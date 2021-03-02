@@ -1,5 +1,15 @@
 // riff.c
 
+#include <limits.h>
+
+#define SAMPLE_RATE 44100
+
+static char RiffId[] = {'R', 'I', 'F', 'F'};
+static char WaveId[] = {'W', 'A', 'V', 'E'};
+static char DataChunkId[] = {'d', 'a', 't', 'a'};
+static char ChunkListId[] = {'L', 'I', 'S', 'T'};
+static char FormatId[] = {'f', 'm', 't', ' '};
+
 static void PrintWaveHeader(wave_header* Header) {
   printf(
     "RiffId:  %.4s\n"
@@ -45,8 +55,6 @@ static void PrintWaveChunk(wave_chunk* Header) {
 }
 
 static i32 ValidateWaveHeader(wave_header* Header) {
-  char RiffId[] = {'R', 'I', 'F', 'F'};
-  char WaveId[] = {'W', 'A', 'V', 'E'};
   if (strncmp(Header->RiffId, RiffId, ARR_SIZE(RiffId)) != 0) {
     return Error;
   }
@@ -57,7 +65,6 @@ static i32 ValidateWaveHeader(wave_header* Header) {
 }
 
 static i32 ValidateWaveFormat(wave_format* Header) {
-  char FormatId[] = {'f', 'm', 't', ' '};
   if (strncmp(Header->FormatId, FormatId, ARR_SIZE(FormatId)) != 0) {
     return Error;
   }
@@ -67,14 +74,14 @@ static i32 ValidateWaveFormat(wave_format* Header) {
   return NoError;
 }
 
-static i32 ValidateWaveChunk(wave_chunk* Header, i32* ListTag) {
-  char ChunkId[] = {'d', 'a', 't', 'a'};
-  char ChunkListId[] = {'L', 'I', 'S', 'T'};
-  if (!strncmp(Header->ChunkId, ChunkId, ARR_SIZE(ChunkId))) {
+static i32 ValidateWaveChunk(wave_chunk* Header, i32* HasListTag) {
+  if (!strncmp(Header->ChunkId, DataChunkId, ARR_SIZE(DataChunkId))) {
     return NoError;
   }
   if (!strncmp(Header->ChunkId, ChunkListId, ARR_SIZE(ChunkListId))) {
-    *ListTag = 1;
+    if (HasListTag) {
+      *HasListTag = 1;
+    }
     return NoError;
   }
   return Error;
@@ -97,6 +104,104 @@ static i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, i32 SampleCount
     *OutBuffer++ = InBuffer[SampleIndex] / 32768.0f;
   }
   return NoError;
+}
+
+static i32 ConvertTo16Buffer(i16* OutBuffer, float* InBuffer, i32 SampleCount) {
+  for (i32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
+    *OutBuffer++ = InBuffer[SampleIndex] * INT16_MAX;
+  }
+  return NoError;
+}
+
+static void InitWaveHeader(wave_header* Header, i32 Size) {
+  strncpy(Header->RiffId, RiffId, ARR_SIZE(RiffId));
+  Header->Size = Size;
+  strncpy(Header->WaveId, WaveId, ARR_SIZE(WaveId));
+}
+
+static void InitWaveFormat(wave_format* Header, i32 SampleRate, i32 ChannelCount, i16 BitsPerSample) {
+  strncpy(Header->FormatId, FormatId, ARR_SIZE(FormatId));
+  Header->Size = 16;
+  Header->Type = FORMAT_PCM;
+  Header->ChannelCount = ChannelCount;
+  Header->SampleRate = SampleRate;
+  Header->DataRate = (SampleRate * ChannelCount * BitsPerSample) / 8;
+  Header->DataBlockSize = BitsPerSample / 8;
+  Header->BitsPerSample = BitsPerSample;
+}
+
+static void InitWaveDataChunk(wave_chunk* Header, i32 Size) {
+  strncpy(Header->ChunkId, DataChunkId, ARR_SIZE(DataChunkId));
+  Header->Size = Size;
+}
+
+static i32 StoreWAVE(const char* Path, audio_source* Source) {
+  printf("=== %s() ===\n", __FUNCTION__);
+
+  i32 Result = NoError;
+  FILE* File = fopen(Path, "w");
+  if (!File) {
+    fprintf(stderr, "Failed to open file '%s'\n", Path);
+    return Error;
+  }
+
+  i16 BitsPerSample = 16;
+  i16 DataBlockSize = BitsPerSample / 8;
+  i32 DataChunkSize = Source->SampleCount * Source->ChannelCount * DataBlockSize;
+  i32 TotalSize = WaveMinSize + DataChunkSize - sizeof(wave_chunk);
+
+  wave_header WaveHeader;
+  InitWaveHeader(&WaveHeader, TotalSize);
+
+  wave_format WaveFormat;
+  InitWaveFormat(&WaveFormat, SAMPLE_RATE, Source->ChannelCount, BitsPerSample);
+
+  wave_chunk WaveChunk;
+  InitWaveDataChunk(&WaveChunk, DataChunkSize);
+
+  if ((Result = ValidateWaveHeader(&WaveHeader)) != NoError) {
+    goto Done;
+  }
+
+  if ((Result = ValidateWaveFormat(&WaveFormat)) != NoError) {
+    goto Done;
+  }
+
+  if ((Result = ValidateWaveChunk(&WaveChunk, NULL)) != NoError) {
+    goto Done;
+  }
+
+#if 0
+  printf("WAVE file to store '%s':\n", Path);
+  printf("===\n");
+  PrintWaveHeader(&WaveHeader);
+  printf("===\n");
+  PrintWaveFormat(&WaveFormat);
+  printf("===\n");
+  PrintWaveChunk(&WaveChunk);
+#endif
+  fwrite(&WaveHeader, 1, sizeof(wave_header), File);
+  fwrite(&WaveFormat, 1, sizeof(wave_format), File);
+  fwrite(&WaveChunk, 1, sizeof(wave_chunk), File);
+
+#if 0
+  i16* Buffer = malloc(sizeof(i16) * Source->SampleCount);
+  i16* Iter = Buffer;
+  ConvertTo16Buffer(Buffer, Source->Buffer, Source->SampleCount);
+  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
+    fwrite(Iter++, 1, sizeof(i16), File);
+  }
+  free(Buffer);
+#else
+  float* Iter = Source->Buffer;
+  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
+    i16 Sample = (i16)(*(Iter++) * INT16_MAX);
+    fwrite(&Sample, 1, sizeof(i16), File);
+  }
+#endif
+Done:
+  fclose(File);
+  return Result;
 }
 
 static i32 LoadWAVE(const char* Path, audio_source* Source) {

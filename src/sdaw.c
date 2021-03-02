@@ -8,14 +8,19 @@
 #include "riff.c"
 
 i32 SdawStart(i32 argc, char** argv) {
-  const char* Path = "test.wav";
   audio_source Source;
-  if (LoadAudioSource(Path, &Source) == NoError) {
-    fprintf(stdout, "Ok\n");
+  if (LoadAudioSource("test.wav", &Source) == NoError) {
+    if (StoreAudioSource("test_copy.wav", &Source) == NoError) {
+      printf("StoreAudioSource: Ok\n");
+    }
+    else {
+      printf("StoreAudioSource: Error\n");
+    }
     UnloadAudioSource(&Source);
+    printf("LoadAudioSource: Ok\n");
   }
   else {
-    fprintf(stderr, "Failed to load WAVE file '%s'\n", Path);
+    printf("LoadAudioSource: Error\n");
   }
   return 0;
 }

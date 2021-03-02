@@ -5,6 +5,10 @@ static i32 LoadAudioSource(const char* Path, audio_source* Source) {
   return LoadWAVE(Path, Source);
 }
 
+static i32 StoreAudioSource(const char* Path, audio_source* Source) {
+  return StoreWAVE(Path, Source);
+}
+
 static void UnloadAudioSource(audio_source* Source) {
   Assert(Source);
   if (Source->Buffer) {

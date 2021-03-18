@@ -8,3 +8,9 @@ typedef struct image {
   u16 Pitch;
   u16 BytesPerPixel;
 } image;
+
+typedef struct color_rgb {
+  u8 R;
+  u8 G;
+  u8 B;
+} __attribute__((packed)) color_rgb;

@@ -23,8 +23,11 @@ typedef double r64;
 #define MAX_PATH_SIZE 512
 
 #define Assert(VALUE) assert(VALUE)
+#define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
 
 typedef enum error_code {
   NoError = 0,
   Error = -1,
 } error_code;
+
+extern float Lerp(float V0, float V1, float T);

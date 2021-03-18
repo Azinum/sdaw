@@ -103,6 +103,10 @@ static i32 LoadPNG(const char* Path, image* Image) {
   return Result;
 }
 
+static i32 LoadImage(const char* Path, image* Image) {
+  return LoadPNG(Path, Image);
+}
+
 static void UnloadImage(image* Image) {
   Assert(Image);
   if (Image->PixelBuffer != NULL) {

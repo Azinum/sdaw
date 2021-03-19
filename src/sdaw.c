@@ -39,27 +39,46 @@ i32 GenerateFromImage(const char* Path, image* Image, float Amp) {
   );
   i32 Result = NoError;
   i32 SampleRate = SAMPLE_RATE;
-  i32 FrameCopies = 8;
+  i32 FrameCopies = 1 + rand() % 16;
   i32 ChannelCount = 1;
-  i32 WDenom = 1;
-  i32 HDenom = 1;
+  float WDenom = 1 + rand() % 8;
+  float HDenom = 1 + rand() % 8;
+  i32 XSpeed = 1 + rand() % 4;
+  i32 YSpeed = 1 + rand() % 4;
   i32 Width = Image->Width / WDenom;
   i32 Height = Image->Height / HDenom;
-  i32 SampleCount = Width * Height * ChannelCount * FrameCopies;
+
+  printf(
+    "FrameCopies:   %i\n"
+    "ChannelCount:  %i\n"
+    "WDenom:        %g\n"
+    "HDenom:        %g\n"
+    "XSpeed:        %i\n"
+    "YSpeed:        %i\n"
+    ,
+    FrameCopies,
+    ChannelCount,
+    WDenom,
+    HDenom,
+    XSpeed,
+    YSpeed
+  );
+
+  // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
+  i32 Padding = 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
+  i32 SampleCount = ((Width / XSpeed) * (Height / YSpeed) * ChannelCount * FrameCopies) + Padding;
 
   audio_source Source;
   if (InitAudioSource(&Source, SampleCount, ChannelCount) == NoError) {
     float* Iter = &Source.Buffer[0];
     float LastFrame = 0;
     float Frame = 0;
-    for (i32 Y = 0; Y < Height; ++Y) {
-      for (i32 X = 0; X < Width; ++X) {
-        u8 R = Image->PixelBuffer[X + (Y * Image->Width) + 0];
-        u8 G = Image->PixelBuffer[X + (Y * Image->Width) + 1];
-        u8 B = Image->PixelBuffer[X + (Y * Image->Width) + 2];
+    for (i32 Y = 0; Y < Height; Y += YSpeed) {
+      for (i32 X = 0; X < Width; X += XSpeed) {
+        color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(1 * ((X + (Y * Image->Width))) % ((3 * Image->Width * Image->Height)))];
 
         LastFrame = Frame;
-        Frame = Amp * (float)(R * G * B) / SampleRate;
+        Frame = Amp * (float)(Color->R + Color->G + Color->B) / (255 * 3);
         Frame = Clamp(Frame, -1.0f, 1.0f);
 
         // printf("Interpolate (%g -> %g):\n", LastFrame, Frame);
@@ -67,7 +86,6 @@ i32 GenerateFromImage(const char* Path, image* Image, float Amp) {
         for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
           LastFrame = Lerp(LastFrame, Frame, InterpFactor);
           if (Source.ChannelCount == 2) {
-            Assert(0);
             *(Iter++) += LastFrame;
             *(Iter++) += LastFrame;
             continue;
@@ -86,6 +104,7 @@ i32 GenerateFromImage(const char* Path, image* Image, float Amp) {
 }
 
 i32 SdawStart(i32 argc, char** argv) {
+  srand(time(NULL));
   if (argc > 1) {
     char* ImagePath = argv[1];
     char* OutputPath = NULL;

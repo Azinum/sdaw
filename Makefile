@@ -19,4 +19,5 @@ uninstall:
 
 run:
 	./${BUILD_DIR}/${PROG} images/sb_nails.png out.wav
+	aplay out.wav
 

@@ -7,6 +7,18 @@
 #include "audio.c"
 #include "riff.c"
 
+typedef enum sampling_strategy {
+  S_DEFAULT = 0,
+  S_EXPERIMENTAL,
+
+  MAX_SAMPLING_STRATEGY,
+} sampling_strategy;
+
+static const char* SamplingDesc[MAX_SAMPLING_STRATEGY] = {
+  "default",
+  "experimental",
+};
+
 typedef struct args {
   i32 FrameCopies;
   i32 ChannelCount;
@@ -14,6 +26,7 @@ typedef struct args {
   float HDenom;
   i32 XSpeed;
   i32 YSpeed;
+  i32 SamplingStrategy;
 } args;
 
 static i32 GenerateSineWave(audio_source* Source, float Amp, float Freq);
@@ -41,15 +54,24 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
   i32 Width = Image->Width / WDenom;
   i32 Height = Image->Height / HDenom;
 
+  // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
+  i32 Padding = 2 * 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
+  i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
+  i32 Tick = 1;
+  i32 SamplingStrategy = S_DEFAULT;
+
 #if 1
+  float TimeInSeconds = (float)SampleCount / SampleRate;
+  i32 TimeInMinutes = (i32)TimeInSeconds / 60;
   printf(
     "Generating audio file '%s' from image file '%s', with the following options:\n"
-    "  FrameCopies:   %i\n"
-    "  ChannelCount:  %i\n"
-    "  WDenom:        %g\n"
-    "  HDenom:        %g\n"
-    "  XSpeed:        %i\n"
-    "  YSpeed:        %i\n"
+    "  FrameCopies:  %i\n"
+    "  ChannelCount: %i\n"
+    "  WDenom:       %g\n"
+    "  HDenom:       %g\n"
+    "  XSpeed:       %i\n"
+    "  YSpeed:       %i\n"
+    "  Time:         %i min, %i sec\n"
     ,
     Path,
     ImagePath,
@@ -58,40 +80,49 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
     WDenom,
     HDenom,
     XSpeed,
-    YSpeed
+    YSpeed,
+    TimeInMinutes,
+    ((i32)TimeInSeconds) % 60
   );
 #endif
-
-  // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
-  i32 Padding = 2 * 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
-  i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
-  i32 Tick = 1;
 
   audio_source Source;
   if (InitAudioSource(&Source, SampleCount, ChannelCount) == NoError) {
     float* Iter = &Source.Buffer[0];
     float LastFrame = 0;
     float Frame = 0;
-    for (i32 Y = 0; Y < Height; Y += YSpeed) {
-      for (i32 X = 0; X < Width; X += XSpeed) {
-        color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(1 * ((X + (Y * Image->Width))) % ((3 * Image->Width * Image->Height)))];
+    switch (SamplingStrategy) {
+      case S_DEFAULT: {
+        for (i32 Y = 0; Y < Height; Y += YSpeed) {
+          for (i32 X = 0; X < Width; X += XSpeed) {
+            color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
 
-        LastFrame = Frame;
-        Frame = Amp * (float)(((Color->R + Color->G + Color->B) / 3) << 6) / (SAMPLE_RATE);
-        Frame = Clamp(Frame, -1.0f, 1.0f);
+            LastFrame = Frame;
+            Frame = Amp * (float)(((Color->R + Color->G + Color->B) / 3) << 6) / SampleRate;
+            Frame = Clamp(Frame, -1.0f, 1.0f);
 
-        float InterpFactor = (fabs(LastFrame - Frame));
-        for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
-          LastFrame = Lerp(LastFrame, Frame, InterpFactor);
-          if (Source.ChannelCount == 2) {
-            *(Iter++) += LastFrame;
-            *(Iter++) += LastFrame;
-            continue;
+            float InterpFactor = (fabs(LastFrame - Frame));
+            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+              LastFrame = Lerp(LastFrame, Frame, InterpFactor);
+              if (Source.ChannelCount == 2) {
+                *(Iter++) += LastFrame;
+                *(Iter++) += LastFrame;
+                continue;
+              }
+              *(Iter++) += LastFrame;
+              Tick++;
+            }
           }
-          *(Iter++) += LastFrame;
-          Tick++;
         }
+        break;
       }
+      case S_EXPERIMENTAL: {
+        assert(0);
+        break;
+      }
+      default:
+        assert(0);
+        break;
     }
     Result = StoreAudioSource(Path, &Source);
     UnloadAudioSource(&Source);
@@ -104,13 +135,18 @@ void PrintHelp(FILE* File) {
   fprintf(File,
     "Usage: ./sdaw <image path> [options]\n"
     "Avaliable options are:\n"
-    "  -c value   number of frame copies\n"
-    "  -w value   width denominator\n"
-    "  -h value   height denominator\n"
-    "  -x value   horizontal sampling speed\n"
-    "  -y value   vertical sampling speed\n"
-    "  -h         show this menu\n"
+    "  -c <value>   number of frame copies\n"
+    "  -w <value>   width denominator\n"
+    "  -h <value>   height denominator\n"
+    "  -x <value>   horizontal sampling speed\n"
+    "  -y <value>   vertical sampling speed\n"
+    "  -h           show this menu\n"
+    "  -s <value>   set sampling strategy which could be:\n"
   );
+  for (i32 Index = 0; Index < MAX_SAMPLING_STRATEGY; ++Index) {
+    const char* Desc = SamplingDesc[Index];
+    fprintf(File, "    %i: %s\n", Index, Desc);
+  }
 }
 
 i32 SdawStart(i32 argc, char** argv) {
@@ -151,6 +187,14 @@ i32 SdawStart(i32 argc, char** argv) {
           }
           case 'y': {
             sscanf(argv[++Index], "%i", &Args.YSpeed);
+            break;
+          }
+          case 's': {
+            sscanf(argv[++Index], "%i", &Args.SamplingStrategy);
+            if (!(Args.SamplingStrategy >= 0 && Args.SamplingStrategy < MAX_SAMPLING_STRATEGY)) {
+              fprintf(stdout, "Invalid sampling strategy (%i was given, expected [%i - %i])\n", Args.SamplingStrategy, S_DEFAULT, MAX_SAMPLING_STRATEGY - 1);
+              return Error;
+            }
             break;
           }
           default:

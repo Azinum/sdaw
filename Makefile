@@ -18,6 +18,6 @@ uninstall:
 	rm ${INSTALL_DIR}/${PROG}
 
 run:
-	./${BUILD_DIR}/${PROG} -c 64 -w 1 -h 1 -x 1 -y 1 sb_nails.png
+	./${BUILD_DIR}/${PROG} sb_nails.png -c 1 -w 1 -h 1 -x 1 -y 1 -s 1
 # aplay sb_nails.wav
 

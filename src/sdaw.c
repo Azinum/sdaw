@@ -30,7 +30,7 @@ typedef struct args {
 } args;
 
 static i32 GenerateSineWave(audio_source* Source, float Amp, float Freq);
-static i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed);
+static i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy);
 static void PrintHelp(FILE* File);
 
 i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
@@ -48,7 +48,7 @@ i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
   return NoError;
 }
 
-i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed) {
+i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy) {
   i32 Result = NoError;
 
   i32 Width = Image->Width / WDenom;
@@ -57,8 +57,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
   // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
   i32 Padding = 2 * 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
   i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
-  i32 Tick = 1;
-  i32 SamplingStrategy = S_DEFAULT;
+  float Tick = 0.0f;
 
 #if 1
   float TimeInSeconds = (float)SampleCount / SampleRate;
@@ -117,7 +116,29 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
         break;
       }
       case S_EXPERIMENTAL: {
-        assert(0);
+        for (i32 Y = 0; Y < Height; Y += YSpeed) {
+          for (i32 X = 0; X < Width; X += XSpeed) {
+            color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
+
+            LastFrame = Frame;
+            float TickAdd = (float)(Color->R * Color->G * Color->B) / (255 * 255);
+            Tick += TickAdd;
+            Frame = Amp * sin((Tick * PI32 * 2 * 100) / SampleRate);
+            Frame = Clamp(Frame, -1.0f, 1.0f);
+
+            float InterpFactor = (fabs(LastFrame - Frame));
+            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+              LastFrame = Lerp(LastFrame, Frame, InterpFactor);
+              if (Source.ChannelCount == 2) {
+                *(Iter++) += LastFrame;
+                *(Iter++) += LastFrame;
+                continue;
+              }
+              *(Iter++) += LastFrame;
+              Tick++;
+            }
+          }
+        }
         break;
       }
       default:
@@ -133,7 +154,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
 
 void PrintHelp(FILE* File) {
   fprintf(File,
-    "Usage: ./sdaw <image path> [options]\n"
+    "Usage: sdaw <image path> [options]\n"
     "Avaliable options are:\n"
     "  -c <value>   number of frame copies\n"
     "  -w <value>   width denominator\n"
@@ -141,7 +162,7 @@ void PrintHelp(FILE* File) {
     "  -x <value>   horizontal sampling speed\n"
     "  -y <value>   vertical sampling speed\n"
     "  -h           show this menu\n"
-    "  -s <value>   set sampling strategy which could be:\n"
+    "  -s <value>   set sampling strategy:\n"
   );
   for (i32 Index = 0; Index < MAX_SAMPLING_STRATEGY; ++Index) {
     const char* Desc = SamplingDesc[Index];
@@ -243,7 +264,7 @@ i32 SdawStart(i32 argc, char** argv) {
 
     image Image;
     if (LoadImage(ImagePath, &Image) == NoError) {
-      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, 1, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed) != NoError) {
+      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, 1, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
         fprintf(stderr, "Something went wrong when trying to generate audio for image '%s', which were going to be generated to '%s'\n", ImagePath, OutPath);
       }
       UnloadImage(&Image);

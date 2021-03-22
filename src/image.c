@@ -65,8 +65,11 @@ static i32 LoadPNGFromFile(FILE* File, image* Image) {
       Image->Pitch = 4 * Image->Width;
       break;
     }
-    default:
-      Assert(0);
+    default: {
+      // Assert(0);
+      Image->Pitch = 3 * Image->Width;
+      break;
+    }
   }
 
   Image->BytesPerPixel = png_get_rowbytes(PNG, Info) / Image->Width;

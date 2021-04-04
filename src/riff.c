@@ -55,17 +55,17 @@ static void PrintWaveChunk(wave_chunk* Header) {
 }
 
 static i32 ValidateWaveHeader(wave_header* Header) {
-  if (strncmp(Header->RiffId, RiffId, ARR_SIZE(RiffId)) != 0) {
+  if (strncmp(Header->RiffId, RiffId, ArraySize(RiffId)) != 0) {
     return Error;
   }
-  if (strncmp(Header->WaveId, WaveId, ARR_SIZE(WaveId)) != 0) {
+  if (strncmp(Header->WaveId, WaveId, ArraySize(WaveId)) != 0) {
     return Error;
   }
   return NoError;
 }
 
 static i32 ValidateWaveFormat(wave_format* Header) {
-  if (strncmp(Header->FormatId, FormatId, ARR_SIZE(FormatId)) != 0) {
+  if (strncmp(Header->FormatId, FormatId, ArraySize(FormatId)) != 0) {
     return Error;
   }
   if (Header->Type != FORMAT_PCM) {
@@ -75,10 +75,10 @@ static i32 ValidateWaveFormat(wave_format* Header) {
 }
 
 static i32 ValidateWaveChunk(wave_chunk* Header, i32* HasListTag) {
-  if (!strncmp(Header->ChunkId, DataChunkId, ARR_SIZE(DataChunkId))) {
+  if (!strncmp(Header->ChunkId, DataChunkId, ArraySize(DataChunkId))) {
     return NoError;
   }
-  if (!strncmp(Header->ChunkId, ChunkListId, ARR_SIZE(ChunkListId))) {
+  if (!strncmp(Header->ChunkId, ChunkListId, ArraySize(ChunkListId))) {
     if (HasListTag) {
       *HasListTag = 1;
     }
@@ -114,13 +114,13 @@ static i32 ConvertTo16Buffer(i16* OutBuffer, float* InBuffer, i32 SampleCount) {
 }
 
 static void InitWaveHeader(wave_header* Header, i32 Size) {
-  strncpy(Header->RiffId, RiffId, ARR_SIZE(RiffId));
+  strncpy(Header->RiffId, RiffId, ArraySize(RiffId));
   Header->Size = Size;
-  strncpy(Header->WaveId, WaveId, ARR_SIZE(WaveId));
+  strncpy(Header->WaveId, WaveId, ArraySize(WaveId));
 }
 
 static void InitWaveFormat(wave_format* Header, i32 SampleRate, i32 ChannelCount, i16 BitsPerSample) {
-  strncpy(Header->FormatId, FormatId, ARR_SIZE(FormatId));
+  strncpy(Header->FormatId, FormatId, ArraySize(FormatId));
   Header->Size = 16;
   Header->Type = FORMAT_PCM;
   Header->ChannelCount = ChannelCount;
@@ -131,7 +131,7 @@ static void InitWaveFormat(wave_format* Header, i32 SampleRate, i32 ChannelCount
 }
 
 static void InitWaveDataChunk(wave_chunk* Header, i32 Size) {
-  strncpy(Header->ChunkId, DataChunkId, ARR_SIZE(DataChunkId));
+  strncpy(Header->ChunkId, DataChunkId, ArraySize(DataChunkId));
   Header->Size = Size;
 }
 

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
@@ -19,7 +20,7 @@ typedef float r32;
 typedef double r64;
 
 #define PI32 3.14159265359f
-#define ARR_SIZE(ARR) ((sizeof(ARR)) / (sizeof(ARR[0])))
+#define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512
 
 #define Assert(VALUE) assert(VALUE)

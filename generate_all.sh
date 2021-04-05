@@ -3,7 +3,7 @@
 OUT_DIR=output
 
 for file in *.png ; do
-	sdaw "$file"
+	sdaw -g "$file"
 done
 
 mkdir -p ${OUT_DIR}

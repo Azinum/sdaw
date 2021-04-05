@@ -95,6 +95,64 @@ Done:
   return Result;
 }
 
+static i32 StorePNGFromFile(FILE* File, image* Image) {
+  i32 Result = Error;
+  png_structp PNG = {0};
+  png_infop Info = {0};
+
+  PNG = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!PNG) {
+    goto Done;
+  }
+
+  Info = png_create_info_struct(PNG);
+  if (!Info)
+    goto Done;
+
+  if (setjmp(png_jmpbuf(PNG)))
+    goto Done;
+
+  png_init_io(PNG, File);
+
+  png_set_IHDR(
+    PNG,
+    Info,
+    Image->Width, Image->Height,
+    8,
+    PNG_COLOR_TYPE_RGB,
+    PNG_INTERLACE_NONE,
+    PNG_COMPRESSION_TYPE_DEFAULT,
+    PNG_FILTER_TYPE_BASE
+  );
+  png_set_filter(PNG, PNG_FILTER_TYPE_BASE, PNG_FILTER_NONE);
+
+  png_write_info(PNG, Info);
+  png_set_filler(PNG, 0, PNG_FILLER_AFTER); // NOTE(lucas): This removes the alpha channel
+
+  png_bytep row = (png_bytep)malloc(3 * Image->Width * sizeof(png_byte));
+
+  for (u32 Y = 0; Y < Image->Height; ++Y) {
+    for (u32 X = 0; X < Image->Width; ++X) {
+      png_byte* Pixel = &(row[X * 3]);
+      memcpy(Pixel, &Image->PixelBuffer[Image->BytesPerPixel * ((Y * Image->Width) + X)], Image->BytesPerPixel);
+    }
+    png_write_row(PNG, row);
+  }
+
+  free(row);
+  png_write_end(PNG, NULL);
+
+  Result = NoError;
+Done:
+  if (Result != NoError) {
+    fprintf(stderr, "Failed to write PNG file\n");
+  }
+  if (PNG && Info) {
+    png_destroy_write_struct(&PNG, &Info);
+  }
+  return Result;
+}
+
 static i32 LoadPNG(const char* Path, image* Image) {
   FILE* File = fopen(Path, "r");
   if (!File) {
@@ -108,6 +166,34 @@ static i32 LoadPNG(const char* Path, image* Image) {
 
 static i32 LoadImage(const char* Path, image* Image) {
   return LoadPNG(Path, Image);
+}
+
+static i32 StoreImage(const char* Path, image* Image) {
+  FILE* File = fopen(Path, "w");
+  if (!File) {
+    fprintf(stderr, "Failed to create '%s'\n", Path);
+    return Error;
+  }
+  i32 Result = StorePNGFromFile(File, Image);
+  fclose(File);
+  return Result;
+}
+
+static i32 InitImage(i32 Width, i32 Height, image* Image) {
+  Assert(Width > 0 && Height > 0 && Image);
+  memset(Image, 0, sizeof(image));
+  i32 BytesPerPixel = 3; // RGB
+  Image->PixelBuffer = malloc(BytesPerPixel * Width * Height * sizeof(u8));
+  memset(Image->PixelBuffer, 0, BytesPerPixel * Width * Height * sizeof(u8));
+  if (!Image->PixelBuffer) {
+    return Error;
+  }
+  Image->Width = Width;
+  Image->Height = Height;
+  Image->Depth = 8; // 8 bits for each color component in any given pixel
+  Image->Pitch = Width * BytesPerPixel;
+  Image->BytesPerPixel = BytesPerPixel;
+  return NoError;
 }
 
 static void UnloadImage(image* Image) {

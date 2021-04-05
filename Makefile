@@ -25,4 +25,4 @@ debug: ${SRC}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:
-	./${BUILD_DIR}/${PROG} -g -f 12 -s 1 sb_nails.png
+	./${BUILD_DIR}/${PROG} -i sb_nails.wav -W 256 -H 256

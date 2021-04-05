@@ -96,6 +96,11 @@ i32 ParseArgs(parse_arg* Args, i32 NumArgs, i32 argc, char** argv) {
                 break;
               }
               case ArgString: {
+                char** String = ParseArg->Data;
+                *String = Buffer;
+                break;
+              }
+              case ArgBuffer: {
                 sscanf(Buffer, "%s", (char*)ParseArg->Data);
                 break;
               }

@@ -5,6 +5,7 @@
 #include "image.h"
 #include "audio.h"
 #include "riff.h"
-#include "gen.h"
+#include "gen_audio.h"
+#include "gen_image.h"
 
 i32 SdawStart(i32 argc, char** argv);

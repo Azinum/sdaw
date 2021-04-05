@@ -1,4 +1,4 @@
-// gen.c
+// gen_audio.c
 // image to audio generator
 
 typedef enum sampling_strategy {
@@ -56,7 +56,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
   float TimeInSeconds = (float)SampleCount / SampleRate;
   i32 TimeInMinutes = (i32)TimeInSeconds / 60;
   printf(
-    "Generating audio file '%s' from image file '%s', with the following options:\n"
+    "Generating audio file '%s' from image file '%s':\n"
     "  Time:         %i min, %i sec\n"
     "  FrameCopies:  %i\n"
     "  ChannelCount: %i\n"
@@ -138,17 +138,18 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
         break;
       }
       default:
-        assert(0);
-        break;
+        Result = Error;
+        goto Done;
     }
     Result = StoreAudioSource(Path, &Source);
+Done:
     UnloadAudioSource(&Source);
     return Result;
   }
   return Error;
 }
 
-i32 Gen(i32 argc, char** argv) {
+i32 GenAudio(i32 argc, char** argv) {
   args Args = (args) {
     .FrameCopies = 1,
     .ChannelCount = 1,
@@ -199,7 +200,7 @@ i32 Gen(i32 argc, char** argv) {
     image Image;
     if (LoadImage(ImagePath, &Image) == NoError) {
       if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, Args.ChannelCount, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
-        fprintf(stderr, "Something went wrong when trying to generate audio for image '%s', which were going to be generated to '%s'\n", ImagePath, OutPath);
+        fprintf(stderr, "Something went wrong when trying to generate audio for image '%s', of which were going to be generated to '%s'\n", ImagePath, OutPath);
       }
       UnloadImage(&Image);
     }

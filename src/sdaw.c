@@ -7,12 +7,15 @@
 #include "image.c"
 #include "audio.c"
 #include "riff.c"
-#include "gen.c"
+#include "gen_audio.c"
+#include "gen_image.c"
 
 i32 ImageToAudioGen = 0;
+i32 AudioToImageGen = 0;
 
 static parse_arg Arguments[] = {
-  {'g', "gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
+  {'g', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
+  {'i', "image-gen", "audio to image generator", ArgInt, 0, &AudioToImageGen},
 };
 
 i32 SdawStart(i32 argc, char** argv) {
@@ -26,7 +29,12 @@ i32 SdawStart(i32 argc, char** argv) {
     return Result;
 
   if (ImageToAudioGen) {
-    if ((Result = Gen(argc - 1, &argv[1])) != NoError) {
+    if ((Result = GenAudio(argc - 1, &argv[1])) != NoError) {
+      return Result;
+    }
+  }
+  else if (AudioToImageGen) {
+    if ((Result = GenImage(argc - 1, &argv[1])) != NoError) {
       return Result;
     }
   }

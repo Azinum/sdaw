@@ -6,6 +6,7 @@ all: prepare compile run
 
 prepare:
 	mkdir -p ${BUILD_DIR}
+	mkdir -p sequence
 
 compile: ${SRC}
 	${CC} ${SRC} ${FLAGS} ${O_RELEASE}
@@ -19,10 +20,11 @@ uninstall:
 
 clean:
 	rm -r ${BUILD_DIR}/
+	rm -r sequence/
 
 debug: ${SRC}
 	${CC} ${SRC} ${FLAGS} ${O_DEBUG}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:
-	./${BUILD_DIR}/${PROG} -i sb_nails.wav -W 256 -H 256
+	./${BUILD_DIR}/${PROG} -i concrete_gloom_low.wav -r 24 -W 512 -H 512 -S -o sequence/frame_ -s 2 -i 0 -n 100

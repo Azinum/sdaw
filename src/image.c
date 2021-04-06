@@ -129,11 +129,11 @@ static i32 StorePNGFromFile(FILE* File, image* Image) {
   png_write_info(PNG, Info);
   png_set_filler(PNG, 0, PNG_FILLER_AFTER); // NOTE(lucas): This removes the alpha channel
 
-  png_bytep row = (png_bytep)malloc(3 * Image->Width * sizeof(png_byte));
+  png_bytep row = (png_bytep)malloc(4 * Image->Width * sizeof(png_byte));
 
-  for (u32 Y = 0; Y < Image->Height; ++Y) {
-    for (u32 X = 0; X < Image->Width; ++X) {
-      png_byte* Pixel = &(row[X * 3]);
+  for (i32 Y = 0; Y < Image->Height; ++Y) {
+    for (i32 X = 0; X < Image->Width; ++X) {
+      png_byte* Pixel = &(row[X * 4]);
       memcpy(Pixel, &Image->PixelBuffer[Image->BytesPerPixel * ((Y * Image->Width) + X)], Image->BytesPerPixel);
     }
     png_write_row(PNG, row);

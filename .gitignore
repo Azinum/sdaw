@@ -2,5 +2,6 @@
 *.swo
 build/
 output/
+sequence/
 out.wav
 *.wav

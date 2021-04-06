@@ -30,7 +30,7 @@ i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
   float* Iter = Source->Buffer;
   for (u32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
     float Frame = Amp * sin((SampleIndex * Freq * 2 * PI32) / SAMPLE_RATE);
-    Amp = Lerp(Amp, 0.0f, 0.0001f);
+    Amp = Lerp(Amp, 0.0f, 0.00005f);
     if (Source->ChannelCount == 2) {
       *(Iter++) += Frame;
       *(Iter++) += Frame;

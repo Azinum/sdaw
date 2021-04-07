@@ -7,6 +7,12 @@ enum gen_image_strategy {
   MAX_STRATEGY,
 };
 
+static const char* GenImageStrategyDesc[MAX_STRATEGY] = {
+  "default",
+  "experimental",
+  "loudness",
+};
+
 typedef struct gen_image_args {
   char* Path;
   char* OutputPath;
@@ -17,9 +23,11 @@ typedef struct gen_image_args {
   i32 SeqFrameRate;
   i32 Strategy;
   i32 NumFrames;
+  i32 Verbose;
 } gen_image_args;
 
 #define FetchPixel(X, Y) (color_rgb*)&Image.PixelBuffer[(3 * ((X + (Y * Image.Width))) % (3 * (Image.Width * Image.Height)))]
+#define Vprintf(Verbose, Format, ...) (Verbose ? printf(Format, __VA_ARGS__) : (void)0)
 
 static i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args* Args);
 static i32 GenerateFromAudio(const char* Path, audio_source* Audio, gen_image_args* Args);
@@ -34,11 +42,18 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
     if (Args->NumFrames > 0) {
       NumFrames = Clamp(Args->NumFrames, 0, NumFrames);
     }
-    i32 WindowSize = 2048;
     i32 FrameSize = (float)(SAMPLE_RATE * Audio->ChannelCount) / Args->SeqFrameRate;
+    i32 WindowSize = FrameSize;
     float ImageSize = DistanceV2(V2(0, 0), V2(Image.Width, Image.Height));
+    i32 MaxFrames = Args->StartIndex + NumFrames;
+    struct timeval TimeNow = {0};
+    struct timeval TimeLast = {0};
 
-    for (i32 FrameIndex = Args->StartIndex; FrameIndex < Args->StartIndex + NumFrames; ++FrameIndex) {
+    for (i32 FrameIndex = Args->StartIndex; FrameIndex < MaxFrames; ++FrameIndex) {
+      TimeLast = TimeNow;
+      gettimeofday(&TimeNow, NULL);
+      float DeltaTime = ((((TimeNow.tv_sec - TimeLast.tv_sec) * 1000000.0f) + TimeNow.tv_usec) - (TimeLast.tv_usec)) / 1000000.0f;
+
       float SampleIndex = FrameIndex * FrameSize;
       float Db = 0.0f;
       for (i32 WindowIndex = 0; WindowIndex < WindowSize; ++WindowIndex) {
@@ -48,6 +63,8 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
       }
       float DbAverage = (float)Db / WindowSize;
       float Amp = Min(20.0f / (1 + DbAverage), 1.0f) * 10;
+
+      Vprintf(Args->Verbose, "frame = %4i/%i, fps = %3i, last = %.4g ms, strategy = %s\n", FrameIndex, MaxFrames, (i32)(1.0f / DeltaTime), DeltaTime, GenImageStrategyDesc[Args->Strategy]);
 
       switch (Args->Strategy) {
         case IMG_GEN_STRAT_DEFAULT: {
@@ -110,17 +127,16 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
           break;
         }
         case IMG_GEN_STRAT_LOUDNESS: {
-          // First pass
           for (i32 Y = 0; Y < Image.Height; ++Y) {
             for (i32 X = 0; X < Image.Height; ++X) {
               color_rgb* Color = (color_rgb*)&Image.PixelBuffer[(3 * ((X + (Y * Image.Width))) % (3 * (Image.Width * Image.Height)))];
               i32 Start = SampleIndex;
-              i32 End = Start + FrameSize;
+              i32 End = Start - (FrameSize * Args->SeqFrameRate);
               v2 Target = V2(Image.Width / 2, Image.Height / 2);
               v2 P = V2(X, Y);
 
-              float Dist = DistanceV2(P, Target) * Amp;
-              float Factor = 1.0f - (Dist / ImageSize / 2) * 5.0f;
+              float Dist = DistanceV2(P, Target) / (1.0f + Amp);
+              float Factor = 1.0f - (Dist / ImageSize / 2);
               i32 ResultAt = Abs(Lerp(End, Start, Factor));
               float Frame = Audio->Buffer[ResultAt % Audio->SampleCount];
 
@@ -129,49 +145,6 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
               Color->B = Abs(Factor * Frame) * 0xa;
             }
           }
-
-#if 1
-          // Second pass
-          for (i32 Y = 0; Y < Image.Height; ++Y) {
-            for (i32 X = 0; X < Image.Height; ++X) {
-              #define NUM_PIXELS 4
-              color_rgb* Color = FetchPixel(X, Y);
-              color_rgb* Pixels[NUM_PIXELS] = {
-                FetchPixel(X + 0, Y - 1), // Top
-                FetchPixel(X + 1, Y + 0), // Right
-                FetchPixel(X + 0, Y - 1), // Bottom
-                FetchPixel(X - 1, Y + 0), // Left
-              };
-              color_rgb16 Sum = ColorRGB16(0, 0, 0);
-              for (i32 PixelIndex = 0; PixelIndex < NUM_PIXELS; ++PixelIndex) {
-                color_rgb* Pixel = Pixels[PixelIndex];
-                Sum.R += Pixel->R;
-                Sum.G += Pixel->G;
-                Sum.B += Pixel->B;
-              }
-              Sum.R /= NUM_PIXELS;
-              Sum.G /= NUM_PIXELS;
-              Sum.B /= NUM_PIXELS;
-              Color->R += 0.5f * Sum.R;
-              Color->G += 0.5f * Sum.G;
-              Color->B += 0.5f * Sum.B;
-            }
-          }
-#else
-          #define BLOCK_SIZE 4
-          for (i32 Y = 0; Y < Image.Height; Y += BLOCK_SIZE) {
-            for (i32 X = 0; X < Image.Height; X += BLOCK_SIZE) {
-              color_rgb* Color = FetchPixel(X, Y);
-              color_rgb Copy = *Color;
-              for (i32 BlockY = Y; BlockY < Y + BLOCK_SIZE; ++BlockY) {
-                for (i32 BlockX = X; BlockX < X + BLOCK_SIZE; ++BlockX) {
-                  color_rgb* Pixel = FetchPixel(BlockX, BlockY);
-                  *Pixel = Copy;
-                }
-              }
-            }
-          }
-#endif
           snprintf(OutputPath, MAX_PATH_SIZE, "%s%04i.png", Path, FrameIndex);
           StoreImage(OutputPath, &Image);
           break;
@@ -240,6 +213,7 @@ i32 GenImage(i32 argc, char** argv) {
     {'r', "seq-frame-rate", "frame rate of the sequence", ArgInt, 1, &Args.SeqFrameRate},
     {'s', "strategy", "image sequence generator strategy", ArgInt, 1, &Args.Strategy},
     {'n', "num-frames", "maximum amount of frames in the image sequence generator", ArgInt, 1, &Args.NumFrames},
+    {'v', "verbose", "verbose output", ArgInt, 0, &Args.Verbose},
   };
 
   Result = ParseArgs(Arguments, ArraySize(Arguments), argc, argv);

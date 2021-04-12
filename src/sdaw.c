@@ -3,40 +3,48 @@
 #include "sdaw.h"
 
 #include "common.c"
+#include "memory.c"
 #include "arg_parser.c"
 #include "image.c"
 #include "audio.c"
 #include "riff.c"
 #include "gen_audio.c"
 #include "gen_image.c"
+#include "engine.c"
 
 i32 ImageToAudioGen = 0;
 i32 AudioToImageGen = 0;
 
 static parse_arg Arguments[] = {
-  {'g', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
+  {'a', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
   {'i', "image-gen", "audio to image generator", ArgInt, 0, &AudioToImageGen},
 };
 
 i32 SdawStart(i32 argc, char** argv) {
+  i32 Result = NoError;
   srand(time(NULL));
   if (argc <= 1) {
-    ArgsPrintHelp(stdout, Arguments, ArraySize(Arguments), argc, argv);
-    return NoError;
+    Result = EngineInit();
+    EngineFree();
   }
-  i32 Result = ParseArgs(Arguments, ArraySize(Arguments), 2 /* parse only the first command */, argv);
-  if (Result != NoError)
-    return Result;
+  else {
+    Result = ParseArgs(Arguments, ArraySize(Arguments), 2 /* parse only the first command */, argv);
+    if (Result != NoError) {
+      return Result;
+    }
 
-  if (ImageToAudioGen) {
-    if ((Result = GenAudio(argc - 1, &argv[1])) != NoError) {
-      return Result;
+    if (ImageToAudioGen) {
+      Result = GenAudio(argc - 1, &argv[1]);
+    }
+    else if (AudioToImageGen) {
+      Result = GenImage(argc - 1, &argv[1]);
     }
   }
-  else if (AudioToImageGen) {
-    if ((Result = GenImage(argc - 1, &argv[1])) != NoError) {
-      return Result;
-    }
+  MemoryPrintInfo(stdout);
+  if (MemoryTotal() != 0) {
+    fprintf(stdout, "Memory leak!\n");
+    MemoryPrintInfo(stdout);
+    Assert(0);
   }
-  return NoError;
+  return Result;
 }

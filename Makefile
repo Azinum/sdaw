@@ -9,7 +9,12 @@ prepare:
 	mkdir -p sequence
 
 compile: ${SRC}
-	${CC} ${SRC} ${FLAGS} ${O_RELEASE}
+	${CC} ${SRC} ${FLAGS} ${LIB} ${O_RELEASE}
+
+mac: prepare compile_mac run
+
+compile_mac: ${SRC}
+	${CC} ${SRC} ${FLAGS} ${LIB_MAC} ${O_RELEASE}
 
 install: compile
 	chmod o+x ${BUILD_DIR}/${PROG}
@@ -27,4 +32,5 @@ debug: ${SRC}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:
-	./${BUILD_DIR}/${PROG} -i concrete_gloom_low.wav -r 24 -W 512 -H 512 -S -o sequence/frame_ -v -s 2 -i 0 -n 250
+	./${BUILD_DIR}/${PROG}
+#	./${BUILD_DIR}/${PROG} -i sb_nails.wav -r 24 -W 512 -H 512 -S -o sequence/frame_ -v -s 2 -i 100 -n 10

@@ -8,13 +8,15 @@ BUILD_DIR=build
 
 INC=include
 
-LIB=-lpng -lportaudio -lm
+LIB=-lpng -lportaudio -lm -lGLEW -lglfw -lGL -lGLU
+
+LIB_MAC=-lpng -lportaudio -lm -lGLEW -lglfw -framework OpenGL
 
 SRC=src/main.c
 
-FLAGS=-o ${BUILD_DIR}/${PROG} ${LIB} -I${INC} -Wall
+FLAGS=-o ${BUILD_DIR}/${PROG} -I${INC} -Wall
 
-O_RELEASE=-O2
+O_RELEASE=-O2 -ffast-math
 
 O_DEBUG=-O0 -g -W
 

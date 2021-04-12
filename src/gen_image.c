@@ -71,7 +71,6 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
           for (i32 Y = 0; Y < Image.Height; ++Y) {
             for (i32 X = 0; X < Image.Width; ++X) {
               i32 Start = SampleIndex;
-              i32 End = Start + FrameSize;
               float Factor = (float)((X - (Image.Width * 0.5f)) * (Y - (Image.Height * 0.5f))) / (Image.Width * Image.Height);
               i32 ResultAt = Abs(Lerp(Start, Start * 2, Factor));
               float* Frames = &Audio->Buffer[(ResultAt + 3) % Audio->SampleCount];

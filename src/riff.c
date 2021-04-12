@@ -263,7 +263,8 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
   } while (ListTag);
 
   i32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
-  void* Buffer = malloc(WaveChunk.Size);
+  u32 BufferSize = WaveChunk.Size;
+  void* Buffer = M_Malloc(BufferSize);
   if (!Buffer) {
     fprintf(stderr, "Failed to allocate sample buffer\n");
     Result = Error;
@@ -275,11 +276,11 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
     goto Done;
   }
 
-  Source->Buffer = malloc(sizeof(float) * SampleCount);
+  Source->Buffer = M_Malloc(sizeof(float) * SampleCount);
   Source->SampleCount = SampleCount;
   Source->ChannelCount = WaveFormat.ChannelCount;
   ConvertToFloatBuffer(Source->Buffer, (i16*)Buffer, Source->SampleCount);
-  free(Buffer);
+  M_Free(Buffer, BufferSize);
 
 #if 0
   printf("Loaded WAVE file '%s':\n", Path);
@@ -300,4 +301,3 @@ Done:
   fclose(File);
   return Result;
 }
-

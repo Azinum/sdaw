@@ -1,6 +1,5 @@
 // audio.c
 
-// NOTE(lucas): Abstraction layer function for loading multiple types audio source files. Only supports WAVE for now.
 static i32 LoadAudioSource(const char* Path, audio_source* Source) {
   return LoadWAVE(Path, Source);
 }
@@ -12,7 +11,7 @@ static i32 StoreAudioSource(const char* Path, audio_source* Source) {
 static i32 InitAudioSource(audio_source* Source, i32 SampleCount, i32 ChannelCount) {
   i32 Result = NoError;
 
-  Source->Buffer = calloc(SampleCount * ChannelCount, sizeof(float));
+  Source->Buffer = M_Calloc(SampleCount * ChannelCount, sizeof(float));
   if (!Source->Buffer) {
     return Error;
   }
@@ -24,7 +23,7 @@ static i32 InitAudioSource(audio_source* Source, i32 SampleCount, i32 ChannelCou
 static void UnloadAudioSource(audio_source* Source) {
   Assert(Source);
   if (Source->Buffer) {
-    free(Source->Buffer);
+    M_Free(Source->Buffer, sizeof(float) * Source->SampleCount);
   }
   memset(Source, 0, sizeof(audio_source));
 }

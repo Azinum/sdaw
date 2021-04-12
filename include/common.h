@@ -8,6 +8,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <sys/time.h>
+
 typedef int64_t i64;
 typedef uint64_t u64;
 typedef int32_t i32;
@@ -33,6 +35,8 @@ typedef union v2 {
 #define PI32 3.14159265359f
 #define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512
+#define SAMPLE_RATE 44100
+#define FRAMES_PER_BUFFER 512
 
 #define Assert(VALUE) assert(VALUE)
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))

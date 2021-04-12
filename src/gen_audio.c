@@ -52,7 +52,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
   i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
   float Tick = 0.0f;
 
-#if 1
+#if 0
   float TimeInSeconds = (float)SampleCount / SampleRate;
   i32 TimeInMinutes = (i32)TimeInSeconds / 60;
   printf(

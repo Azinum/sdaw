@@ -5,3 +5,4 @@ output/
 sequence/
 out.wav
 *.wav
+.DS_Store

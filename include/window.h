@@ -16,7 +16,7 @@
 
 typedef struct window {
   const char* Title;
-  u8 IsFullscreen;
+  u8 FullScreen;
   u32 Width;
   u32 Height;
   u32 InitWidth;

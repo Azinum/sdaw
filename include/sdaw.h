@@ -1,6 +1,7 @@
 // sdaw.h
 
 #include "common.h"
+#include "config.h"
 #include "memory.h"
 #include "arg_parser.h"
 #include "image.h"

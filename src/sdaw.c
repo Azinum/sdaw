@@ -3,6 +3,7 @@
 #include "sdaw.h"
 
 #include "common.c"
+#include "config.c"
 #include "memory.c"
 #include "arg_parser.c"
 #include "image.c"

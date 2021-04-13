@@ -23,9 +23,9 @@ static void ConfigureOpenGL() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync) {
+static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync, u8 FullScreen) {
   Window.Title = Title;
-  Window.IsFullscreen = 0;
+  Window.FullScreen = FullScreen;
   Window.Width = Window.InitWidth = Width;
   Window.Height = Window.InitHeight = Height;
 
@@ -40,7 +40,15 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-  Window.Window = glfwCreateWindow(Width, Height, Title, NULL, NULL);
+  if (Window.FullScreen) {
+    const GLFWvidmode* Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    Window.Width = Mode->width;
+    Window.Height = Mode->height;
+    Window.Window = glfwCreateWindow(Window.Width, Window.Height, Title, glfwGetPrimaryMonitor(), NULL);
+  }
+  else {
+    Window.Window = glfwCreateWindow(Window.Width, Window.Height, Title, NULL, NULL);
+  }
   if (!Window.Window) {
     fprintf(stderr, "Failed to create window\n");
     return -1;
@@ -59,9 +67,17 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync) {
   return 0;
 }
 
-static void WindowToggleFullscreen() {
-  Window.IsFullscreen = !Window.IsFullscreen;
-  if (Window.IsFullscreen) {
+static void WindowSetFullScreen() {
+  const GLFWvidmode* Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  Window.Width = Mode->width;
+  Window.Height = Mode->height;
+  Window.FullScreen = 1;
+  glfwSetWindowSize(Window.Window, Window.Width, Window.Height);
+}
+
+static void WindowToggleFullScreen() {
+  Window.FullScreen = !Window.FullScreen;
+  if (Window.FullScreen) {
     const GLFWvidmode* Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     Window.Width = Mode->width;
     Window.Height = Mode->height;
@@ -102,7 +118,7 @@ static i32 WindowPollEvents() {
   MiddleMouseButtonState ? MouseState |= (1 << 3) : (MouseState &= ~(1 << 3));
 
   if (KeyPressed[GLFW_KEY_F11]) {
-    WindowToggleFullscreen();
+    WindowToggleFullScreen();
   }
 
   if (KeyPressed[GLFW_KEY_ESCAPE]) {

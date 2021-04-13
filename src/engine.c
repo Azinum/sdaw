@@ -4,7 +4,7 @@
 #include "window.c"
 
 static i32 EngineStart() {
-  if (WindowOpen(800, 600, "sdaw", 1) == NoError) {
+  if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     while (WindowPollEvents() == 0) {
       if (KeyPressed[GLFW_KEY_P]) {
         AudioEngine.IsPlaying = !AudioEngine.IsPlaying;

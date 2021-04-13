@@ -28,9 +28,9 @@ clean:
 	rm -r sequence/
 
 debug: ${SRC}
-	${CC} ${SRC} ${FLAGS} ${O_DEBUG}
+	${CC} ${SRC} ${FLAGS} ${LIB} ${O_DEBUG}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:
 	./${BUILD_DIR}/${PROG}
-#	./${BUILD_DIR}/${PROG} -i sb_nails.wav -r 24 -W 512 -H 512 -S -o sequence/frame_ -v -s 2 -i 100 -n 10
+#	./${BUILD_DIR}/${PROG} -i dark_wind.wav -r 24 -W 1024 -H 1024 -S -o sequence/frame_ -v -s 2 --mask images/dark_wind.png --start-index 250 --num-frames 8

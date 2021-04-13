@@ -10,6 +10,16 @@
 
 #include <sys/time.h>
 
+#define NO_SSE 1
+
+#ifndef __SSE__
+#define NO_SSE 1
+#endif
+
+#if !NO_SSE
+#include <xmmintrin.h>
+#endif
+
 typedef int64_t i64;
 typedef uint64_t u64;
 typedef int32_t i32;
@@ -35,6 +45,7 @@ typedef union v2 {
 #define PI32 3.14159265359f
 #define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512
+
 #define SAMPLE_RATE 44100
 #define FRAMES_PER_BUFFER 512
 

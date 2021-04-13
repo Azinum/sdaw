@@ -66,9 +66,11 @@ i32 ParseArgs(parse_arg* Args, i32 NumArgs, i32 argc, char** argv) {
       for (i32 ArgIndex = 0; ArgIndex < NumArgs; ++ArgIndex) {
         ParseArg = &Args[ArgIndex];
         if (LongFlag) {
-          if (!strcmp(ParseArg->LongFlag, Arg)) {
-            FoundFlag = 1;
-            break;
+          if (ParseArg->LongFlag) {
+            if (!strcmp(ParseArg->LongFlag, Arg)) {
+              FoundFlag = 1;
+              break;
+            }
           }
         }
         else {

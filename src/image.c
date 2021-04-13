@@ -1,4 +1,5 @@
 // image.c
+// utility for storing and loading image files
 
 #include <png.h>
 
@@ -179,10 +180,9 @@ static i32 StoreImage(const char* Path, image* Image) {
   return Result;
 }
 
-static i32 InitImage(i32 Width, i32 Height, image* Image) {
+static i32 InitImage(u32 Width, u32 Height, u16 BytesPerPixel, image* Image) {
   Assert(Width > 0 && Height > 0 && Image);
   memset(Image, 0, sizeof(image));
-  i32 BytesPerPixel = 3; // RGB
   Image->PixelBuffer = malloc(BytesPerPixel * Width * Height * sizeof(u8));
   memset(Image->PixelBuffer, 0, BytesPerPixel * Width * Height * sizeof(u8));
   if (!Image->PixelBuffer) {

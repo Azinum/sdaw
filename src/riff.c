@@ -190,7 +190,7 @@ static i32 StoreWAVE(const char* Path, audio_source* Source) {
   free(Buffer);
 #else
   float* Iter = Source->Buffer;
-  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
+  for (u32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
     i16 Sample = (i16)(*(Iter++) * INT16_MAX);
     fwrite(&Sample, 1, sizeof(i16), File);
   }

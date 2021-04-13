@@ -97,7 +97,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
             Frame = Clamp(Frame, -1.0f, 1.0f);
 
             float InterpFactor = (fabs(LastFrame - Frame));
-            for (u32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
               LastFrame = Lerp(LastFrame, Frame, InterpFactor);
               if (Source.ChannelCount == 2) {
                 *(Iter++) += LastFrame;
@@ -123,7 +123,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
             Frame = Clamp(Frame, -1.0f, 1.0f);
 
             float InterpFactor = (fabs(LastFrame - Frame));
-            for (u32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
               LastFrame = Lerp(LastFrame, Frame, InterpFactor);
               if (Source.ChannelCount == 2) {
                 *(Iter++) += LastFrame;

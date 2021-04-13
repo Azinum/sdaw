@@ -4,6 +4,7 @@
 
 #include "common.c"
 #include "config.c"
+#include "math_util.c"
 #include "memory.c"
 #include "arg_parser.c"
 #include "image.c"

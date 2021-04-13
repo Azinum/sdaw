@@ -10,16 +10,6 @@
 
 #include <sys/time.h>
 
-#define NO_SSE 1
-
-#ifndef __SSE__
-#define NO_SSE 1
-#endif
-
-#if !NO_SSE
-#include <xmmintrin.h>
-#endif
-
 typedef int64_t i64;
 typedef uint64_t u64;
 typedef int32_t i32;
@@ -40,14 +30,20 @@ typedef union v2 {
   };
 } v2;
 
-#define V2(_X, _Y) ((v2) {.X = _X, .Y = _Y})
+typedef union v3 {
+  struct {
+    float X, Y, Z;
+  };
+} v3;
 
-#define PI32 3.14159265359f
-#define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
-#define MAX_PATH_SIZE 512
+#define V2(_X, _Y) ((v2) { .X = _X, .Y = _Y })
+#define V3(_X, _Y, _Z) ((v3) { .X = _X, .Y = _Y, .Z = _Z })
 
 #define SAMPLE_RATE 44100
 #define FRAMES_PER_BUFFER 512
+#define PI32 3.14159265359f
+#define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
+#define MAX_PATH_SIZE 512
 
 #define Assert(VALUE) assert(VALUE)
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
@@ -64,19 +60,3 @@ typedef enum error_code {
   NoError = 0,
   Error = -1,
 } error_code;
-
-extern float Lerp(float V0, float V1, float T);
-
-extern float Pow(float A, float B);
-
-extern float SquareRoot(float A);
-
-extern float DistanceV2(v2 A, v2 B);
-
-extern v2 DiffV2(v2 A, v2 B);
-
-extern v2 AddV2(v2 A, v2 B);
-
-extern v2 DivV2(v2 A, v2 B);
-
-extern i32 Inside(v2 P, v2 Start, v2 End);

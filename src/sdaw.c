@@ -40,9 +40,8 @@ i32 SdawStart(i32 argc, char** argv) {
       Result = GenImage(argc - 1, &argv[1]);
     }
   }
-  MemoryPrintInfo(stdout);
   if (MemoryTotal() != 0) {
-    fprintf(stdout, "Memory leak!\n");
+    fprintf(stderr, "Memory leak!\n");
     MemoryPrintInfo(stdout);
     Assert(0);
   }

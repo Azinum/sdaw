@@ -2,6 +2,6 @@
 
 typedef struct audio_source {
   float* Buffer;
-  i32 SampleCount;
-  i32 ChannelCount;
+  u32 SampleCount;
+  u32 ChannelCount;
 } audio_source;

@@ -8,7 +8,7 @@ static i32 StoreAudioSource(const char* Path, audio_source* Source) {
   return StoreWAVE(Path, Source);
 }
 
-static i32 InitAudioSource(audio_source* Source, i32 SampleCount, i32 ChannelCount) {
+static i32 InitAudioSource(audio_source* Source, u32 SampleCount, u32 ChannelCount) {
   i32 Result = NoError;
 
   Source->Buffer = M_Calloc(SampleCount * ChannelCount, sizeof(float));

@@ -2,8 +2,6 @@
 
 #include <limits.h>
 
-#define SAMPLE_RATE 44100
-
 static char RiffId[] = {'R', 'I', 'F', 'F'};
 static char WaveId[] = {'W', 'A', 'V', 'E'};
 static char DataChunkId[] = {'d', 'a', 't', 'a'};
@@ -99,15 +97,15 @@ static i32 IterateWaveFile(void* Dest, i32 Size, FILE* File, const char* Path) {
   return NoError;
 }
 
-static i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, i32 SampleCount) {
-  for (i32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
-    *OutBuffer++ = InBuffer[SampleIndex] / 32768.0f;
+static i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount) {
+  for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
+    *OutBuffer++ = InBuffer[SampleIndex] / ((float)INT16_MAX);
   }
   return NoError;
 }
 
-static i32 ConvertTo16Buffer(i16* OutBuffer, float* InBuffer, i32 SampleCount) {
-  for (i32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
+static i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
+  for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
     *OutBuffer++ = InBuffer[SampleIndex] * INT16_MAX;
   }
   return NoError;
@@ -262,7 +260,7 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
     }
   } while (ListTag);
 
-  i32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
+  u32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
   u32 BufferSize = WaveChunk.Size;
   void* Buffer = M_Malloc(BufferSize);
   if (!Buffer) {

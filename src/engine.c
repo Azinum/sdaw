@@ -4,7 +4,7 @@
 #include "window.c"
 
 static i32 EngineStart() {
-  if (WindowOpen(800, 600, "Let them sounds go wild", 1) == NoError) {
+  if (WindowOpen(800, 600, "sdaw", 1) == NoError) {
     while (WindowPollEvents() == 0) {
       if (KeyPressed[GLFW_KEY_P]) {
         AudioEngine.IsPlaying = !AudioEngine.IsPlaying;
@@ -13,6 +13,7 @@ static i32 EngineStart() {
       WindowClear(0, 0, 0);
     }
   }
+  WindowClose();
   return NoError;
 }
 

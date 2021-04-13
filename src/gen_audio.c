@@ -44,12 +44,12 @@ i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
 i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy) {
   i32 Result = NoError;
 
-  i32 Width = Image->Width / WDenom;
-  i32 Height = Image->Height / HDenom;
+  u32 Width = Image->Width / WDenom;
+  u32 Height = Image->Height / HDenom;
 
   // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
   i32 Padding = 2 * 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
-  i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
+  u32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
   float Tick = 0.0f;
 
 #if 0
@@ -88,8 +88,8 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
     float Frame = 0;
     switch (SamplingStrategy) {
       case S_DEFAULT: {
-        for (i32 Y = 0; Y < Height; Y += YSpeed) {
-          for (i32 X = 0; X < Width; X += XSpeed) {
+        for (u32 Y = 0; Y < Height; Y += YSpeed) {
+          for (u32 X = 0; X < Width; X += XSpeed) {
             color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
 
             LastFrame = Frame;
@@ -97,7 +97,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
             Frame = Clamp(Frame, -1.0f, 1.0f);
 
             float InterpFactor = (fabs(LastFrame - Frame));
-            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+            for (u32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
               LastFrame = Lerp(LastFrame, Frame, InterpFactor);
               if (Source.ChannelCount == 2) {
                 *(Iter++) += LastFrame;
@@ -112,8 +112,8 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
         break;
       }
       case S_EXPERIMENTAL: {
-        for (i32 Y = 0; Y < Height; Y += YSpeed) {
-          for (i32 X = 0; X < Width; X += XSpeed) {
+        for (u32 Y = 0; Y < Height; Y += YSpeed) {
+          for (u32 X = 0; X < Width; X += XSpeed) {
             color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
 
             LastFrame = Frame;
@@ -123,7 +123,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
             Frame = Clamp(Frame, -1.0f, 1.0f);
 
             float InterpFactor = (fabs(LastFrame - Frame));
-            for (i32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
+            for (u32 CopyIndex = 0; CopyIndex < FrameCopies; ++CopyIndex) {
               LastFrame = Lerp(LastFrame, Frame, InterpFactor);
               if (Source.ChannelCount == 2) {
                 *(Iter++) += LastFrame;

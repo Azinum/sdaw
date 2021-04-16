@@ -97,20 +97,6 @@ static i32 IterateWaveFile(void* Dest, i32 Size, FILE* File, const char* Path) {
   return NoError;
 }
 
-static i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount) {
-  for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
-    *OutBuffer++ = InBuffer[SampleIndex] / ((float)INT16_MAX);
-  }
-  return NoError;
-}
-
-static i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
-  for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
-    *OutBuffer++ = InBuffer[SampleIndex] * INT16_MAX;
-  }
-  return NoError;
-}
-
 static void InitWaveHeader(wave_header* Header, i32 Size) {
   strncpy(Header->RiffId, RiffId, ArraySize(RiffId));
   Header->Size = Size;
@@ -190,7 +176,7 @@ static i32 StoreWAVE(const char* Path, audio_source* Source) {
   free(Buffer);
 #else
   float* Iter = Source->Buffer;
-  for (u32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
+  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
     i16 Sample = (i16)(*(Iter++) * INT16_MAX);
     fwrite(&Sample, 1, sizeof(i16), File);
   }
@@ -260,8 +246,8 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
     }
   } while (ListTag);
 
-  u32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
-  u32 BufferSize = WaveChunk.Size;
+  i32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
+  i32 BufferSize = WaveChunk.Size;
   void* Buffer = M_Malloc(BufferSize);
   if (!Buffer) {
     fprintf(stderr, "Failed to allocate sample buffer\n");

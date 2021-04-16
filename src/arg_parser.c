@@ -160,4 +160,3 @@ i32 ParseArgs(parse_arg* Args, i32 NumArgs, i32 argc, char** argv) {
   }
   return NoError;
 }
-

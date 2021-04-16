@@ -15,14 +15,15 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   float* Out = (float*)OutBuffer;
   float* Iter = Out;
   AudioEngine.Out = Out;
-  static float Freq = 60;
+  static float Freq = 60 << 1;
 
   for (u32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex) {
     float FrameL = 0.0f;
     float FrameR = 0.0f;
     if (AudioEngine.IsPlaying) {
-      float Frame = 0.0f; // 0.5f * sin((AudioEngine.Tick * Freq * 2 * PI32) / AudioEngine.SampleRate);
-      FrameL = FrameR = Frame;
+      float Frame = 0.5f * sin((AudioEngine.Tick * Freq * 2 * PI32) / AudioEngine.SampleRate);
+      FrameL = Frame;
+      FrameR = Frame;
       ++AudioEngine.Tick;
     }
     *(Iter++) = FrameL;

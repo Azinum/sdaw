@@ -82,7 +82,7 @@ static i32 LoadPNGFromFile(FILE* File, image* Image) {
 
   png_bytep* Rows = malloc(sizeof(png_bytep) * Image->Height);
   u8* Pixels = Image->PixelBuffer;
-  for (u32 Row = 0; Row < Image->Height; ++Row) {
+  for (i32 Row = 0; Row < Image->Height; ++Row) {
     Rows[Row] = Pixels;
     Pixels += Image->Width * Image->BytesPerPixel;
   }
@@ -132,8 +132,8 @@ static i32 StorePNGFromFile(FILE* File, image* Image) {
 
   png_bytep row = (png_bytep)malloc(4 * Image->Width * sizeof(png_byte));
 
-  for (u32 Y = 0; Y < Image->Height; ++Y) {
-    for (u32 X = 0; X < Image->Width; ++X) {
+  for (i32 Y = 0; Y < Image->Height; ++Y) {
+    for (i32 X = 0; X < Image->Width; ++X) {
       png_byte* Pixel = &(row[X * 4]);
       memcpy(Pixel, &Image->PixelBuffer[Image->BytesPerPixel * ((Y * Image->Width) + X)], Image->BytesPerPixel);
     }
@@ -180,7 +180,7 @@ static i32 StoreImage(const char* Path, image* Image) {
   return Result;
 }
 
-static i32 InitImage(u32 Width, u32 Height, u16 BytesPerPixel, image* Image) {
+static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
   Assert(Width > 0 && Height > 0 && Image);
   memset(Image, 0, sizeof(image));
   Image->PixelBuffer = malloc(BytesPerPixel * Width * Height * sizeof(u8));

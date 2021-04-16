@@ -28,7 +28,7 @@ static i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Ima
 
 i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
   float* Iter = Source->Buffer;
-  for (u32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
+  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
     float Frame = Amp * sin((SampleIndex * Freq * 2 * PI32) / SAMPLE_RATE);
     Amp = Lerp(Amp, 0.0f, 0.00005f);
     if (Source->ChannelCount == 2) {
@@ -44,12 +44,12 @@ i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
 i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy) {
   i32 Result = NoError;
 
-  u32 Width = Image->Width / WDenom;
-  u32 Height = Image->Height / HDenom;
+  i32 Width = Image->Width / WDenom;
+  i32 Height = Image->Height / HDenom;
 
   // TODO(lucas): This size is arbitrary, calculate the exact number of padding needed.
   i32 Padding = 2 * 4096; // NOTE(lucas): Use padding to not overflow the sample buffer.
-  u32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
+  i32 SampleCount = ((Width / (float)XSpeed) * (Height / (float)YSpeed) * ChannelCount * FrameCopies) + Padding;
   float Tick = 0.0f;
 
 #if 0
@@ -88,8 +88,8 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
     float Frame = 0;
     switch (SamplingStrategy) {
       case S_DEFAULT: {
-        for (u32 Y = 0; Y < Height; Y += YSpeed) {
-          for (u32 X = 0; X < Width; X += XSpeed) {
+        for (i32 Y = 0; Y < Height; Y += YSpeed) {
+          for (i32 X = 0; X < Width; X += XSpeed) {
             color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
 
             LastFrame = Frame;
@@ -112,8 +112,8 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
         break;
       }
       case S_EXPERIMENTAL: {
-        for (u32 Y = 0; Y < Height; Y += YSpeed) {
-          for (u32 X = 0; X < Width; X += XSpeed) {
+        for (i32 Y = 0; Y < Height; Y += YSpeed) {
+          for (i32 X = 0; X < Width; X += XSpeed) {
             color_rgb* Color = (color_rgb*)&Image->PixelBuffer[(3 * ((X + (Y * Image->Width))) % (3 * (Image->Width * Image->Height)))];
 
             LastFrame = Frame;
@@ -177,9 +177,9 @@ i32 GenAudio(i32 argc, char** argv) {
     return Result;
   }
   if (ImagePath) {
-    char* Ext = strrchr(ImagePath, '.');
+    char* Ext = FetchExtension(ImagePath);
     if (Ext) {
-      if (strcmp(Ext, ".png") != 0) {
+      if (strncmp(Ext, ".png", MAX_PATH_SIZE) != 0) {
         fprintf(stderr, "Invalid image file extension (is %s, should be png)\n", Ext + 1);
         return Error;
       }

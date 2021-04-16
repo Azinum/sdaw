@@ -10,6 +10,7 @@
 #include "image.c"
 #include "audio.c"
 #include "riff.c"
+#include "vorbis.c"
 #include "gen_audio.c"
 #include "gen_image.c"
 #include "engine.c"

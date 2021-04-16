@@ -60,3 +60,5 @@ typedef enum error_code {
   NoError = 0,
   Error = -1,
 } error_code;
+
+char* FetchExtension(const char* Path);

@@ -182,7 +182,7 @@ inline v3 NormalizeVec3(v3 A) {
 
   float Length = LengthVec3(A);
 
-  if (Length != 0.0) {
+  if (Length != 0.0f) {
     Result.X = A.X * (1.0f / Length);
     Result.Y = A.Y * (1.0f / Length);
     Result.Z = A.Z * (1.0f / Length);

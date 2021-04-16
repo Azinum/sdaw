@@ -8,6 +8,7 @@
 #include "image.h"
 #include "audio.h"
 #include "riff.h"
+#include "vorbis.h"
 #include "gen_audio.h"
 #include "gen_image.h"
 #include "engine.h"

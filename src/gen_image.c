@@ -32,11 +32,11 @@ typedef struct gen_image_args {
 
 #define Vprintf(Verbose, Format, ...) (Verbose ? printf(Format, __VA_ARGS__) : (void)0)
 
-static u8* FetchPixel(const image* Source, u32 X, u32 Y);
+static u8* FetchPixel(const image* Source, i32 X, i32 Y);
 static i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args* Args);
 static i32 GenerateFromAudio(const char* Path, audio_source* Audio, gen_image_args* Args);
 
-u8* FetchPixel(const image* Source, u32 X, u32 Y) {
+u8* FetchPixel(const image* Source, i32 X, i32 Y) {
   return &Source->PixelBuffer[(Source->BytesPerPixel * ((X + (Y * Source->Width))) % (Source->BytesPerPixel * (Source->Width * Source->Height)))];
 }
 
@@ -85,17 +85,17 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
       float DbAverage = (float)Db / WindowSize;
       float Amp = Min(20.0f / (1 + DbAverage), 1.0f);
 
-      u32 FramesLeft = MaxFrames - FrameIndex;
+      i32 FramesLeft = MaxFrames - FrameIndex;
       float TimeLeft = DeltaTime * FramesLeft;
       Vprintf(Args->Verbose, "frame = %4i/%i, fps = %3i, last = %.4g ms, strategy = %s, est. time left = %3.3g s\n", FrameIndex, MaxFrames, (i32)(1.0f / DeltaTime), DeltaTime, GenImageStrategyDesc[Args->Strategy], TimeLeft);
 
       switch (Args->Strategy) {
         case IMG_GEN_STRAT_DEFAULT: {
-          for (u32 Y = 0; Y < Image.Height; ++Y) {
-            for (u32 X = 0; X < Image.Width; ++X) {
-              u32 Start = SampleIndex;
+          for (i32 Y = 0; Y < Image.Height; ++Y) {
+            for (i32 X = 0; X < Image.Width; ++X) {
+              i32 Start = SampleIndex;
               float Factor = (float)((X - (Image.Width * 0.5f)) * (Y - (Image.Height * 0.5f))) / (Image.Width * Image.Height);
-              u32 ResultAt = Abs(Lerp(Start, Start * 2, Factor));
+              i32 ResultAt = Abs(Lerp(Start, Start * 2, Factor));
               float* Frames = &Audio->Buffer[(ResultAt + 3) % Audio->SampleCount];
               color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
               if (Abs(Frames[0]) > 0.19f) {
@@ -115,24 +115,24 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
           break;
         }
         case IMG_GEN_STRAT_EXPERIMENTAL: {
-          for (u32 Y = 0; Y < Image.Height; ++Y) {
-            for (u32 X = 0; X < Image.Width; ++X) {
-              u32 Start = SampleIndex;
-              u32 End = Start + FrameSize;
+          for (i32 Y = 0; Y < Image.Height; ++Y) {
+            for (i32 X = 0; X < Image.Width; ++X) {
+              i32 Start = SampleIndex;
+              i32 End = Start + FrameSize;
               v2 Target = V2(Image.Width / 2, Image.Height / 2);
               v2 P = V2(X, Y);
               float Dist = DistanceV2(P, Target);
               float Factor = 1.0f - (Dist / ImageSize);
-              u32 ResultAt = Abs(Lerp(End, Start, Factor));
+              i32 ResultAt = Abs(Lerp(End, Start, Factor));
 #if 0
 
               float* Frame0 = &Audio->Buffer[(ResultAt * 1) % Audio->SampleCount];
               float* Frame1 = &Audio->Buffer[(ResultAt * 2) % Audio->SampleCount];
               float* Frame2 = &Audio->Buffer[(ResultAt * 3) % Audio->SampleCount];
 #else
-              u32 ResultAt0 = ResultAt;
-              u32 ResultAt1 = Abs(Lerp(End, Start, 1.0f - ((Dist * 0.75) / ImageSize)));
-              u32 ResultAt2 = Abs(Lerp(End, Start, 1.0f - ((Dist * 0.50) / ImageSize)));
+              i32 ResultAt0 = ResultAt;
+              i32 ResultAt1 = Abs(Lerp(End, Start, 1.0f - ((Dist * 0.75) / ImageSize)));
+              i32 ResultAt2 = Abs(Lerp(End, Start, 1.0f - ((Dist * 0.50) / ImageSize)));
 
               float* Frame0 = &Audio->Buffer[ResultAt0 % Audio->SampleCount];
               float* Frame1 = &Audio->Buffer[ResultAt1 % Audio->SampleCount];
@@ -149,8 +149,8 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
           break;
         }
         case IMG_GEN_STRAT_LOUDNESS: {
-          for (u32 Y = 0; Y < Image.Height; ++Y) {
-            for (u32 X = 0; X < Image.Width; ++X) {
+          for (i32 Y = 0; Y < Image.Height; ++Y) {
+            for (i32 X = 0; X < Image.Width; ++X) {
               color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
 
               i32 Start = SampleIndex;
@@ -203,12 +203,15 @@ Done:
 }
 
 i32 GenerateFromAudio(const char* Path, audio_source* Audio, gen_image_args* Args) {
+  if (!Audio->Buffer) {
+    return Error;
+  }
   i32 Result = NoError;
   image Image;
   if ((Result = InitImage(Args->Width, Args->Height, 4 /* bytes per pixel */, &Image)) == NoError) {
-    u32 SampleIndex = Args->StartIndex;
-    for (u32 Y = 0; Y < Image.Height; ++Y) {
-      for (u32 X = 0; X < Image.Width; ++X) {
+    i32 SampleIndex = Args->StartIndex;
+    for (i32 Y = 0; Y < Image.Height; ++Y) {
+      for (i32 X = 0; X < Image.Width; ++X) {
         color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
         float* Samples = &Audio->Buffer[(SampleIndex + 3) % Audio->SampleCount]; // Grab 3 samples, one for each color component
         SampleIndex += Audio->ChannelCount * 3;

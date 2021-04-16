@@ -1,5 +1,6 @@
 // engine.c
 
+#include "mixer.c"
 #include "audio_engine.c"
 #include "window.c"
 
@@ -8,6 +9,14 @@ static i32 EngineStart() {
     while (WindowPollEvents() == 0) {
       if (KeyPressed[GLFW_KEY_P]) {
         AudioEngine.IsPlaying = !AudioEngine.IsPlaying;
+      }
+      if (KeyPressed[GLFW_KEY_E]) {
+        AudioEngine.Tick += AudioEngine.SampleRate;
+      }
+      if (KeyPressed[GLFW_KEY_W]) {
+        AudioEngine.Tick -= AudioEngine.SampleRate;
+        if (AudioEngine.Tick < 0)
+          AudioEngine.Tick = 0;
       }
       WindowSwapBuffers();
       WindowClear(0, 0, 0);

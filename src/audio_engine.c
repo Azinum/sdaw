@@ -2,7 +2,7 @@
 
 #include <portaudio.h>
 
-static audio_engine AudioEngine;
+audio_engine AudioEngine;
 static PaStream* Stream = NULL;
 static PaStreamParameters OutPort;
 
@@ -15,24 +15,14 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   float* Out = (float*)OutBuffer;
   float* Iter = Out;
   AudioEngine.Out = Out;
-  static float Freq = 60 << 1;
+  mixer* Mixer = &AudioEngine.Mixer;
 
-  for (u32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex) {
-    float FrameL = 0.0f;
-    float FrameR = 0.0f;
-    if (AudioEngine.IsPlaying) {
-      float Frame = 0.5f * sin((AudioEngine.Tick * Freq * 2 * PI32) / AudioEngine.SampleRate);
-      FrameL = Frame;
-      FrameR = Frame;
-      ++AudioEngine.Tick;
-    }
-    *(Iter++) = FrameL;
-    *(Iter++) = FrameR;
-  }
+  MixerSumBusses(Mixer, Out);
 
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / AudioEngine.SampleRate) * FramesPerBuffer;
     AudioEngine.Time += DeltaTime;
+    AudioEngine.Tick += FramesPerBuffer;
   }
   return paContinue;
 }
@@ -79,6 +69,12 @@ i32 AudioEngineInit(u32 SampleRate, u32 FramesPerBuffer) {
   OutPort.sampleFormat = paFloat32; // paInt16;
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;
   OutPort.hostApiSpecificStreamInfo = NULL;
+
+  MixerInit(&AudioEngine.Mixer, 2 /* channel count */, FramesPerBuffer);
+  LoadAudioSource("audio/dark_wind.ogg", &AudioEngine.TempAudioSource);
+  audio_state* TempSound = &AudioEngine.TempSound;
+  TempSound->Source = &AudioEngine.TempAudioSource;
+  TempSound->Index = 0;
   return NoError;
 }
 
@@ -96,6 +92,8 @@ i32 AudioEngineStart(callback Callback) {
 }
 
 void AudioEngineTerminate() {
+  MixerFree(&AudioEngine.Mixer);
+  UnloadAudioSource(&AudioEngine.TempAudioSource);
   Pa_CloseStream(Stream);
   Pa_Terminate();
 }

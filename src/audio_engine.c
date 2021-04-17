@@ -71,10 +71,7 @@ i32 AudioEngineInit(u32 SampleRate, u32 FramesPerBuffer) {
   OutPort.hostApiSpecificStreamInfo = NULL;
 
   MixerInit(&AudioEngine.Mixer, 2 /* channel count */, FramesPerBuffer);
-  LoadAudioSource("audio/dark_wind.ogg", &AudioEngine.TempAudioSource);
-  audio_state* TempSound = &AudioEngine.TempSound;
-  TempSound->Source = &AudioEngine.TempAudioSource;
-  TempSound->Index = 0;
+
   return NoError;
 }
 
@@ -93,7 +90,6 @@ i32 AudioEngineStart(callback Callback) {
 
 void AudioEngineTerminate() {
   MixerFree(&AudioEngine.Mixer);
-  UnloadAudioSource(&AudioEngine.TempAudioSource);
   Pa_CloseStream(Stream);
   Pa_Terminate();
 }

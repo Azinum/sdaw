@@ -28,8 +28,6 @@ typedef struct audio_engine {
   float Time;
   u8 IsPlaying;
   mixer Mixer;
-  audio_source TempAudioSource;
-  audio_state TempSound;
 } audio_engine;
 
 extern audio_engine AudioEngine;

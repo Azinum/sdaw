@@ -2,8 +2,9 @@
 
 #include "common.h"
 #include "config.h"
-#include "math_util.h"
+#include "debug.h"
 #include "memory.h"
+#include "math_util.h"
 #include "arg_parser.h"
 #include "image.h"
 #include "audio.h"

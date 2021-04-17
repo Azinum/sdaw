@@ -34,6 +34,8 @@ static i32 MixerInitBus(mixer* Mixer, i32 BusIndex, i32 ChannelCount, float* Buf
 }
 
 static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
+  TIMER_START();
+
   bus* Master = &Mixer->Busses[0];
   Master->Buffer = OutBuffer;
   memset(Master->Buffer, 0, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
@@ -83,6 +85,7 @@ static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
       }
     }
   }
+  TIMER_END();
   return NoError;
 }
 

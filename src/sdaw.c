@@ -4,8 +4,9 @@
 
 #include "common.c"
 #include "config.c"
-#include "math_util.c"
+#include "debug.c"
 #include "memory.c"
+#include "math_util.c"
 #include "arg_parser.c"
 #include "image.c"
 #include "audio.c"

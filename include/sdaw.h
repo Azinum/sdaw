@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "tables.h"
 #include "debug.h"
 #include "memory.h"
 #include "math_util.h"

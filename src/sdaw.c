@@ -4,6 +4,7 @@
 
 #include "common.c"
 #include "config.c"
+#include "tables.c"
 #include "debug.c"
 #include "memory.c"
 #include "math_util.c"

@@ -13,7 +13,6 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   (void)UserData;
 
   float* Out = (float*)OutBuffer;
-  float* Iter = Out;
   AudioEngine.Out = Out;
   mixer* Mixer = &AudioEngine.Mixer;
 

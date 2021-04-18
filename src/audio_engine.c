@@ -7,10 +7,9 @@ static PaStream* Stream = NULL;
 static PaStreamParameters OutPort;
 
 static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long FramesPerBuffer, const PaStreamCallbackTimeInfo* TimeInfo, PaStreamCallbackFlags Flags, void* UserData) {
-  (void)InBuffer;
-  (void)TimeInfo;
-  (void)Flags;
-  (void)UserData;
+  (void)InBuffer; (void)TimeInfo; (void)Flags; (void)UserData;
+
+  TIMER_START();
 
   float* Out = (float*)OutBuffer;
   AudioEngine.Out = Out;
@@ -23,6 +22,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
     AudioEngine.Time += DeltaTime;
     AudioEngine.Tick += FramesPerBuffer;
   }
+  TIMER_END();
   return paContinue;
 }
 
@@ -47,7 +47,7 @@ static i32 OpenStream() {
   return NoError;
 }
 
-i32 AudioEngineInit(u32 SampleRate, u32 FramesPerBuffer) {
+i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   PaError Err = Pa_Initialize();
   if (Err != paNoError) {
     Pa_Terminate();

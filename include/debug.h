@@ -1,6 +1,6 @@
 // debug.h
 
-#define DEBUG_TIMER 0
+#define DEBUG_TIMER 1
 
 #if DEBUG_TIMER
 
@@ -15,16 +15,14 @@ typedef struct debug_event_info {
   float Value;
 } debug_event_info;
 
-static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {
-  {NULL, 0.0f},
-};
+static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {0};
 
 static i32 DebugNumEvents = 0;
 
 #define DebugRecordEvent(NAME, VALUE, EVENT) { \
   Assert(EVENT >= 0 && EVENT < MAX_DEBUG_EVENT);\
   debug_event_info* _DebugEventInfo = &DebugEventTable[EVENT]; \
-  if (!_DebugEventInfo->Name) DebugNumEvents++; \
+  if (!_DebugEventInfo->Name) { DebugNumEvents++; } \
   _DebugEventInfo->Name = NAME; \
   _DebugEventInfo->Value = VALUE; \
 }

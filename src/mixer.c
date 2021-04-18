@@ -1,6 +1,6 @@
 // mixer.c
 
-static i32 MixerInit(mixer* Mixer, i32 ChannelCount, u32 FramesPerBuffer) {
+static i32 MixerInit(mixer* Mixer, i32 ChannelCount, i32 FramesPerBuffer) {
 {
   bus* Master = &Mixer->Busses[0];
   Master->Buffer = NULL;
@@ -48,27 +48,8 @@ static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
     if (Bus->Active && Bus->Buffer) {
       i32 Tick = AudioEngine.Tick;
       float* Iter = &Master->Buffer[0];
+      OscTestProcess(Bus->Buffer, Bus->ChannelCount, Mixer->FramesPerBuffer, AudioEngine.SampleRate);
       for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
-#if 0
-        audio_state* TempSound = &AudioEngine.TempSound;
-        if (TempSound) {
-          audio_source* Source = TempSound->Source;
-          TempSound->Index = Tick;
-          if (TempSound->Index < Source->SampleCount) {
-            if (Source->ChannelCount == 2) {
-              float Frame0 = Source->Buffer[TempSound->Index * Source->ChannelCount + 0];
-              float Frame1 = Source->Buffer[TempSound->Index * Source->ChannelCount + 1];
-              *(Iter++) += Frame0;
-              *(Iter++) += Frame1;
-            }
-            else {
-              float Frame0 = Source->Buffer[TempSound->Index * Source->ChannelCount + 0];
-              *(Iter++) += Frame0;
-              *(Iter++) += Frame0;
-            }
-          }
-        }
-#else
         if (Bus->ChannelCount == 2) {
           float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
           float Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount + 1];
@@ -80,11 +61,11 @@ static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
           *(Iter++) += Frame0;
           *(Iter++) += Frame0;
         }
-#endif
         Tick++;
       }
     }
   }
+
   TIMER_END();
   return NoError;
 }

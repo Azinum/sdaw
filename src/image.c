@@ -1,7 +1,11 @@
 // image.c
-// utility for storing and loading image files
+// utility for storing and loading of image files
 
 #include <png.h>
+
+u8* FetchPixel(const image* Source, i32 X, i32 Y) {
+  return &Source->PixelBuffer[(Source->BytesPerPixel * ((X + (Y * Source->Width))) % (Source->BytesPerPixel * (Source->Width * Source->Height)))];
+}
 
 static i32 LoadPNGFromFile(FILE* File, image* Image) {
   i32 Result = NoError;
@@ -78,9 +82,10 @@ static i32 LoadPNGFromFile(FILE* File, image* Image) {
   png_set_interlace_handling(PNG);
   png_read_update_info(PNG, Info);
 
-  Image->PixelBuffer = malloc(sizeof(u8) * Image->Width * Image->Height * Image->BytesPerPixel);
+  Image->PixelBuffer = M_Malloc(sizeof(u8) * Image->Width * Image->Height * Image->BytesPerPixel);
 
-  png_bytep* Rows = malloc(sizeof(png_bytep) * Image->Height);
+  i32 RowSize = sizeof(png_bytep) * Image->Height;
+  png_bytep* Rows = M_Malloc(RowSize);
   u8* Pixels = Image->PixelBuffer;
   for (i32 Row = 0; Row < Image->Height; ++Row) {
     Rows[Row] = Pixels;
@@ -90,7 +95,7 @@ static i32 LoadPNGFromFile(FILE* File, image* Image) {
   png_read_image(PNG, Rows);
   png_read_end(PNG, NULL);
   png_destroy_read_struct(&PNG, &Info, NULL);
-  free(Rows);
+  M_Free(Rows, RowSize);
 
 Done:
   return Result;
@@ -130,17 +135,18 @@ static i32 StorePNGFromFile(FILE* File, image* Image) {
   png_write_info(PNG, Info);
   png_set_filler(PNG, 0, PNG_FILLER_AFTER); // NOTE(lucas): This removes the alpha channel
 
-  png_bytep row = (png_bytep)malloc(4 * Image->Width * sizeof(png_byte));
+  i32 RowSize = 4 * Image->Width * sizeof(png_byte);
+  png_bytep Row = (png_bytep)M_Malloc(RowSize);
 
   for (i32 Y = 0; Y < Image->Height; ++Y) {
     for (i32 X = 0; X < Image->Width; ++X) {
-      png_byte* Pixel = &(row[X * 4]);
+      png_byte* Pixel = &(Row[X * 4]);
       memcpy(Pixel, &Image->PixelBuffer[Image->BytesPerPixel * ((Y * Image->Width) + X)], Image->BytesPerPixel);
     }
-    png_write_row(PNG, row);
+    png_write_row(PNG, Row);
   }
 
-  free(row);
+  M_Free(Row, RowSize);
   png_write_end(PNG, NULL);
 
   Result = NoError;
@@ -166,24 +172,38 @@ static i32 LoadPNG(const char* Path, image* Image) {
 }
 
 static i32 LoadImage(const char* Path, image* Image) {
-  return LoadPNG(Path, Image);
+  char* Ext = FetchExtension(Path);
+  if (!strncmp(Ext, ".png", MAX_PATH_SIZE)) {
+    return LoadPNG(Path, Image);
+  }
+  else {
+    fprintf(stderr, "%s: Extension '%s' not supported for file '%s'\n", __FUNCTION__, Ext, Path);
+  }
+  return Error;
 }
 
 static i32 StoreImage(const char* Path, image* Image) {
-  FILE* File = fopen(Path, "w");
-  if (!File) {
-    fprintf(stderr, "Failed to create '%s'\n", Path);
-    return Error;
+  char* Ext = FetchExtension(Path);
+  if (!strncmp(Ext, ".png", MAX_PATH_SIZE)) {
+    FILE* File = fopen(Path, "w");
+    if (!File) {
+      fprintf(stderr, "Failed to create '%s'\n", Path);
+      return Error;
+    }
+    i32 Result = StorePNGFromFile(File, Image);
+    fclose(File);
+    return Result;
   }
-  i32 Result = StorePNGFromFile(File, Image);
-  fclose(File);
-  return Result;
+  else {
+    fprintf(stderr, "%s: Extension '%s' not supported for file '%s'\n", __FUNCTION__, Ext, Path);
+  }
+  return Error;
 }
 
 static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
   Assert(Width > 0 && Height > 0 && Image);
   memset(Image, 0, sizeof(image));
-  Image->PixelBuffer = malloc(BytesPerPixel * Width * Height * sizeof(u8));
+  Image->PixelBuffer = M_Malloc(BytesPerPixel * Width * Height * sizeof(u8));
   memset(Image->PixelBuffer, 0, BytesPerPixel * Width * Height * sizeof(u8));
   if (!Image->PixelBuffer) {
     return Error;
@@ -199,7 +219,7 @@ static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
 static void UnloadImage(image* Image) {
   Assert(Image);
   if (Image->PixelBuffer != NULL) {
-    free(Image->PixelBuffer);
+    M_Free(Image->PixelBuffer, sizeof(u8) * Image->Width * Image->Height * Image->BytesPerPixel);
   }
   memset(Image, 0, sizeof(image));
 }

@@ -13,6 +13,7 @@
 #include "vorbis.h"
 #include "gen_audio.h"
 #include "gen_image.h"
+#include "image_interp.h"
 #include "engine.h"
 
 i32 SdawStart(i32 argc, char** argv);

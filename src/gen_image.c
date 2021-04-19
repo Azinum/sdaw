@@ -32,13 +32,8 @@ typedef struct gen_image_args {
 
 #define Vprintf(Verbose, Format, ...) (Verbose ? printf(Format, __VA_ARGS__) : (void)0)
 
-static u8* FetchPixel(const image* Source, i32 X, i32 Y);
 static i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args* Args);
 static i32 GenerateFromAudio(const char* Path, audio_source* Audio, gen_image_args* Args);
-
-u8* FetchPixel(const image* Source, i32 X, i32 Y) {
-  return &Source->PixelBuffer[(Source->BytesPerPixel * ((X + (Y * Source->Width))) % (Source->BytesPerPixel * (Source->Width * Source->Height)))];
-}
 
 i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args* Args) {
   i32 Result = NoError;

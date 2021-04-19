@@ -1,4 +1,5 @@
 // memory.c
+// tracks basic memory information
 
 struct {
   u32 Total;

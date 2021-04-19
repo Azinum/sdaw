@@ -36,3 +36,5 @@ typedef struct color_rgb16 {
 #define ColorRGB(_R, _G, _B) ((color_rgb) { .R = _R, .G = _G, .B = _B })
 #define ColorRGBA(_R, _G, _B, _A) ((color_rgba) { .R = _R, .G = _G, .B = _B, .A = _A })
 #define ColorRGB16(_R, _G, _B) ((color_rgb16) { .R = _R, .G = _G, .B = _B })
+
+u8* FetchPixel(const image* Source, i32 X, i32 Y);

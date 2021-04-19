@@ -9,7 +9,14 @@ static i32 MelodyTable[] = {
 };
 static i32 MelodyIndex = 0;
 static float InitAmp = 0.5f;
-static float Amp = 0.5f;
+static float Amp = 0.0f;
+
+typedef enum ins_state {
+  STATE_ATTACK = 0,
+  STATE_RELEASE,
+} ins_state;
+
+static ins_state State = STATE_ATTACK;
 
 inline float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
 
@@ -19,7 +26,6 @@ float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate) {
 }
 
 i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 SampleRate) {
-  memset(Buffer, 0, sizeof(float) * ChannelCount * FramesPerBuffer);
   if (!AudioEngine.IsPlaying)
     return NoError;
 
@@ -34,11 +40,26 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
       Lf = MelodyTable[MelodyIndex];
       Rf = Lf + 12;
       MelodyIndex = (MelodyIndex + 1) % ArraySize(MelodyTable);
-      Amp = InitAmp;
+      Amp = 0;
+      State = STATE_ATTACK;
     }
-    Amp = Lerp(Amp, 0, 0.0001f);
-    float Frame0 = Amp * SineWave(Tick, Lf, SampleRate);
-    float Frame1 = Amp * SineWave(Tick, Rf, SampleRate);
+    switch (State) {
+      case STATE_ATTACK: {
+        Amp += (1.0f / 50.0f);
+        if (Amp >= InitAmp) {
+          State = STATE_RELEASE;
+        }
+        break;
+      }
+      case STATE_RELEASE: {
+        Amp = Lerp(Amp, 0, 0.0001f);
+        break;
+      }
+      default:
+        break;
+    }
+    float Frame0 = Amp * SineWave(Tick % SampleRate, Lf, SampleRate);
+    float Frame1 = Amp * SineWave(Tick % SampleRate, Rf, SampleRate);
     if (ChannelCount == 2) {
       *(Buffer++) = Frame0;
       *(Buffer++) = Frame1;

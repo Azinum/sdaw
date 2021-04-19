@@ -15,6 +15,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   AudioEngine.Out = Out;
   mixer* Mixer = &AudioEngine.Mixer;
 
+  MixerClearBuffers(Mixer);
   MixerSumBusses(Mixer, Out);
 
   if (AudioEngine.IsPlaying) {

@@ -7,6 +7,7 @@
 typedef struct bus {
   float* Buffer;
   i32 ChannelCount;
+  v2 Pan;
   u8 Active;
   u8 InternalBuffer;
 } bus;
@@ -14,7 +15,6 @@ typedef struct bus {
 typedef struct mixer {
   bus Busses[MAX_AUDIO_BUS];
   i32 BusCount;
-  i32 FramesPerBuffer;
 } mixer;
 
 typedef struct audio_state {

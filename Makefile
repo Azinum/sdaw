@@ -32,5 +32,5 @@ debug: ${SRC}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:
-	./${BUILD_DIR}/${PROG} -I -f images/a.png -t images/b.png -o images/c.png
+	./${BUILD_DIR}/${PROG}
 #	./${BUILD_DIR}/${PROG} -i audio/dark_wind.wav -r 24 -W 1024 -H 1024 -S -o sequence/frame_ -v -s 2 --mask images/dark_wind.png --start-index 250 --num-frames 12

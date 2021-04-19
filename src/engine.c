@@ -19,13 +19,13 @@ static i32 EngineRun() {
       TIMER_END();
     }
   }
-  WindowClose();
   return NoError;
 }
 
 i32 EngineInit() {
   AudioEngineInit(SAMPLE_RATE, FRAMES_PER_BUFFER);
   AudioEngineStart(EngineRun);
+  WindowClose();
   return NoError;
 }
 

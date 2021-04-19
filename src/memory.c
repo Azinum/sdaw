@@ -2,8 +2,8 @@
 // tracks basic memory information
 
 struct {
-  u32 Total;
-  u32 Blocks;
+  i32 Total;
+  i32 Blocks;
 } MemoryInfo;
 
 #define MemoryInfoUpdate(AddTotal, AddNumBlocks) \

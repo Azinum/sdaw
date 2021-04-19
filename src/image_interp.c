@@ -56,9 +56,7 @@ Done:
   UnloadImage(&Image1);
   UnloadImage(&Dest);
 
-  TIMER_END(
-    printf("%s: %g s\n", __FUNCTION__, _DeltaTime);
-  );
+  TIMER_END();
   return Result;
 }
 

@@ -1,6 +1,5 @@
 // arg_parser.c
 
-// TODO(lucas): Improve alignments of flags which stand alone (without long flag)
 void ArgsPrintHelp(FILE* File, parse_arg* Args, i32 NumArgs, i32 argc, char** argv) {
   assert(argc != 0);
   i32 LongestArgLength = 0;

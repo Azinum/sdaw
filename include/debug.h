@@ -5,23 +5,24 @@
 #if DEBUG_TIMER
 
 typedef enum debug_event_type {
-  DEBUG_EVENT_TEST = 0,
-
   MAX_DEBUG_EVENT = 128,
 } debug_event_type;
 
 typedef struct debug_event_info {
   const char* Name;
-  float Value;
+  union {
+    float Value;
+  };
 } debug_event_info;
 
 static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {0};
 
 static i32 DebugNumEvents = 0;
 
-#define DebugRecordEvent(NAME, VALUE, EVENT) { \
-  Assert(EVENT >= 0 && EVENT < MAX_DEBUG_EVENT);\
-  debug_event_info* _DebugEventInfo = &DebugEventTable[EVENT]; \
+// TODO(lucas): Add fixed ids for storing multiple debug events
+#define DebugRecordEvent(NAME, VALUE, EVENT_ID) { \
+  Assert(EVENT_ID >= 0 && EVENT_ID < MAX_DEBUG_EVENT);\
+  debug_event_info* _DebugEventInfo = &DebugEventTable[EVENT_ID]; \
   if (!_DebugEventInfo->Name) { DebugNumEvents++; } \
   _DebugEventInfo->Name = NAME; \
   _DebugEventInfo->Value = VALUE; \
@@ -37,7 +38,7 @@ static i32 DebugNumEvents = 0;
   gettimeofday(&_TimeNow, NULL); \
   char* _Name = (char*)__FUNCTION__; \
   float _DeltaTime = (((((_TimeNow.tv_sec - _TimeStart.tv_sec) * 1000000.0f) + _TimeNow.tv_usec) - (_TimeStart.tv_usec)) / 1000000.0f); \
-  DebugRecordEvent(_Name, _DeltaTime, DEBUG_EVENT_TEST); \
+  DebugRecordEvent(_Name, _DeltaTime, 0); \
   __VA_ARGS__; \
 }
 

@@ -2,7 +2,7 @@
 
 static i32 MixerInit(mixer* Mixer, i32 ChannelCount, i32 FramesPerBuffer) {
 {
-  bus* Master = &Mixer->Busses[0];
+  bus* Master = &Mixer->Buses[0];
   Master->Buffer = NULL;
   Master->ChannelCount = ChannelCount;
   Master->Pan = V2(1, 1);
@@ -16,7 +16,7 @@ static i32 MixerInit(mixer* Mixer, i32 ChannelCount, i32 FramesPerBuffer) {
 
 static i32 MixerInitBus(mixer* Mixer, i32 BusIndex, i32 ChannelCount, float* Buffer) {
   if (BusIndex > 0 && BusIndex < MAX_AUDIO_BUS && Mixer->BusCount < MAX_AUDIO_BUS) {
-    bus* Bus = &Mixer->Busses[BusIndex];
+    bus* Bus = &Mixer->Buses[BusIndex];
     if (!Buffer) {
       Bus->Buffer = M_Calloc(sizeof(float), ChannelCount * AudioEngine.FramesPerBuffer);
       Bus->InternalBuffer = 1;
@@ -44,7 +44,7 @@ static i32 MixerClearBuffers(mixer* Mixer) {
   // TODO(lucas): We probably want to use a big contiguous array of
   // frame buffers, but for now buffers are seperately allocated for each bus
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Busses[BusIndex];
+    bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->InternalBuffer) {
       i32 ChunkSize = 4 * sizeof(float);
       i32 BufferSize = (sizeof(float) * Bus->ChannelCount * AudioEngine.FramesPerBuffer) / ChunkSize;
@@ -56,7 +56,7 @@ static i32 MixerClearBuffers(mixer* Mixer) {
   }
 #else
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Busses[BusIndex];
+    bus* Bus = &Mixer->Buses[BusIndex];
     // NOTE(lucas): The buffer is cleared elsewhere if it is not internal
     if (Bus->InternalBuffer) {
       memset(Bus->Buffer, 0, sizeof(float) * Bus->ChannelCount * AudioEngine.FramesPerBuffer);
@@ -67,10 +67,10 @@ static i32 MixerClearBuffers(mixer* Mixer) {
   return NoError;
 }
 
-static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
+static i32 MixerSumBuses(mixer* Mixer, float* OutBuffer) {
   TIMER_START();
 
-  bus* Master = &Mixer->Busses[0];
+  bus* Master = &Mixer->Buses[0];
   Master->Buffer = OutBuffer;
   memset(Master->Buffer, 0, sizeof(float) * Master->ChannelCount * AudioEngine.FramesPerBuffer);
   if (!AudioEngine.IsPlaying) {
@@ -78,7 +78,7 @@ static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
   }
 
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Busses[BusIndex];
+    bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Active && Bus->Buffer) {
       i32 Tick = AudioEngine.Tick;
       float* Iter = &Master->Buffer[0];
@@ -106,7 +106,7 @@ static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer) {
 
 static void MixerFree(mixer* Mixer) {
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Busses[BusIndex];
+    bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->InternalBuffer) {
       M_Free(Bus->Buffer, sizeof(float) * Bus->ChannelCount * AudioEngine.FramesPerBuffer);
     }

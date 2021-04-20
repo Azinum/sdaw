@@ -6,6 +6,6 @@ static i32 MixerInitBus(mixer* Mixer, i32 BusIndex, i32 ChannelCount, float* Buf
 
 static i32 MixerClearBuffers(mixer* Mixer);
 
-static i32 MixerSumBusses(mixer* Mixer, float* OutBuffer);
+static i32 MixerSumBuses(mixer* Mixer, float* OutBuffer);
 
 static void MixerFree(mixer* Mixer);

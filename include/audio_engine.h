@@ -13,7 +13,7 @@ typedef struct bus {
 } bus;
 
 typedef struct mixer {
-  bus Busses[MAX_AUDIO_BUS];
+  bus Buses[MAX_AUDIO_BUS];
   i32 BusCount;
 } mixer;
 

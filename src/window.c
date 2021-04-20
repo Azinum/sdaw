@@ -1,6 +1,6 @@
 // window.c
 
-static window Window;
+window Window;
 
 static i8 KeyDown[GLFW_KEY_LAST] = {0};
 static i8 KeyPressed[GLFW_KEY_LAST] = {0};
@@ -10,7 +10,7 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
   glfwGetWindowSize(Win, &Width, &Height);
   Window.Width = Width;
   Window.Height = Height;
-  // Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
+  Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
 }
 
 static void ConfigureOpenGL() {

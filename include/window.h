@@ -24,6 +24,8 @@ typedef struct window {
   void* Window;
 } window;
 
+extern window Window;
+
 static double MouseX = 0;
 static double MouseY = 0;
 static i8 MouseState = 0;

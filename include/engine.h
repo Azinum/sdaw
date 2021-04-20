@@ -3,6 +3,7 @@
 #include "audio_engine.h"
 #include "mixer.h"
 #include "osc_test.h"
+#include "draw.h"
 #include "window.h"
 
 static i32 EngineInit();

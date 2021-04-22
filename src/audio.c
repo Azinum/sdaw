@@ -14,6 +14,23 @@ static i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount
   return NoError;
 }
 
+static void ClearFloatBuffer(float* Buffer, i32 Size) {
+  Assert(Buffer);
+  Assert(Size > 0);
+#if USE_SSE
+  Assert(!(Size % 4));
+  __m128 Zero = _mm_set1_ps(0.0f);
+  __m128* Dest = (__m128*)Buffer;
+  i32 ChunkSize = 4 * sizeof(float);
+  Size /= ChunkSize;
+  for (i32 ChunkIndex = 0; ChunkIndex < Size; ++ChunkIndex, ++Dest) {
+    *Dest = Zero;
+  }
+#else
+  memset(Buffer, 0, Size);
+#endif
+}
+
 static i32 LoadAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {

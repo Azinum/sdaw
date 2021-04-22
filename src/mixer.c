@@ -43,32 +43,16 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
 
 i32 MixerClearBuffers(mixer* Mixer) {
   TIMER_START();
-
-#if USE_SSE
-  __m128 Zero = _mm_set1_ps(0.0f);
-  __m128* Dest = NULL;
   // TODO(lucas): We probably want to use a big contiguous array of
   // frame buffers, but for now buffers are seperately allocated for each bus
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
-    if (Bus->InternalBuffer) {
-      i32 ChunkSize = 4 * sizeof(float);
-      i32 BufferSize = (sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer) / ChunkSize;
-      Dest = (__m128*)&Bus->Buffer[0];
-      for (i32 ChunkIndex = 0; ChunkIndex < BufferSize; ++ChunkIndex, ++Dest) {
-        *Dest = Zero;
-      }
-    }
-  }
-#else
-  for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Buses[BusIndex];
     // NOTE(lucas): The buffer is cleared elsewhere if it is not internal
     if (Bus->InternalBuffer) {
-      memset(Bus->Buffer, 0, sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer);
+      i32 BufferSize = sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer;
+      ClearFloatBuffer(Bus->Buffer, BufferSize);
     }
   }
-#endif
   TIMER_END();
   return NoError;
 }
@@ -78,7 +62,8 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
 
   bus* Master = &Mixer->Buses[0];
   Master->Buffer = OutBuffer;
-  memset(Master->Buffer, 0, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
+  i32 MasterBufferSize = sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer;
+  ClearFloatBuffer(Master->Buffer, MasterBufferSize);
   if (!IsPlaying) {
     return NoError;
   }
@@ -115,6 +100,7 @@ i32 MixerRender(mixer* Mixer) {
 
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
+    (void)Bus;
     v3 P = V3((1 + BusIndex) * TILE_SIZE, TILE_SIZE, 0);
     DrawRect(P, TILE_SIZE - GAP, TILE_SIZE - GAP);
   }

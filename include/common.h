@@ -36,8 +36,15 @@ typedef union v3 {
   };
 } v3;
 
+typedef union v4 {
+  struct {
+    float X, Y, Z, W;
+  };
+} v4;
+
 #define V2(_X, _Y) ((v2) { .X = _X, .Y = _Y })
 #define V3(_X, _Y, _Z) ((v3) { .X = _X, .Y = _Y, .Z = _Z })
+#define V4(_X, _Y, _Z, _W) ((v4) { .X = _X, .Y = _Y, .Z = _Z, .W = _W })
 
 #define SAMPLE_RATE 44100
 #define FRAMES_PER_BUFFER 512

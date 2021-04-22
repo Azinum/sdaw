@@ -5,12 +5,21 @@ window Window;
 static i8 KeyDown[GLFW_KEY_LAST] = {0};
 static i8 KeyPressed[GLFW_KEY_LAST] = {0};
 
+static void ErrorCallback(i32 ErrCode, const char* ErrString);
+
+void ErrorCallback(i32 ErrCode, const char* ErrString) {
+  (void)ErrCode;
+  (void)ErrString;
+  // fprintf(stderr, "GLFW error(%i): %s\n", ErrCode, ErrString);
+}
+
 static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
   glViewport(0, 0, Width, Height);
   glfwGetWindowSize(Win, &Width, &Height);
   Window.Width = Width;
   Window.Height = Height;
   Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
+  Clip = V4(0.0f, 0, Window.Width, Window.Height);
 }
 
 static void ConfigureOpenGL() {
@@ -28,6 +37,8 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync, u8 Ful
   Window.FullScreen = FullScreen;
   Window.Width = Window.InitWidth = Width;
   Window.Height = Window.InitHeight = Height;
+
+  glfwSetErrorCallback(ErrorCallback);
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -64,6 +75,7 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync, u8 Ful
   }
   glfwSwapInterval(Vsync);
   ConfigureOpenGL();
+  FrameBufferSizeCallback(Window.Window, Window.Width, Window.Height);
   return 0;
 }
 
@@ -121,7 +133,7 @@ static i32 WindowPollEvents() {
     WindowToggleFullScreen();
   }
 
-  if (KeyPressed[GLFW_KEY_ESCAPE]) {
+  if (KeyPressed[GLFW_KEY_ESCAPE] || glfwWindowShouldClose(Window.Window)) {
     return -1;
   }
   return 0;

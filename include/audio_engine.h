@@ -15,6 +15,8 @@ typedef struct bus {
 typedef struct mixer {
   bus Buses[MAX_AUDIO_BUS];
   i32 BusCount;
+  i32 SampleRate;
+  i32 FramesPerBuffer;
 } mixer;
 
 typedef struct audio_state {
@@ -29,12 +31,13 @@ typedef struct audio_engine {
   float* Out;
   float Time;
   u8 IsPlaying;
+  u8 Initialized;
   mixer Mixer;
 } audio_engine;
 
 extern audio_engine AudioEngine;
 
-typedef i32 (*callback)();
+typedef i32 (*callback)(audio_engine*);
 
 i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer);
 

@@ -65,7 +65,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
       *(Buffer++) = Frame1;
     }
     else {
-      *(Buffer++) = 0.5f * Frame0 + 0.5f * Frame1;
+      *(Buffer++) = 0.5f * (Frame0 + Frame1);
     }
     ++Tick;
   }

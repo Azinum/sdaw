@@ -6,17 +6,20 @@
 #include "draw.c"
 #include "window.c"
 
-static i32 EngineRun() {
+static i32 EngineRun(audio_engine* Engine) {
+  mixer* Mixer = &Engine->Mixer;
+  MixerInit(Mixer, Engine->SampleRate, Engine->FramesPerBuffer);
+
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     RendererInit();
     while (WindowPollEvents() == 0) {
       TIMER_START();
 
-      if (KeyPressed[GLFW_KEY_P]) {
-        AudioEngine.IsPlaying = !AudioEngine.IsPlaying;
+      if (KeyPressed[GLFW_KEY_SPACE]) {
+        Engine->IsPlaying = !Engine->IsPlaying;
       }
 
-      DrawRect(V3(25, 25, 0), 32, 32);
+      MixerRender(Mixer);
 
       WindowSwapBuffers();
       WindowClear(0, 0, 0);
@@ -25,6 +28,7 @@ static i32 EngineRun() {
     }
     RendererFree();
   }
+  MixerFree(Mixer);
   return NoError;
 }
 

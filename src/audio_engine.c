@@ -12,16 +12,17 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   TIMER_START();
 
   float* Out = (float*)OutBuffer;
-  AudioEngine.Out = Out;
-  mixer* Mixer = &AudioEngine.Mixer;
+  audio_engine* Engine = &AudioEngine;
+  Engine->Out = Out;
+  mixer* Mixer = &Engine->Mixer;
 
   MixerClearBuffers(Mixer);
-  MixerSumBuses(Mixer, Out);
+  MixerSumBuses(Mixer, Engine->IsPlaying, Out);
 
   if (AudioEngine.IsPlaying) {
-    const float DeltaTime = (1.0f / AudioEngine.SampleRate) * FramesPerBuffer;
-    AudioEngine.Time += DeltaTime;
-    AudioEngine.Tick += FramesPerBuffer;
+    const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
+    Engine->Time += DeltaTime;
+    Engine->Tick += FramesPerBuffer;
   }
   TIMER_END();
   return paContinue;
@@ -62,6 +63,7 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   AudioEngine.Out = NULL;
   AudioEngine.Time = 0;
   AudioEngine.IsPlaying = 1;
+  AudioEngine.Initialized = 1;
 
   i32 OutputDevice = Pa_GetDefaultOutputDevice();
   OutPort.device = OutputDevice;
@@ -69,9 +71,6 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   OutPort.sampleFormat = paFloat32; // paInt16;
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;
   OutPort.hostApiSpecificStreamInfo = NULL;
-
-  MixerInit(&AudioEngine.Mixer, 2 /* channel count */, FramesPerBuffer);
-
   return NoError;
 }
 
@@ -81,15 +80,17 @@ i32 AudioEngineStart(callback Callback) {
     return Result;
   }
 
+  if (!AudioEngine.Initialized) {
+    return Error;
+  }
   if (Callback) {
-    Callback();
+    Callback(&AudioEngine);
   }
 
   return NoError;
 }
 
 void AudioEngineTerminate() {
-  MixerFree(&AudioEngine.Mixer);
   Pa_CloseStream(Stream);
   Pa_Terminate();
 }

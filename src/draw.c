@@ -133,7 +133,6 @@ void RendererInit() {
   View = Mat4D(1.0f);
   Model = Mat4D(1.0f);
   CompileShaderFromSource(VertSource, FragSource, &RectShader);
-  Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
 }
 
 void DrawRect(v3 P, i32 W, i32 H) {

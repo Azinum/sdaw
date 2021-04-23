@@ -29,32 +29,59 @@ static i32 EngineRun(audio_engine* Engine) {
           BaseNote = (FREQ_TABLE_SIZE - 12);
       }
 
-      if (KeyPressed[GLFW_KEY_A]) {
+      if (KeyPressed[GLFW_KEY_A]) { // A
         OscTestPlayNote(BaseNote + 0);
       }
+        if (KeyPressed[GLFW_KEY_W]) {
+          OscTestPlayNote(BaseNote + 1);
+        }
       if (KeyPressed[GLFW_KEY_S]) {
         OscTestPlayNote(BaseNote + 2);
       }
       if (KeyPressed[GLFW_KEY_D]) {
         OscTestPlayNote(BaseNote + 3);
       }
+        if (KeyPressed[GLFW_KEY_R]) {
+          OscTestPlayNote(BaseNote + 4);
+        }
       if (KeyPressed[GLFW_KEY_F]) {
         OscTestPlayNote(BaseNote + 5);
       }
+        if (KeyPressed[GLFW_KEY_T]) {
+          OscTestPlayNote(BaseNote + 6);
+        }
       if (KeyPressed[GLFW_KEY_G]) {
         OscTestPlayNote(BaseNote + 7);
       }
       if (KeyPressed[GLFW_KEY_H]) {
         OscTestPlayNote(BaseNote + 8);
       }
+        if (KeyPressed[GLFW_KEY_U]) {
+          OscTestPlayNote(BaseNote + 9);
+        }
       if (KeyPressed[GLFW_KEY_J]) {
         OscTestPlayNote(BaseNote + 10);
       }
-      if (KeyPressed[GLFW_KEY_K]) {
+        if (KeyPressed[GLFW_KEY_I]) {
+          OscTestPlayNote(BaseNote + 11);
+        }
+      if (KeyPressed[GLFW_KEY_K]) { // A
         OscTestPlayNote(BaseNote + 12);
       }
+        if (KeyPressed[GLFW_KEY_O]) {
+          OscTestPlayNote(BaseNote + 13);
+        }
       if (KeyPressed[GLFW_KEY_L]) {
         OscTestPlayNote(BaseNote + 14);
+      }
+      if (KeyPressed[GLFW_KEY_SEMICOLON]) {
+        OscTestPlayNote(BaseNote + 15);
+      }
+        if (KeyPressed[GLFW_KEY_LEFT_BRACKET]) {
+          OscTestPlayNote(BaseNote + 16);
+        }
+      if (KeyPressed[GLFW_KEY_APOSTROPHE]) {
+        OscTestPlayNote(BaseNote + 17);
       }
 
       MixerRender(Mixer);

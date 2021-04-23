@@ -18,6 +18,6 @@ FLAGS=-o ${BUILD_DIR}/${PROG} -I${INC} -Wall
 
 O_RELEASE=-O2 -ffast-math
 
-O_DEBUG=-O0 -g -W
+O_DEBUG=-O0 -g -W -Wall
 
 INSTALL_DIR=/usr/local/bin

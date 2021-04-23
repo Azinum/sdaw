@@ -21,6 +21,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
+    Engine->DeltaTime = DeltaTime;
     Engine->Time += DeltaTime;
     Engine->Tick += FramesPerBuffer;
   }
@@ -61,7 +62,8 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   AudioEngine.FramesPerBuffer = FramesPerBuffer;
   AudioEngine.Tick = 0;
   AudioEngine.Out = NULL;
-  AudioEngine.Time = 0;
+  AudioEngine.Time = 0.0f;
+  AudioEngine.DeltaTime = 0.0f;
   AudioEngine.IsPlaying = 1;
   AudioEngine.Initialized = 1;
 

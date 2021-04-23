@@ -30,6 +30,7 @@ typedef struct audio_engine {
   i32 Tick;
   float* Out;
   float Time;
+  float DeltaTime;
   u8 IsPlaying;
   u8 Initialized;
   mixer Mixer;

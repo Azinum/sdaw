@@ -135,7 +135,7 @@ void RendererInit() {
   CompileShaderFromSource(VertSource, FragSource, &RectShader);
 }
 
-void DrawRect(v3 P, i32 W, i32 H) {
+void DrawRect(v3 P, i32 W, i32 H, v3 Color) {
   u32 Handle = RectShader;
   glUseProgram(Handle);
 
@@ -149,7 +149,7 @@ void DrawRect(v3 P, i32 W, i32 H) {
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
-  glUniform4f(glGetUniformLocation(Handle, "InColor"), 1.0f, 0.0f, 0.0f, 1.0f);
+  glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
 
   glBindVertexArray(QuadVAO);
   glDrawArrays(GL_TRIANGLES, 0, ArraySize(QuadVertices) / 4);

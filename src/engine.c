@@ -7,6 +7,8 @@
 #include "window.c"
 
 static i32 BaseNote = 0;
+static float AttackTime = 2.0f;
+static float ReleaseTime = 12.0f;
 
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
@@ -30,61 +32,62 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       if (KeyPressed[GLFW_KEY_A]) { // A
-        OscTestPlayNote(BaseNote + 0);
+        OscTestPlayNote(BaseNote + 0, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_W]) {
-          OscTestPlayNote(BaseNote + 1);
+          OscTestPlayNote(BaseNote + 1, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_S]) {
-        OscTestPlayNote(BaseNote + 2);
+        OscTestPlayNote(BaseNote + 2, AttackTime, ReleaseTime);
       }
       if (KeyPressed[GLFW_KEY_D]) {
-        OscTestPlayNote(BaseNote + 3);
+        OscTestPlayNote(BaseNote + 3, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_R]) {
-          OscTestPlayNote(BaseNote + 4);
+          OscTestPlayNote(BaseNote + 4, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_F]) {
-        OscTestPlayNote(BaseNote + 5);
+        OscTestPlayNote(BaseNote + 5, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_T]) {
-          OscTestPlayNote(BaseNote + 6);
+          OscTestPlayNote(BaseNote + 6, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_G]) {
-        OscTestPlayNote(BaseNote + 7);
+        OscTestPlayNote(BaseNote + 7, AttackTime, ReleaseTime);
       }
       if (KeyPressed[GLFW_KEY_H]) {
-        OscTestPlayNote(BaseNote + 8);
+        OscTestPlayNote(BaseNote + 8, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_U]) {
-          OscTestPlayNote(BaseNote + 9);
+          OscTestPlayNote(BaseNote + 9, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_J]) {
-        OscTestPlayNote(BaseNote + 10);
+        OscTestPlayNote(BaseNote + 10, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_I]) {
-          OscTestPlayNote(BaseNote + 11);
+          OscTestPlayNote(BaseNote + 11, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_K]) { // A
-        OscTestPlayNote(BaseNote + 12);
+        OscTestPlayNote(BaseNote + 12, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_O]) {
-          OscTestPlayNote(BaseNote + 13);
+          OscTestPlayNote(BaseNote + 13, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_L]) {
-        OscTestPlayNote(BaseNote + 14);
+        OscTestPlayNote(BaseNote + 14, AttackTime, ReleaseTime);
       }
       if (KeyPressed[GLFW_KEY_SEMICOLON]) {
-        OscTestPlayNote(BaseNote + 15);
+        OscTestPlayNote(BaseNote + 15, AttackTime, ReleaseTime);
       }
         if (KeyPressed[GLFW_KEY_LEFT_BRACKET]) {
-          OscTestPlayNote(BaseNote + 16);
+          OscTestPlayNote(BaseNote + 16, AttackTime, ReleaseTime);
         }
       if (KeyPressed[GLFW_KEY_APOSTROPHE]) {
-        OscTestPlayNote(BaseNote + 17);
+        OscTestPlayNote(BaseNote + 17, AttackTime, ReleaseTime);
       }
 
       MixerRender(Mixer);
+      OscTestRender();
 
       WindowSwapBuffers();
       WindowClear(0, 0, 0);

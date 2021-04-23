@@ -1,6 +1,6 @@
 // audio_engine.h
 
-#define TEMPO_BPM 160
+#define TEMPO_BPM 120
 
 #define MAX_AUDIO_BUS 64
 

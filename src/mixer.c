@@ -102,7 +102,7 @@ i32 MixerRender(mixer* Mixer) {
     bus* Bus = &Mixer->Buses[BusIndex];
     (void)Bus;
     v3 P = V3((1 + BusIndex) * TILE_SIZE, TILE_SIZE, 0);
-    DrawRect(P, TILE_SIZE - GAP, TILE_SIZE - GAP);
+    DrawRect(P, TILE_SIZE - GAP, TILE_SIZE - GAP, V3(1.0f, 0.1f, 0.1f));
   }
   return NoError;
 }

@@ -7,6 +7,6 @@ static v4 Clip;
 
 void RendererInit();
 
-void DrawRect(v3 P, i32 W, i32 H);
+void DrawRect(v3 P, i32 W, i32 H, v3 Color);
 
 void RendererFree();

@@ -1,5 +1,9 @@
 // osc_test.h
 
-void OscTestPlayNote(i32 FreqIndex);
+struct note_state;
+
+struct note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime);
 
 i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 SampleRate);
+
+void OscTestRender();

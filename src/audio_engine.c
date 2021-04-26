@@ -92,6 +92,14 @@ i32 AudioEngineStart(callback Callback) {
   return NoError;
 }
 
+i32 AudioEngineRestart() {
+  i32 OldSampleRate = AudioEngine.SampleRate;
+  i32 OldFramesPerBuffer = AudioEngine.FramesPerBuffer;
+  AudioEngineTerminate();
+  AudioEngineInit(OldSampleRate, OldFramesPerBuffer);
+  AudioEngineStart(NULL);
+}
+
 void AudioEngineTerminate() {
   Pa_CloseStream(Stream);
   Pa_Terminate();

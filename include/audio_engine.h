@@ -1,6 +1,6 @@
 // audio_engine.h
 
-#define TEMPO_BPM 120
+static i32 TempoBPM = 120;
 
 #define MAX_AUDIO_BUS 64
 
@@ -43,5 +43,7 @@ typedef i32 (*callback)(audio_engine*);
 i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer);
 
 i32 AudioEngineStart(callback Callback);
+
+i32 AudioEngineRestart();
 
 void AudioEngineTerminate();

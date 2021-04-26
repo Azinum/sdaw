@@ -7,8 +7,8 @@
 #include "window.c"
 
 static i32 BaseNote = 0;
-static float AttackTime = 2.0f;
-static float ReleaseTime = 12.0f;
+static float AttackTime = 0.03f;
+static float ReleaseTime = 3.0f;
 
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
@@ -27,8 +27,11 @@ static i32 EngineRun(audio_engine* Engine) {
       }
       if (KeyPressed[GLFW_KEY_X]) {
         BaseNote += 12;
-        if (BaseNote >= (FREQ_TABLE_SIZE - 12))
-          BaseNote = (FREQ_TABLE_SIZE - 12);
+        if (BaseNote >= (FreqTableSize - 12))
+          BaseNote = (FreqTableSize - 12);
+      }
+      if (KeyPressed[GLFW_KEY_0]) {
+        AudioEngineRestart();
       }
 
       if (KeyPressed[GLFW_KEY_A]) { // A

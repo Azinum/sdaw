@@ -440,6 +440,14 @@ inline mat4 InverseMat4(mat4 A) {
   return Result;
 }
 
+inline float Sin(float Value) {
+  float Result = 0.0f;
+
+  Result = sinf(Value);
+
+  return Result;
+}
+
 inline i32 Inside(v2 P, v2 Start, v2 End) {
   i32 Result = 0;
 

@@ -68,6 +68,8 @@ extern mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar);
 extern mat4 Orthographic(float Left, float Right, float Bottom, float Top, float ZNear, float ZFar);
 extern mat4 InverseMat4(mat4 A);
 
+extern float Sin(float Value);
+
 extern i32 Inside(v2 P, v2 Start, v2 End);
 
 extern void PrintMat4(FILE* File, mat4 A);

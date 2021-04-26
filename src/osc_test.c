@@ -3,12 +3,12 @@
 static float InsTime = 0;
 static i32 MelodyTable[] = {
 #if 0
-  -1,
-#else
   24, 27, 29, 31,
   24, 27, 29, 31,
   24, 27, 29, 31,
   32, 31, 29, 27,
+#else
+  -1,
 #endif
 };
 static i32 MelodyIndex = 0;
@@ -32,7 +32,7 @@ typedef struct note_state {
 
 #define EFFECT_BUFFER_SIZE (1024 * 32)
 static float EffectBuffer[EFFECT_BUFFER_SIZE] = {0};
-static i32 EffectIndex = EFFECT_BUFFER_SIZE - 1;
+static i32 EffectIndex = 0;
 static i32 CurrentEffectIndex = 0;
 
 #define MAX_NOTES 32
@@ -41,8 +41,8 @@ static note_state NoteTable[MAX_NOTES] = {0};
 static i32 NoteCount = 0;
 
 inline i32 Sign(float Value);
-inline float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
-inline float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
+static float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
+static float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
 static void Distortion(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
 static void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
 static void WeirdEffect2(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
@@ -53,13 +53,13 @@ i32 Sign(float Value) {
 }
 
 float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate) {
-  float Freq = FreqTable[FreqIndex % FREQ_TABLE_SIZE];
-  return sin((Tick * Freq * 2 * PI32) / SampleRate);
+  float Freq = FreqTable[FreqIndex % FreqTableSize];
+  return Sin((Tick * Freq * 2 * PI32) / (float)SampleRate);
 }
 
 float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate) {
-  float Freq = FreqTable[FreqIndex % FREQ_TABLE_SIZE];
-  return Sign(sin((Tick * Freq * 2 * PI32) / SampleRate));
+  float Freq = FreqTable[FreqIndex % FreqTableSize];
+  return Sign(Sin((Tick * Freq * 2 * PI32) / SampleRate));
 }
 
 void Distortion(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount) {
@@ -85,11 +85,14 @@ void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix
     float WetFrame = *Iter;
     float DryFrame = WetFrame;
 
+    EffectBuffer[EffectIndex] = DryFrame;
+    EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
+#if 0
     EffectBuffer[(EffectIndex + 256) % EFFECT_BUFFER_SIZE] = DryFrame;
     EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
 
     WetFrame = EffectBuffer[EffectIndex | (EffectIndex % 12)];
-
+#endif
 #if 0
     EffectBuffer[EffectIndex--] = DryFrame;
     if (EffectIndex < 0)
@@ -111,7 +114,7 @@ void WeirdEffect2(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mi
     float WetFrame = *Iter;
     float DryFrame = WetFrame;
 
-    WetFrame = EffectBuffer[CurrentEffectIndex ^ 0xa];
+    WetFrame = EffectBuffer[(i32)((CurrentEffectIndex ^ 0xb))];
     CurrentEffectIndex = (CurrentEffectIndex + 1) % EFFECT_BUFFER_SIZE;
 
     *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
@@ -150,7 +153,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     return NoError;
   TIMER_START();
 
-	float* Iter = Buffer;
+  float* Iter = Buffer;
   i32 Tick = AudioEngine.Tick;
   float Time = AudioEngine.Time;
   float DeltaTime = AudioEngine.DeltaTime;
@@ -160,7 +163,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     float Frame0 = 0.0f;
     float Frame1 = 0.0f;
 
-    float TimeStamp = InsTime + (60.0f / TEMPO_BPM / 2);
+    float TimeStamp = InsTime + (60.0f / TempoBPM / 2);
     if (Time >= TimeStamp) {
       float Delta = Time - TimeStamp;
       InsTime = Time - Delta;
@@ -198,7 +201,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
           break;
       }
       Frame0 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
-      Frame1 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex + 12, SampleRate);
+      Frame1 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
     }
     if (ChannelCount == 2) {
       *(Iter++) = MasterAmp * Frame0;
@@ -210,9 +213,9 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     ++Tick;
   }
 
-	WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
-	// Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
-	// WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
+  WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
+  Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
+  WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
   TIMER_END();
   return NoError;
 }
@@ -231,18 +234,24 @@ void OscTestRender() {
       case STATE_RELEASE:
         Color = V3(0.2f * Note->Amp, 0.3f * Note->Amp, 1.0f * Note->Amp);
         break;
+      case STATE_DONE:
+      default:
+        break;
     }
     DrawRect(P, TileSize - Gap, (1 + 10.0f * Note->Amp) * TileSize - Gap, Color);
   }
-  i32 ChunkSize = 128;
+  i32 ChunkSize = 32;
   i32 Chunk = 0;
   i32 SmallerTile = TileSize / 2;
+  i32 XPos = TileSize;
+  i32 YPos = Window.Height >> 1;
   for (i32 Index = 0; Index < EFFECT_BUFFER_SIZE; Index += ChunkSize, ++Chunk) {
     float Frame0 = EffectBuffer[Index + 0];
     float Frame1 = EffectBuffer[Index + 1];
     float Frame2 = EffectBuffer[Index + 2];
     v3 Color = V3(Abs(Frame0), Abs(Frame1), Abs(Frame2));
-    v3 P = V3(1 + Chunk * SmallerTile, 400, 0);
-    DrawRect(P, 2, (SmallerTile - Gap) * (100 * Frame0), Color);
+    v3 P = V3(XPos, YPos, 0);
+    DrawRect(P, 1, (SmallerTile - Gap) * (100 * Frame0), Color);
+    XPos += 1;
   }
 }

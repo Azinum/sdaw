@@ -14,9 +14,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->InternalBuffer = 0;
 }
   Mixer->BusCount = 1;
-  for (i32 Index = 1; Index < MAX_AUDIO_BUS; ++Index) {
-    MixerAddBus(Mixer, 2, NULL);
-  }
+  MixerAddBus(Mixer, 2, NULL);
   return NoError;
 }
 
@@ -92,21 +90,22 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
   }
 
   TIMER_END(
-    printf("%g, %i%%\n", _DeltaTime, (i32)(100 * (_DeltaTime / AudioEngine.DeltaTime)));
+    // printf("%g, %i%%\n", _DeltaTime, (i32)(100 * (_DeltaTime / AudioEngine.DeltaTime)));
   );
   return NoError;
 }
 
 i32 MixerRender(mixer* Mixer) {
-
-#define TILE_SIZE 32
-#define GAP 8
+  const i32 TileSize = 32;
+  const i32 Gap = 8;
 
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     (void)Bus;
-    v3 P = V3((1 + BusIndex) * TILE_SIZE, TILE_SIZE, 0);
-    DrawRect(P, TILE_SIZE - GAP, TILE_SIZE - GAP, V3(0.9f, 0.1f, 0.1f));
+    v3 P = V3((1 + BusIndex) * TileSize, TileSize, 0);
+    v2 Size = V2(TileSize - Gap, TileSize - Gap);
+    v3 Color = V3(0.9f, 0.2f, 0.2f);
+    DrawRect(P, Size, Color);
   }
   return NoError;
 }

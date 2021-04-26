@@ -28,6 +28,9 @@ typedef union v2 {
   struct {
     float U, V;
   };
+  struct {
+    float W, H;
+  };
 } v2;
 
 typedef union v3 {

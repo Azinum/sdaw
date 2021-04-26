@@ -135,16 +135,16 @@ void RendererInit() {
   CompileShaderFromSource(VertSource, FragSource, &RectShader);
 }
 
-void DrawRect(v3 P, i32 W, i32 H, v3 Color) {
+void DrawRect(v3 P, v2 Size, v3 Color) {
   u32 Handle = RectShader;
   glUseProgram(Handle);
 
   Model = Translate(P);
 
-  Model = Translate2D(Model, 0.5f * W, 0.5f * H);
+  Model = Translate2D(Model, 0.5f * Size.W, 0.5f * Size.H);
   Model = Rotate2D(Model, 0);
-  Model = Translate2D(Model, -0.5f * W, -0.5f * H);
-  Model = Scale2D(Model, W, H);
+  Model = Translate2D(Model, -0.5f * Size.W, -0.5f * Size.H);
+  Model = Scale2D(Model, Size.W, Size.H);
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);

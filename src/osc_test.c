@@ -217,9 +217,9 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     ++Tick;
   }
 
-  // WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
-  // Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
-  // WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
+  WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
+  Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
+  WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
 
   TIMER_END();
   return NoError;
@@ -242,8 +242,9 @@ void OscTestRender() {
   const i32 TileSize = 32;
   for (i32 NoteIndex = 0; NoteIndex < NoteCount; ++NoteIndex) {
     note_state* Note = &NoteTable[NoteIndex];
-    v3 Color = V3(0, 0, 0);
     v3 P = V3((1 + Note->FreqIndex) * TileSize, TileSize * 2, 0);
+    v2 Size = V2(TileSize - Gap, (1 + 10.0f * Note->Amp) * TileSize - Gap);
+    v3 Color = V3(0, 0, 0);
     switch (Note->State) {
       case STATE_ATTACK:
         Color = V3(1.0f * Note->Amp, 0.3f * Note->Amp, 0.3f * Note->Amp);
@@ -255,7 +256,7 @@ void OscTestRender() {
       default:
         break;
     }
-    DrawRect(P, TileSize - Gap, (1 + 10.0f * Note->Amp) * TileSize - Gap, Color);
+    DrawRect(P, Size, Color);
   }
   i32 ChunkSize = 32;
   i32 Chunk = 0;
@@ -267,8 +268,9 @@ void OscTestRender() {
     float Frame1 = EffectBuffer[Index + 1];
     float Frame2 = EffectBuffer[Index + 2];
     v3 Color = V3(Abs(Frame0), Abs(Frame1), Abs(Frame2));
+    v2 Size = V2(1, (SmallerTile - Gap) * (100 * Frame0));
     v3 P = V3(XPos, YPos, 0);
-    DrawRect(P, 1, (SmallerTile - Gap) * (100 * Frame0), Color);
+    DrawRect(P, Size, Color);
     XPos += 1;
   }
 }

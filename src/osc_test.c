@@ -11,9 +11,13 @@ static i32 MelodyTable[] = {
   -1,
 #endif
 };
+
 static i32 MelodyIndex = 0;
 static float InitAmp = 0.5f;
 static float MasterAmp = 0.5f;
+
+static float DefaultAttackTime = 0.01f;
+static float DefaultReleaseTime = 0.8f;
 
 typedef enum ins_state {
   STATE_ATTACK = 0,
@@ -30,7 +34,7 @@ typedef struct note_state {
   ins_state State;
 } note_state;
 
-#define EFFECT_BUFFER_SIZE (1024 * 32)
+#define EFFECT_BUFFER_SIZE (1024 * 16)
 static float EffectBuffer[EFFECT_BUFFER_SIZE] = {0};
 static i32 EffectIndex = 0;
 static i32 CurrentEffectIndex = 0;
@@ -169,7 +173,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
       InsTime = Time - Delta;
       i32 Note = MelodyTable[MelodyIndex];
       if (Note >= 0) {
-        note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], 0.01f, 0.8f);
+        note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], DefaultAttackTime, DefaultReleaseTime);
         if (NewNote) {
           NewNote->Velocity = 0.25f;
         }
@@ -213,11 +217,24 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     ++Tick;
   }
 
-  WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
-  Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
-  WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
+  // WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
+  // Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
+  // WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
+
   TIMER_END();
   return NoError;
+}
+
+void OscTestIncrAttackTime(float Amount) {
+  DefaultAttackTime += Amount;
+  if (DefaultAttackTime <= 0.0f)  // Leaving it at zero will give click noises
+    DefaultAttackTime = 0.001f;
+}
+
+void OscTestIncrReleaseTime(float Amount) {
+  DefaultReleaseTime += Amount;
+  if (DefaultReleaseTime <= 0.0f)
+    DefaultReleaseTime = 0.001f;
 }
 
 void OscTestRender() {

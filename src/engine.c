@@ -34,6 +34,28 @@ static i32 EngineRun(audio_engine* Engine) {
         AudioEngineRestart();
       }
 
+      if (KeyPressed[GLFW_KEY_1]) {
+        OscTestIncrAttackTime(-0.02f);
+      }
+      if (KeyPressed[GLFW_KEY_2]) {
+        OscTestIncrAttackTime(0.02f);
+      }
+      if (KeyPressed[GLFW_KEY_3]) {
+        OscTestIncrReleaseTime(-0.02f);
+      }
+      if (KeyPressed[GLFW_KEY_4]) {
+        OscTestIncrReleaseTime(0.02f);
+      }
+      if (KeyPressed[GLFW_KEY_0]) {
+        TempoBPM = 120;
+      }
+      if (KeyPressed[GLFW_KEY_8]) {
+        --TempoBPM;
+      }
+      if (KeyPressed[GLFW_KEY_9]) {
+        ++TempoBPM;
+      }
+
       if (KeyPressed[GLFW_KEY_A]) { // A
         OscTestPlayNote(BaseNote + 0, AttackTime, ReleaseTime);
       }

@@ -98,6 +98,7 @@ i32 AudioEngineRestart() {
   AudioEngineTerminate();
   AudioEngineInit(OldSampleRate, OldFramesPerBuffer);
   AudioEngineStart(NULL);
+  return 0;
 }
 
 void AudioEngineTerminate() {

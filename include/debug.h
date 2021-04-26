@@ -2,16 +2,27 @@
 
 #define DEBUG_TIMER 1
 
+#include <time.h>
+
 #if DEBUG_TIMER
 
-typedef enum debug_event_type {
-  MAX_DEBUG_EVENT = 128,
-} debug_event_type;
+#define MAX_DEBUG_EVENT 128
+
+typedef enum debug_value_type {
+  DebugTypeInteger32,
+  DebugTypeFloat32,
+  DebugTypeFloat64,
+
+  MaxDebugValueType,
+} debug_value_type;
 
 typedef struct debug_event_info {
   const char* Name;
+  debug_value_type Type;  // Unused for now
   union {
-    float Value;
+    i32 Integer;
+    r32 Float;
+    r64 Double;
   };
 } debug_event_info;
 
@@ -25,21 +36,22 @@ static i32 DebugNumEvents = 0;
   debug_event_info* _DebugEventInfo = &DebugEventTable[EVENT_ID]; \
   if (!_DebugEventInfo->Name) { DebugNumEvents++; } \
   _DebugEventInfo->Name = NAME; \
-  _DebugEventInfo->Value = VALUE; \
+  _DebugEventInfo->Double = VALUE; \
 }
 
 #define TIMER_START(...) \
-  struct timeval _TimeNow = {0}; \
-  struct timeval _TimeStart = {0}; \
-  gettimeofday(&_TimeStart, NULL); \
+  clock_t _TimeEnd = 0; \
+  clock_t _TimeStart = 0; \
+  _TimeStart = clock(); \
+  Assert(_TimeStart != (clock_t)(-1)); \
   __VA_ARGS__
 
 #define TIMER_END(...) { \
-  gettimeofday(&_TimeNow, NULL); \
+  _TimeEnd = clock(); \
+  r64 _DeltaTime = ((r64) (_TimeEnd - _TimeStart)) / CLOCKS_PER_SEC; \
   char* _Name = (char*)__FUNCTION__; \
-  float _DeltaTime = (((((_TimeNow.tv_sec - _TimeStart.tv_sec) * 1000000.0f) + _TimeNow.tv_usec) - (_TimeStart.tv_usec)) / 1000000.0f); \
   DebugRecordEvent(_Name, _DeltaTime, 0); \
-  __VA_ARGS__; \
+  __VA_ARGS__ \
 }
 
 #else

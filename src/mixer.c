@@ -14,7 +14,9 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->InternalBuffer = 0;
 }
   Mixer->BusCount = 1;
-  MixerAddBus(Mixer, 2, NULL);
+  for (i32 Index = 1; Index < MAX_AUDIO_BUS; ++Index) {
+    MixerAddBus(Mixer, 2, NULL);
+  }
   return NoError;
 }
 
@@ -77,8 +79,8 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
         if (Bus->ChannelCount == 2) {
           float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
           float Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount + 1];
-          *(Iter++) += Frame0 * Bus->Pan.X;
-          *(Iter++) += Frame1 * Bus->Pan.Y;
+          *(Iter++) += Frame0 * Bus->Pan.X * Master->Pan.X;
+          *(Iter++) += Frame1 * Bus->Pan.Y * Master->Pan.Y;
         }
         else {
           float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
@@ -89,7 +91,9 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
     }
   }
 
-  TIMER_END();
+  TIMER_END(
+    printf("%g, %i%%\n", _DeltaTime, (i32)(100 * (_DeltaTime / AudioEngine.DeltaTime)));
+  );
   return NoError;
 }
 

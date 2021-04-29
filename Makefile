@@ -7,6 +7,7 @@ all: prepare compile run
 prepare:
 	mkdir -p ${BUILD_DIR}
 	mkdir -p sequence
+	cp -rp ${RES} ${BUILD_DIR}
 
 compile: ${SRC}
 	${CC} ${SRC} ${FLAGS} ${LIB} ${O_RELEASE}
@@ -16,7 +17,7 @@ mac: prepare compile_mac run
 compile_mac: ${SRC}
 	${CC} ${SRC} ${FLAGS} ${LIB_MAC} ${O_RELEASE}
 
-install: compile
+install:
 	chmod o+x ${BUILD_DIR}/${PROG}
 	cp ${BUILD_DIR}/${PROG} ${INSTALL_DIR}/
 

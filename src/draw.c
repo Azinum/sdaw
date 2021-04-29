@@ -59,6 +59,7 @@ static const char* FragSource =
 #define ERR_BUFFER_SIZE 512
 
 static i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program);
+static i32 CompileShader(const char* Path, u32* Program);
 static void InitQuadData();
 
 i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program) {
@@ -75,7 +76,7 @@ i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32*
   glGetShaderiv(VertShader, GL_COMPILE_STATUS, &Report);
   if (!Report) {
     glGetShaderInfoLog(VertShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s\n", ErrorLog);
+    fprintf(stderr, "vertex shader: %s\n", ErrorLog);
     Result = Error;
     goto Done;
   }
@@ -88,7 +89,7 @@ i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32*
   glGetShaderiv(FragShader, GL_COMPILE_STATUS, &Report);
   if (!Report) {
     glGetShaderInfoLog(FragShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s\n", ErrorLog);
+    fprintf(stderr, "fragment shader: %s\n", ErrorLog);
     Result = Error;
     goto Done;
   }
@@ -114,6 +115,29 @@ Done:
   return Result;
 }
 
+i32 CompileShader(const char* Path, u32* Program) {
+  i32 Result = NoError;
+  char VertPath[MAX_PATH_SIZE] = {0};
+  char FragPath[MAX_PATH_SIZE] = {0};
+  snprintf(VertPath, MAX_PATH_SIZE, "%s.vert", Path);
+  snprintf(FragPath, MAX_PATH_SIZE, "%s.frag", Path);
+  buffer VertSource = {0};
+  buffer FragSource = {0};
+
+  if ((Result = ReadFileAndNullTerminate(VertPath, &VertSource)) != NoError) {
+    goto Done;
+  }
+  if ((Result = ReadFileAndNullTerminate(FragPath, &FragSource)) != NoError) {
+    goto Done;
+  }
+
+  Result = CompileShaderFromSource(VertSource.Data, FragSource.Data, Program);
+Done:
+  BufferFree(&VertSource);
+  BufferFree(&FragSource);
+  return Result;
+}
+
 void InitQuadData() {
   glGenVertexArrays(1, &QuadVAO);
   glGenBuffers(1, &QuadVBO);
@@ -132,7 +156,7 @@ void RendererInit() {
   InitQuadData();
   View = Mat4D(1.0f);
   Model = Mat4D(1.0f);
-  CompileShaderFromSource(VertSource, FragSource, &RectShader);
+  CompileShader("resource/shader/rect", &RectShader);
 }
 
 void DrawRect(v3 P, v2 Size, v3 Color) {

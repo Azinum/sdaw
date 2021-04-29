@@ -6,6 +6,8 @@ PROG=sdaw
 
 BUILD_DIR=build
 
+RES=resource
+
 INC=include
 
 LIB=-lpng -lportaudio -lm -lGLEW -lglfw -lGL -lGLU

@@ -5,6 +5,7 @@
 #include "tables.h"
 #include "debug.h"
 #include "memory.h"
+#include "list.h"
 #include "math_util.h"
 #include "arg_parser.h"
 #include "image.h"

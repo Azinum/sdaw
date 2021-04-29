@@ -7,6 +7,7 @@
 #include "tables.c"
 #include "debug.c"
 #include "memory.c"
+#include "list.c"
 #include "math_util.c"
 #include "arg_parser.c"
 #include "image.c"

@@ -48,6 +48,13 @@ typedef union v4 {
   };
 } v4;
 
+typedef struct string {
+  char* Data;
+  u32 Count;
+} string;
+
+typedef string buffer;
+
 #define V2(_X, _Y) ((v2) { .X = _X, .Y = _Y })
 #define V3(_X, _Y, _Z) ((v3) { .X = _X, .Y = _Y, .Z = _Z })
 #define V4(_X, _Y, _Z, _W) ((v4) { .X = _X, .Y = _Y, .Z = _Z, .W = _W })
@@ -75,3 +82,7 @@ typedef enum error_code {
 } error_code;
 
 char* FetchExtension(const char* Path);
+
+i32 ReadFile(const char* Path, buffer* Buffer);
+
+i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);

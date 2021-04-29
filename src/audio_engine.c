@@ -5,19 +5,24 @@
 audio_engine AudioEngine;
 static PaStream* Stream = NULL;
 static PaStreamParameters OutPort;
+static PaStreamParameters InPort;
 
 static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long FramesPerBuffer, const PaStreamCallbackTimeInfo* TimeInfo, PaStreamCallbackFlags Flags, void* UserData) {
   (void)InBuffer; (void)TimeInfo; (void)Flags; (void)UserData;
 
   TIMER_START();
 
-  float* Out = (float*)OutBuffer;
   audio_engine* Engine = &AudioEngine;
-  Engine->Out = Out;
   mixer* Mixer = &Engine->Mixer;
 
+  Engine->Out = (float*)OutBuffer;
+  Engine->In = (float*)InBuffer;
+
+  float* In = Engine->In;
+  float* Out = Engine->Out;
+
   MixerClearBuffers(Mixer);
-  MixerSumBuses(Mixer, Engine->IsPlaying, Out);
+  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
 
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
@@ -32,11 +37,11 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 static i32 OpenStream() {
   PaError Error = Pa_OpenStream(
     &Stream,
-    NULL,
+    &InPort,
     &OutPort,
     AudioEngine.SampleRate,
     AudioEngine.FramesPerBuffer,
-    0,
+    paNoFlag,
     StereoCallback,
     NULL
   );
@@ -67,12 +72,26 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   AudioEngine.IsPlaying = 1;
   AudioEngine.Initialized = 1;
 
+  i32 InputDevice = Pa_GetDefaultInputDevice();
+  InPort.device = InputDevice;
+  InPort.channelCount = 2;
+  InPort.sampleFormat = paFloat32;
+  InPort.suggestedLatency = Pa_GetDeviceInfo(InPort.device)->defaultLowInputLatency;
+  InPort.hostApiSpecificStreamInfo = NULL;
+
   i32 OutputDevice = Pa_GetDefaultOutputDevice();
   OutPort.device = OutputDevice;
   OutPort.channelCount = 2;
   OutPort.sampleFormat = paFloat32; // paInt16;
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;
   OutPort.hostApiSpecificStreamInfo = NULL;
+
+  if ((Err = Pa_IsFormatSupported(&InPort, &OutPort, SampleRate)) == paFormatIsSupported) {
+  }
+  else {
+    Assert(0);
+  }
+
   return NoError;
 }
 

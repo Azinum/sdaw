@@ -60,7 +60,7 @@ typedef string buffer;
 #define V4(_X, _Y, _Z, _W) ((v4) { .X = _X, .Y = _Y, .Z = _Z, .W = _W })
 
 #define SAMPLE_RATE 44100
-#define FRAMES_PER_BUFFER 128
+#define FRAMES_PER_BUFFER 256
 #define PI32 3.14159265359f
 #define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512

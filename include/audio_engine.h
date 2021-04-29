@@ -24,11 +24,17 @@ typedef struct audio_state {
   i32 Index;
 } audio_state;
 
+typedef struct instrument {
+  buffer UserData;
+  i32 Type;
+} instrument;
+
 typedef struct audio_engine {
   i32 SampleRate;
   i32 FramesPerBuffer;
   i32 Tick;
   float* Out;
+  float* In;
   float Time;
   float DeltaTime;
   u8 IsPlaying;

@@ -41,6 +41,14 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
   return NoError;
 }
 
+i32 MixerToggleActiveBus(mixer* Mixer, i32 BusIndex) {
+  if (BusIndex < Mixer->BusCount) {
+    bus* Bus = &Mixer->Buses[BusIndex];
+    Bus->Active = !Bus->Active;
+  }
+  return NoError;
+}
+
 i32 MixerClearBuffers(mixer* Mixer) {
   TIMER_START();
   // TODO(lucas): We probably want to use a big contiguous array of
@@ -57,22 +65,31 @@ i32 MixerClearBuffers(mixer* Mixer) {
   return NoError;
 }
 
-i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
+i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer) {
   TIMER_START();
 
   bus* Master = &Mixer->Buses[0];
   Master->Buffer = OutBuffer;
   i32 MasterBufferSize = sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer;
   ClearFloatBuffer(Master->Buffer, MasterBufferSize);
-  if (!IsPlaying) {
+  if (!IsPlaying || !Master->Active) {
     return NoError;
   }
 
+  float* Iter = &Master->Buffer[0];
+  for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
+    float Input0 = *InBuffer++;
+    float Input1 = *InBuffer++;
+    *(Iter++) = Input0;
+    *(Iter++) = Input0;
+  }
+
+#if 0
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Active && Bus->Buffer) {
       float* Iter = &Master->Buffer[0];
-      OscTestProcess(Bus->Buffer, Bus->ChannelCount, Mixer->FramesPerBuffer, Mixer->SampleRate);
+      OscTestProcess(NULL /* instrument */, Bus, Mixer->FramesPerBuffer, Mixer->SampleRate);
       for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
         if (Bus->ChannelCount == 2) {
           float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
@@ -88,10 +105,8 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer) {
       }
     }
   }
-
-  TIMER_END(
-    // printf("%g, %i%%\n", _DeltaTime, (i32)(100 * (_DeltaTime / AudioEngine.DeltaTime)));
-  );
+#endif
+  TIMER_END();
   return NoError;
 }
 
@@ -104,8 +119,18 @@ i32 MixerRender(mixer* Mixer) {
     (void)Bus;
     v3 P = V3((1 + BusIndex) * TileSize, TileSize, 0);
     v2 Size = V2(TileSize - Gap, TileSize - Gap);
-    v3 Color = V3(0.9f, 0.2f, 0.2f);
+    v3 Color = V3(0, 0, 0);
+    if (Bus->Active) {
+      Color = V3(0.25f, 0.25f, 0.90f);
+    }
+    else {
+      Color = V3(0.30f, 0.30f, 0.30f);
+    }
     DrawRect(P, Size, Color);
+    // TODO(lucas): Remove
+    if (BusIndex == 1) {
+      OscTestRender();
+    }
   }
   return NoError;
 }

@@ -1,6 +1,7 @@
 // engine.c
 
 #include "mixer.c"
+#include "instrument.c"
 #include "audio_engine.c"
 #include "osc_test.c"
 #include "draw.c"
@@ -35,17 +36,18 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       if (KeyPressed[GLFW_KEY_1]) {
-        OscTestIncrAttackTime(-0.02f);
+        MixerToggleActiveBus(Mixer, 0);
       }
       if (KeyPressed[GLFW_KEY_2]) {
-        OscTestIncrAttackTime(0.02f);
+        MixerToggleActiveBus(Mixer, 1);
       }
       if (KeyPressed[GLFW_KEY_3]) {
-        OscTestIncrReleaseTime(-0.02f);
+        MixerToggleActiveBus(Mixer, 2);
       }
       if (KeyPressed[GLFW_KEY_4]) {
-        OscTestIncrReleaseTime(0.02f);
+        MixerToggleActiveBus(Mixer, 3);
       }
+
       if (KeyPressed[GLFW_KEY_0]) {
         TempoBPM = 120;
       }
@@ -112,7 +114,6 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       MixerRender(Mixer);
-      OscTestRender();
 
       WindowSwapBuffers();
       WindowClear(0, 0, 0);

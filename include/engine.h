@@ -2,6 +2,7 @@
 
 #include "audio_engine.h"
 #include "mixer.h"
+#include "instrument.h"
 #include "osc_test.h"
 #include "draw.h"
 #include "window.h"

@@ -152,12 +152,12 @@ note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime) 
   return NULL;
 }
 
-i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 SampleRate) {
+i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRate) {
   if (!AudioEngine.IsPlaying)
     return NoError;
   TIMER_START();
 
-  float* Iter = Buffer;
+  float* Iter = Bus->Buffer;
   i32 Tick = AudioEngine.Tick;
   float Time = AudioEngine.Time;
   float DeltaTime = AudioEngine.DeltaTime;
@@ -207,7 +207,7 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
       Frame0 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
       Frame1 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
     }
-    if (ChannelCount == 2) {
+    if (Bus->ChannelCount == 2) {
       *(Iter++) = MasterAmp * Frame0;
       *(Iter++) = MasterAmp * Frame1;
     }
@@ -216,10 +216,6 @@ i32 OscTestProcess(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, i32 Sam
     }
     ++Tick;
   }
-
-  WeirdEffect(Buffer, ChannelCount, FramesPerBuffer, 0.0f, 10.0f);
-  Distortion(Buffer, ChannelCount, FramesPerBuffer, 0.2f, 40.0f);
-  WeirdEffect2(Buffer, ChannelCount, FramesPerBuffer, 0.01f, 10.0f);
 
   TIMER_END();
   return NoError;
@@ -273,4 +269,15 @@ void OscTestRender() {
     DrawRect(P, Size, Color);
     XPos += 1;
   }
+}
+
+instrument* OscTestCreate() {
+  instrument* Ins = M_Malloc(sizeof(instrument));
+  if (Ins) {
+    InstrumentInit(Ins, INSTRUMENT_OSC_TEST);
+  }
+  else {
+    // TODO(lucas): Handle
+  }
+  return Ins;
 }

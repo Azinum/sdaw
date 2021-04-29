@@ -25,37 +25,6 @@ static u32 QuadVAO = 0;
 static u32 QuadVBO = 0;
 static u32 RectShader = 0;
 
-static const char* VertSource =
-  "#version 330 core\n"
-  "\n"
-  "layout (location = 0) in vec4 Vertex;\n"
-  "\n"
-  "out vec2 TexCoords;\n"
-  "\n"
-  "uniform mat4 Projection;\n"
-  "uniform mat4 View;\n"
-  "uniform mat4 Model;\n"
-  "\n"
-  "void main() {\n"
-  "	TexCoords = Vertex.zw;\n"
-  "	gl_Position = Projection * View * Model * vec4(Vertex.xy, 0, 1.0);\n"
-  "}\n";
-
-static const char* FragSource =
-  "#version 330 core\n"
-  "\n"
-  "in vec2 TexCoords;\n"
-  "out vec4 Color;\n"
-  "\n"
-  "uniform vec4 InColor;\n"
-  "\n"
-  "void main() {\n"
-  "	Color = InColor;\n"
-  "	if (Color.r == 1 && Color.g == 0 && Color.b == 1) {\n"
-  "		discard;\n"
-  "	}\n"
-  "}\n";
-
 #define ERR_BUFFER_SIZE 512
 
 static i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program);
@@ -174,6 +143,7 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
   glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
+  glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
 
   glBindVertexArray(QuadVAO);
   glDrawArrays(GL_TRIANGLES, 0, ArraySize(QuadVertices) / 4);

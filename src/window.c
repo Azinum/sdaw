@@ -19,7 +19,7 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
   Window.Width = Width;
   Window.Height = Height;
   Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
-  Clip = V4(0.0f, 0, Window.Width, Window.Height);
+  Clip = V4(0.0f, 0.0f, Window.Width, Window.Height); // Origo (0, 0) is at bottom-left
 }
 
 static void ConfigureOpenGL() {

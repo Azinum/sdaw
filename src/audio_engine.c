@@ -22,7 +22,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   float* Out = Engine->Out;
 
   MixerClearBuffers(Mixer);
-  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
+  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, In);
 
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
@@ -37,7 +37,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 static i32 OpenStream() {
   PaError Error = Pa_OpenStream(
     &Stream,
-    &InPort,
+    NULL, // &InPort,
     &OutPort,
     AudioEngine.SampleRate,
     AudioEngine.FramesPerBuffer,

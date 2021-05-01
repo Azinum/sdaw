@@ -1,20 +1,20 @@
 // audio.c
 
-static i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount) {
+i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount) {
   for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
     *OutBuffer++ = InBuffer[SampleIndex] / ((float)INT16_MAX);
   }
   return NoError;
 }
 
-static i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
+i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
   for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
     *OutBuffer++ = InBuffer[SampleIndex] * INT16_MAX;
   }
   return NoError;
 }
 
-static void ClearFloatBuffer(float* Buffer, i32 Size) {
+void ClearFloatBuffer(float* Buffer, i32 Size) {
   Assert(Buffer);
   Assert(Size > 0);
 #if USE_SSE
@@ -22,8 +22,8 @@ static void ClearFloatBuffer(float* Buffer, i32 Size) {
   __m128 Zero = _mm_set1_ps(0.0f);
   __m128* Dest = (__m128*)Buffer;
   i32 ChunkSize = 4 * sizeof(float);
-  Size /= ChunkSize;
-  for (i32 ChunkIndex = 0; ChunkIndex < Size; ++ChunkIndex, ++Dest) {
+  i32 MaxChunk = Size / ChunkSize;
+  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest) {
     *Dest = Zero;
   }
 #else
@@ -31,7 +31,24 @@ static void ClearFloatBuffer(float* Buffer, i32 Size) {
 #endif
 }
 
-static i32 LoadAudioSource(const char* Path, audio_source* Source) {
+void CopyFloatBuffer(float* Buffer, float* Source, i32 Size) {
+  Assert(Buffer && Source);
+  Assert(Size > 0);
+#if USE_SSE
+  Assert(!(Size % 4));
+  __m128* Dest = (__m128*)Buffer;
+  __m128* Src = (__m128*)Source;
+  i32 ChunkSize = 4 * sizeof(float);
+  i32 MaxChunk = Size / ChunkSize;
+  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest, ++Src) {
+    *Dest = *Src;
+  }
+#else
+  memcpy(Buffer, Source, Size);
+#endif
+}
+
+i32 LoadAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {
     return LoadWAVE(Path, Source);
@@ -45,7 +62,7 @@ static i32 LoadAudioSource(const char* Path, audio_source* Source) {
   return Error;
 }
 
-static i32 StoreAudioSource(const char* Path, audio_source* Source) {
+i32 StoreAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {
     return StoreWAVE(Path, Source);
@@ -56,7 +73,7 @@ static i32 StoreAudioSource(const char* Path, audio_source* Source) {
   return Error;
 }
 
-static i32 InitAudioSource(audio_source* Source, u32 SampleCount, u32 ChannelCount) {
+i32 InitAudioSource(audio_source* Source, u32 SampleCount, u32 ChannelCount) {
   i32 Result = NoError;
 
   Source->Buffer = M_Calloc(SampleCount * ChannelCount, sizeof(float));
@@ -68,7 +85,7 @@ static i32 InitAudioSource(audio_source* Source, u32 SampleCount, u32 ChannelCou
   return Result;
 }
 
-static void UnloadAudioSource(audio_source* Source) {
+void UnloadAudioSource(audio_source* Source) {
   Assert(Source);
   if (Source->Buffer) {
     M_Free(Source->Buffer, sizeof(float) * Source->SampleCount);

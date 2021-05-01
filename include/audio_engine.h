@@ -4,12 +4,18 @@ static i32 TempoBPM = 120;
 
 #define MAX_AUDIO_BUS 64
 
+typedef struct instrument {
+  buffer UserData;
+  i32 Type;
+} instrument;
+
 typedef struct bus {
   float* Buffer;
   i32 ChannelCount;
   v2 Pan;
   u8 Active;
   u8 InternalBuffer;
+  instrument* Ins;
 } bus;
 
 typedef struct mixer {
@@ -23,11 +29,6 @@ typedef struct audio_state {
   audio_source* Source;
   i32 Index;
 } audio_state;
-
-typedef struct instrument {
-  buffer UserData;
-  i32 Type;
-} instrument;
 
 typedef struct audio_engine {
   i32 SampleRate;

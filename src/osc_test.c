@@ -44,6 +44,11 @@ static i32 CurrentEffectIndex = 0;
 static note_state NoteTable[MAX_NOTES] = {0};
 static i32 NoteCount = 0;
 
+typedef struct osc_test_instrument {
+  note_state NoteTable[MAX_NOTES];
+  i32 NoteCount;
+} osc_test_instrument;
+
 inline i32 Sign(float Value);
 static float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
 static float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
@@ -91,20 +96,6 @@ void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix
 
     EffectBuffer[EffectIndex] = DryFrame;
     EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
-#if 0
-    EffectBuffer[(EffectIndex + 256) % EFFECT_BUFFER_SIZE] = DryFrame;
-    EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
-
-    WetFrame = EffectBuffer[EffectIndex | (EffectIndex % 12)];
-#endif
-#if 0
-    EffectBuffer[EffectIndex--] = DryFrame;
-    if (EffectIndex < 0)
-      EffectIndex = EFFECT_BUFFER_SIZE - 1;
-
-    WetFrame = EffectBuffer[EffectIndex >> 1];
-    CurrentEffectIndex = (CurrentEffectIndex + 1) % EFFECT_BUFFER_SIZE;
-#endif
     *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
   }
 }
@@ -254,27 +245,21 @@ void OscTestRender() {
     }
     DrawRect(P, Size, Color);
   }
-  i32 ChunkSize = 32;
-  i32 Chunk = 0;
-  i32 SmallerTile = TileSize / 2;
-  i32 XPos = TileSize;
-  i32 YPos = Window.Height >> 1;
-  for (i32 Index = 0; Index < EFFECT_BUFFER_SIZE; Index += ChunkSize, ++Chunk) {
-    float Frame0 = EffectBuffer[Index + 0];
-    float Frame1 = EffectBuffer[Index + 1];
-    float Frame2 = EffectBuffer[Index + 2];
-    v3 Color = V3(Abs(Frame0), Abs(Frame1), Abs(Frame2));
-    v2 Size = V2(1, (SmallerTile - Gap) * (100 * Frame0));
-    v3 P = V3(XPos, YPos, 0);
-    DrawRect(P, Size, Color);
-    XPos += 1;
-  }
+}
+
+static i32 OscTestInit(instrument* Ins) {
+  i32 Size = sizeof(osc_test_instrument);
+  osc_test_instrument* OscTest = M_Malloc(Size);
+  Ins->UserData.Data = (void*)OscTest;
+  Ins->UserData.Count = Size;
+  return NoError;
 }
 
 instrument* OscTestCreate() {
   instrument* Ins = M_Malloc(sizeof(instrument));
   if (Ins) {
     InstrumentInit(Ins, INSTRUMENT_OSC_TEST);
+    OscTestInit(Ins);
   }
   else {
     // TODO(lucas): Handle

@@ -11,16 +11,17 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->Buffer = NULL;
   Master->ChannelCount = MASTER_CHANNEL_COUNT;
   Master->Pan = V2(1, 1);
+  Master->Db = V2(DB_MIN, DB_MIN);
+  Master->DbFade = Master->Db;
   Master->Active = 1;
   Master->Disabled = 0;
   Master->InternalBuffer = 0;
-  Master->Db = DB_MIN;
 
   Mixer->BusCount = 1;
 
   i32 Index = -1;
   MixerAddBus0(Mixer, 2, NULL, &Index);
-  instrument* OscTest = InstrumentCreate(INSTRUMENT_OSC_TEST, OscTestInit, OscTestFree);
+  instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
   MixerAttachInstrumentToBus(Mixer, Index, OscTest);
   return NoError;
 }
@@ -38,13 +39,15 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
     }
     Bus->ChannelCount = ChannelCount;
     Bus->Pan = V2(1, 1);
+    Bus->Db = V2(DB_MIN, DB_MIN);
+    Bus->DbFade = Bus->Db;
     Bus->Active = 1;
     Bus->Disabled = 0;
 
     Mixer->BusCount++;
   }
   else {
-    // Handle
+    Assert(0); // TODO(lucas): Handle
   }
   return NoError;
 }
@@ -67,7 +70,6 @@ bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) 
       *BusIndex = -1;
     }
   }
-
   return Bus;
 }
 
@@ -137,13 +139,8 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
     instrument* Ins = Bus->Ins;
     if (Bus->Active && !Bus->Disabled && Bus->Buffer) {
       if (Ins) {
-        switch (Ins->Type) {  // TODO(lucas): Temporary, remove
-          case INSTRUMENT_OSC_TEST: {
-            OscTestProcess(Ins, Bus, Mixer->FramesPerBuffer, Mixer->SampleRate);
-            break;
-          }
-          default:
-            break;
+        if (Ins->Process) {
+          Ins->Process(Ins, Bus, Mixer->FramesPerBuffer, Mixer->SampleRate);
         }
       }
     }
@@ -158,7 +155,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
       float* Iter = &Master->Buffer[0];
       float Frame0 = 0.0f;
       float Frame1 = 0.0f;
-      float Db = 0.0f;
+      v2 Db = V2(0.0f, 0.0f);
       i32 WindowSize = Mixer->FramesPerBuffer;
       for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
         if (Bus->ChannelCount == 2) {
@@ -172,10 +169,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
           *(Iter++) += Frame0 * Bus->Pan.X * Master->Pan.X;
           *(Iter++) += Frame1 * Bus->Pan.Y * Master->Pan.Y;
         }
-        float MonoFrame = 0.5f * Frame0 + 0.5f * Frame1;
-        Db += 20.0f * Log10(Abs(MonoFrame));
+        Db.L += 20.0f * Log10(Abs(Frame0));
+        Db.R += 20.0f * Log10(Abs(Frame1));
       }
-      Db /= WindowSize;
+      Db.L /= WindowSize;
+      Db.R /= WindowSize;
       Bus->Db = Db;
     }
   }
@@ -183,36 +181,41 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   return NoError;
 }
 
+// TODO(lucas): This is temporary. Replace all of this when proper ui code is implemented.
 i32 MixerRender(mixer* Mixer) {
   const i32 TileSize = 32;
   const i32 Gap = 8;
 
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
-
+    if (Bus->Active) {
+      Bus->DbFade = LerpV2t(Bus->DbFade, Bus->Db, 30 * AudioEngine.DeltaTime);
+    }
     { // Draw bus
-      v3 P = V3((1 + BusIndex) * TileSize, TileSize, 0);
-      v2 Size = V2(TileSize - Gap, TileSize - Gap);
+      v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize, 0);
+      v2 Size = V2(TileSize, TileSize);
       v3 Color = V3(0, 0, 0);
       Color = (Bus->Active ? V3(0.25f, 0.25f, 0.90f) : V3(0.30f, 0.30f, 0.30f));
       DrawRect(P, Size, Color);
     }
     { // Draw bus volume
-      float DbFactor = -(1.0f / (1 + Bus->Db));
-      float VolumeBarMaxHeight = 80;
-      v3 P = V3((1 + BusIndex) * TileSize, TileSize * 2 + Gap, 0);
-      v2 Size = V2(TileSize - Gap, 1 + (VolumeBarMaxHeight * DbFactor));
+      float DbFactorL = 1.0f / (1 + (-Bus->DbFade.L));
+      float DbFactorR = 1.0f / (1 + (-Bus->DbFade.R));
+      float VolumeBarMaxHeight = 200;
+      v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize * 2, 0);
+      v3 OrigP = P;
+      v2 Size = V2(TileSize, 1 + (VolumeBarMaxHeight * DbFactorL));
+      v2 OrigSize = Size;
       v2 FullSize = Size;
-      FullSize.Y = VolumeBarMaxHeight;
-      v3 Color = V3(0.1f, 1.0f, 0.1f);
+      Size.W *= 0.4f;
+      FullSize.Y = 1 + VolumeBarMaxHeight;
+      v3 Color = (Bus->Active ? V3(0.1f, 0.92, 0.1f) : V3(0.10f, 0.5f, 0.10f));
       DrawRect(P, Size, Color);
-      DrawRect(P, FullSize, V3(0.15f, 0.15f, 0.15f));
-    }
-    // TODO(lucas): Remove later
-    if (Bus->Ins) {
-      if (Bus->Ins->Type == INSTRUMENT_OSC_TEST) {
-        OscTestRender();
-      }
+
+      P.X += OrigSize.W - Size.W;
+      Size.H = 1 + (VolumeBarMaxHeight * DbFactorR);
+      DrawRect(P, Size, Color);
+      DrawRect(OrigP, FullSize, V3(0.15f, 0.15f, 0.15f));
     }
   }
   return NoError;

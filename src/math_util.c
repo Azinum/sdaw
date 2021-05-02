@@ -89,6 +89,13 @@ inline v2 LerpV2(v2 V0, v2 V1, v2 T) {
   );
 }
 
+inline v2 LerpV2t(v2 V0, v2 V1, float T) {
+  return V2(
+    Lerp(V0.X, V1.X, T),
+    Lerp(V0.Y, V1.Y, T)
+  );
+}
+
 inline v3 LerpV3(v3 V0, v3 V1, float T) {
   return V3(
     Lerp(V0.X, V1.X, T),

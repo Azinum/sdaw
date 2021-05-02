@@ -4,6 +4,7 @@
 #include "mixer.h"
 #include "instrument.h"
 #include "osc_test.h"
+#include "sampler.h"
 #include "draw.h"
 #include "window.h"
 

@@ -39,6 +39,7 @@ extern float DistanceV3(v3 A, v3 B);
 extern float ToRadians(float Degrees);
 extern float Lerp(float V0, float V1, float T);
 extern v2 LerpV2(v2 V0, v2 V1, v2 T);
+extern v2 LerpV2t(v2 V0, v2 V1, float T);
 extern v3 LerpV3(v3 V0, v3 V1, float T);
 extern mat4 Translate(v3 T);
 extern mat4 TranslateMat4(mat4 A, v3 T);

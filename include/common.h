@@ -31,6 +31,9 @@ typedef union v2 {
   struct {
     float W, H;
   };
+  struct {
+    float L, R;
+  };
 } v2;
 
 typedef union v3 {

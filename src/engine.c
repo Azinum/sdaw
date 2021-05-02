@@ -4,6 +4,7 @@
 #include "instrument.c"
 #include "audio_engine.c"
 #include "osc_test.c"
+#include "sampler.c"
 #include "draw.c"
 #include "window.c"
 

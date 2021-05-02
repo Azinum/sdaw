@@ -1,13 +1,13 @@
 // instrument.c
 
-instrument* InstrumentCreate(instrument_type Type, instrument_callback InitCb, instrument_callback FreeCb) {
+instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrument_process_cb Process) {
   instrument* Ins = M_Malloc(sizeof(instrument));
   if (Ins) {
     Ins->UserData.Data = NULL;
     Ins->UserData.Count = 0;
-    Ins->Type = Type;
     Ins->InitCb = InitCb;
     Ins->FreeCb = FreeCb;
+    Ins->Process = Process;
     if (Ins->InitCb) {
       Ins->InitCb(Ins);
     }

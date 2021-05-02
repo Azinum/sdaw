@@ -18,11 +18,8 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   Engine->Out = (float*)OutBuffer;
   Engine->In = (float*)InBuffer;
 
-  float* In = Engine->In;
-  float* Out = Engine->Out;
-
   MixerClearBuffers(Mixer);
-  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, In);
+  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
 
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;

@@ -7,6 +7,6 @@ typedef enum instrument_type {
   MAX_INSTRUMENT_TYPE,
 } instrument_type;
 
-void InstrumentInit(instrument* Ins, instrument_type Type);
+instrument* InstrumentCreate(instrument_type Type, instrument_callback InitCb, instrument_callback FreeCb);
 
 void InstrumentFree(instrument* Ins);

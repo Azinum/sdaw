@@ -8,8 +8,8 @@
 #include "window.c"
 
 static i32 BaseNote = 0;
-static float AttackTime = 0.05f;
-static float ReleaseTime = 5.0f;
+static float AttackTime = 30.0f;
+static float ReleaseTime = 60.0f;
 
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;

@@ -12,4 +12,6 @@ void OscTestIncrReleaseTime(float Amount);
 
 void OscTestRender();
 
-instrument* OscTestCreate();
+static i32 OscTestInit(instrument* Ins);
+
+static i32 OscTestFree(instrument* Ins);

@@ -4,9 +4,15 @@ static i32 TempoBPM = 120;
 
 #define MAX_AUDIO_BUS 64
 
+struct instrument;
+
+typedef i32 (*instrument_callback)(struct instrument*);
+
 typedef struct instrument {
   buffer UserData;
   i32 Type;
+  instrument_callback InitCb;
+  instrument_callback FreeCb;
 } instrument;
 
 typedef struct bus {
@@ -14,7 +20,9 @@ typedef struct bus {
   i32 ChannelCount;
   v2 Pan;
   u8 Active;
+  u8 Disabled;
   u8 InternalBuffer;
+  float Db;
   instrument* Ins;
 } bus;
 

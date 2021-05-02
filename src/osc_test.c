@@ -45,8 +45,6 @@ static note_state NoteTable[MAX_NOTES] = {0};
 static i32 NoteCount = 0;
 
 typedef struct osc_test_instrument {
-  note_state NoteTable[MAX_NOTES];
-  i32 NoteCount;
 } osc_test_instrument;
 
 inline i32 Sign(float Value);
@@ -96,6 +94,9 @@ void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix
 
     EffectBuffer[EffectIndex] = DryFrame;
     EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
+    // WetFrame = EffectBuffer[(EffectIndex & 0xfaa) % EFFECT_BUFFER_SIZE];
+    WetFrame = EffectBuffer[(EffectIndex & (i32)Amount) % EFFECT_BUFFER_SIZE];
+
     *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
   }
 }
@@ -203,10 +204,13 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       *(Iter++) = MasterAmp * Frame1;
     }
     else {
-      *(Iter++) = MasterAmp * (0.5f * (Frame0 + Frame1));
+      *(Iter++) = MasterAmp * (0.5f * Frame0 + 0.5f * Frame1);
     }
     ++Tick;
   }
+
+  WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.1f, 500 + 10 * Sin(Tick / (float)SampleRate));
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.3f, 150.0f);
 
   TIMER_END();
   return NoError;
@@ -229,7 +233,7 @@ void OscTestRender() {
   const i32 TileSize = 32;
   for (i32 NoteIndex = 0; NoteIndex < NoteCount; ++NoteIndex) {
     note_state* Note = &NoteTable[NoteIndex];
-    v3 P = V3((1 + Note->FreqIndex) * TileSize, TileSize * 2, 0);
+    v3 P = V3((1 + Note->FreqIndex) * TileSize, TileSize * 5, 0);
     v2 Size = V2(TileSize - Gap, (1 + 10.0f * Note->Amp) * TileSize - Gap);
     v3 Color = V3(0, 0, 0);
     switch (Note->State) {
@@ -247,22 +251,14 @@ void OscTestRender() {
   }
 }
 
-static i32 OscTestInit(instrument* Ins) {
+i32 OscTestInit(instrument* Ins) {
   i32 Size = sizeof(osc_test_instrument);
-  osc_test_instrument* OscTest = M_Malloc(Size);
-  Ins->UserData.Data = (void*)OscTest;
+  osc_test_instrument* OscTestData = M_Malloc(Size);
+  Ins->UserData.Data = (void*)OscTestData;
   Ins->UserData.Count = Size;
   return NoError;
 }
 
-instrument* OscTestCreate() {
-  instrument* Ins = M_Malloc(sizeof(instrument));
-  if (Ins) {
-    InstrumentInit(Ins, INSTRUMENT_OSC_TEST);
-    OscTestInit(Ins);
-  }
-  else {
-    // TODO(lucas): Handle
-  }
-  return Ins;
+i32 OscTestFree(instrument* Ins) {
+  return NoError;
 }

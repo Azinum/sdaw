@@ -12,15 +12,16 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->ChannelCount = MASTER_CHANNEL_COUNT;
   Master->Pan = V2(1, 1);
   Master->Active = 1;
+  Master->Disabled = 0;
   Master->InternalBuffer = 0;
+  Master->Db = DB_MIN;
 
   Mixer->BusCount = 1;
 
-  bus* BusA = MixerAddBus0(Mixer, 1, NULL, NULL);
-  i32 BusBIndex = -1;
-  bus* BusB = MixerAddBus0(Mixer, 1, BusA->Buffer, &BusBIndex);
-  instrument* OscTest = OscTestCreate();
-  MixerAttachInstrumentToBus(Mixer, BusBIndex, OscTest);
+  i32 Index = -1;
+  MixerAddBus0(Mixer, 2, NULL, &Index);
+  instrument* OscTest = InstrumentCreate(INSTRUMENT_OSC_TEST, OscTestInit, OscTestFree);
+  MixerAttachInstrumentToBus(Mixer, Index, OscTest);
   return NoError;
 }
 
@@ -38,6 +39,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
     Bus->ChannelCount = ChannelCount;
     Bus->Pan = V2(1, 1);
     Bus->Active = 1;
+    Bus->Disabled = 0;
 
     Mixer->BusCount++;
   }
@@ -47,7 +49,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
   return NoError;
 }
 
-// NOTE(lucas): Returns a reference to a bus in which you add. It should be noted, however, that the reference is
+// NOTE(lucas): Returns a reference to the bus that you added. It should be noted, however, that the reference is
 // not persistant, in other words the reference can change (it can point to a bus which you did not
 // initially select). It should therefore be used with caution.
 bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) {
@@ -129,11 +131,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 
   // CopyFloatBuffer(Master->Buffer, InBuffer, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
 
-  // 1. Process all buses
+  // Process all buses
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     instrument* Ins = Bus->Ins;
-    if (Bus->Active && Bus->Buffer) {
+    if (Bus->Active && !Bus->Disabled && Bus->Buffer) {
       if (Ins) {
         switch (Ins->Type) {  // TODO(lucas): Temporary, remove
           case INSTRUMENT_OSC_TEST: {
@@ -147,25 +149,34 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
     }
   }
 
-  // 2. Sum all buses
+  // Sum all buses into the master bus
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     instrument* Ins = Bus->Ins;
-    if (Bus->Active && Bus->Buffer && Bus->InternalBuffer) {
+    (void)Ins;
+    if (!Bus->Disabled && Bus->Buffer && Bus->InternalBuffer) {
       float* Iter = &Master->Buffer[0];
+      float Frame0 = 0.0f;
+      float Frame1 = 0.0f;
+      float Db = 0.0f;
+      i32 WindowSize = Mixer->FramesPerBuffer;
       for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
         if (Bus->ChannelCount == 2) {
-          float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
-          float Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount + 1];
+          Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
+          Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount + 1];
+        }
+        else {
+          Frame0 = Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
+        }
+        if (Bus->Active) {
           *(Iter++) += Frame0 * Bus->Pan.X * Master->Pan.X;
           *(Iter++) += Frame1 * Bus->Pan.Y * Master->Pan.Y;
         }
-        else {
-          float Frame0 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
-          *(Iter++) += Frame0 * Bus->Pan.X;
-          *(Iter++) += Frame0 * Bus->Pan.Y;
-        }
+        float MonoFrame = 0.5f * Frame0 + 0.5f * Frame1;
+        Db += 20.0f * Log10(Abs(MonoFrame));
       }
+      Db /= WindowSize;
+      Bus->Db = Db;
     }
   }
   TIMER_END();
@@ -178,20 +189,30 @@ i32 MixerRender(mixer* Mixer) {
 
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
-    (void)Bus;
-    v3 P = V3((1 + BusIndex) * TileSize, TileSize, 0);
-    v2 Size = V2(TileSize - Gap, TileSize - Gap);
-    v3 Color = V3(0, 0, 0);
-    if (Bus->Active) {
-      Color = V3(0.25f, 0.25f, 0.90f);
+
+    { // Draw bus
+      v3 P = V3((1 + BusIndex) * TileSize, TileSize, 0);
+      v2 Size = V2(TileSize - Gap, TileSize - Gap);
+      v3 Color = V3(0, 0, 0);
+      Color = (Bus->Active ? V3(0.25f, 0.25f, 0.90f) : V3(0.30f, 0.30f, 0.30f));
+      DrawRect(P, Size, Color);
     }
-    else {
-      Color = V3(0.30f, 0.30f, 0.30f);
+    { // Draw bus volume
+      float DbFactor = -(1.0f / (1 + Bus->Db));
+      float VolumeBarMaxHeight = 80;
+      v3 P = V3((1 + BusIndex) * TileSize, TileSize * 2 + Gap, 0);
+      v2 Size = V2(TileSize - Gap, 1 + (VolumeBarMaxHeight * DbFactor));
+      v2 FullSize = Size;
+      FullSize.Y = VolumeBarMaxHeight;
+      v3 Color = V3(0.1f, 1.0f, 0.1f);
+      DrawRect(P, Size, Color);
+      DrawRect(P, FullSize, V3(0.15f, 0.15f, 0.15f));
     }
-    DrawRect(P, Size, Color);
-    // TODO(lucas): Remove
-    if (BusIndex == 1) {
-      OscTestRender();
+    // TODO(lucas): Remove later
+    if (Bus->Ins) {
+      if (Bus->Ins->Type == INSTRUMENT_OSC_TEST) {
+        OscTestRender();
+      }
     }
   }
   return NoError;

@@ -60,7 +60,7 @@ typedef string buffer;
 #define V4(_X, _Y, _Z, _W) ((v4) { .X = _X, .Y = _Y, .Z = _Z, .W = _W })
 
 #define SAMPLE_RATE 44100
-#define FRAMES_PER_BUFFER 256
+#define FRAMES_PER_BUFFER 512
 #define PI32 3.14159265359f
 #define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512
@@ -68,7 +68,8 @@ typedef string buffer;
 #define Assert(VALUE) assert(VALUE)
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
 #define Min(A, B) (A < B ? A : B)
-#define Log10(Value) (Value <= 0 ? -200.0f : log10(Value))
+#define DB_MIN (-100.0f)  // Somewhat arbitrary
+#define Log10(Value) (Value <= 0 ? DB_MIN : log10(Value))
 
 #if 1
 #define Abs(Value) (Value < 0 ? -Value : Value)

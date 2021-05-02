@@ -19,10 +19,18 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
 
   Mixer->BusCount = 1;
 
-  i32 Index = -1;
+{
+  i32 Index = 0;
   MixerAddBus0(Mixer, 2, NULL, &Index);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
   MixerAttachInstrumentToBus(Mixer, Index, OscTest);
+}
+{
+  i32 Index = 0;
+  MixerAddBus0(Mixer, 2, NULL, &Index);
+  instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
+  MixerAttachInstrumentToBus(Mixer, Index, Sampler);
+}
   return NoError;
 }
 
@@ -117,7 +125,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   Master->Buffer = OutBuffer;
   i32 MasterBufferSize = sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer;
   ClearFloatBuffer(Master->Buffer, MasterBufferSize);
-  if (!IsPlaying || !Master->Active) {
+  if (!IsPlaying || !Master->Active || Master->Disabled) {
     return NoError;
   }
 

@@ -18,6 +18,20 @@ instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrum
   return Ins;
 }
 
+i32 InstrumentAllocUserData(instrument* Ins, i32 Size) {
+  i32 Result = NoError;
+  void* Data = M_Calloc(Size, 1);
+  if (Data) {
+    Ins->UserData.Data = Data;
+    Ins->UserData.Count = Size;
+  }
+  else {
+    fprintf(stderr, "Failed to allocate memory for user data\n");
+    Result = Error;
+  }
+  return Result;
+}
+
 void InstrumentFree(instrument* Ins) {
   if (Ins->FreeCb) {
     Ins->FreeCb(Ins);

@@ -3,14 +3,15 @@
 #include "mixer.c"
 #include "instrument.c"
 #include "audio_engine.c"
+#include "effect.c"
 #include "osc_test.c"
 #include "sampler.c"
 #include "draw.c"
 #include "window.c"
 
 static i32 BaseNote = 0;
-static float AttackTime = 30.0f;
-static float ReleaseTime = 60.0f;
+static float AttackTime = 0.1f;
+static float ReleaseTime = 15.0f;
 
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
@@ -34,6 +35,9 @@ static i32 EngineRun(audio_engine* Engine) {
       }
       if (KeyPressed[GLFW_KEY_0]) {
         AudioEngineRestart();
+      }
+      if (KeyPressed[GLFW_KEY_9]) {
+        MemoryPrintInfo(stdout);
       }
 
       if (KeyPressed[GLFW_KEY_1]) {

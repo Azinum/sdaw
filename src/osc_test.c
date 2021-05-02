@@ -14,7 +14,6 @@ static i32 MelodyTable[] = {
 
 static i32 MelodyIndex = 0;
 static float InitAmp = 0.5f;
-static float MasterAmp = 0.5f;
 
 static float DefaultAttackTime = 0.01f;
 static float DefaultReleaseTime = 0.8f;
@@ -34,11 +33,6 @@ typedef struct note_state {
   ins_state State;
 } note_state;
 
-#define EFFECT_BUFFER_SIZE (1024 * 16)
-static float EffectBuffer[EFFECT_BUFFER_SIZE] = {0};
-static i32 EffectIndex = 0;
-static i32 CurrentEffectIndex = 0;
-
 #define MAX_NOTES 32
 
 static note_state NoteTable[MAX_NOTES] = {0};
@@ -50,9 +44,6 @@ typedef struct osc_test_instrument {
 inline i32 Sign(float Value);
 static float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
 static float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate);
-static void Distortion(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
-static void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
-static void WeirdEffect2(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount);
 static void ClearNoteTable(note_state* Table, i32* Count);
 
 i32 Sign(float Value) {
@@ -67,54 +58,6 @@ float SineWave(i32 Tick, i32 FreqIndex, i32 SampleRate) {
 float SquareWave(i32 Tick, i32 FreqIndex, i32 SampleRate) {
   float Freq = FreqTable[FreqIndex % FreqTableSize];
   return Sign(Sin((Tick * Freq * 2 * PI32) / SampleRate));
-}
-
-void Distortion(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount) {
-  float Dry = 1 - Mix;
-  float Wet = 1 - Dry;
-  float* Iter = Buffer;
-
-  for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer * ChannelCount; ++FrameIndex) {
-    float WetFrame = *Iter;
-    float DryFrame = WetFrame;
-    WetFrame *= Amount;
-    WetFrame = Clamp(WetFrame, -1.0f, 1.0f);
-    *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
-  }
-}
-
-void WeirdEffect(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount) {
-  float Dry = 1 - Mix;
-  float Wet = 1 - Dry;
-  float* Iter = Buffer;
-
-  for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer * ChannelCount; ++FrameIndex) {
-    float WetFrame = *Iter;
-    float DryFrame = WetFrame;
-
-    EffectBuffer[EffectIndex] = DryFrame;
-    EffectIndex = (EffectIndex + 1) % EFFECT_BUFFER_SIZE;
-    // WetFrame = EffectBuffer[(EffectIndex & 0xfaa) % EFFECT_BUFFER_SIZE];
-    WetFrame = EffectBuffer[(EffectIndex & (i32)Amount) % EFFECT_BUFFER_SIZE];
-
-    *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
-  }
-}
-
-void WeirdEffect2(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mix, float Amount) {
-  float Dry = 1 - Mix;
-  float Wet = 1 - Dry;
-  float* Iter = Buffer;
-
-  for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer * ChannelCount; ++FrameIndex) {
-    float WetFrame = *Iter;
-    float DryFrame = WetFrame;
-
-    WetFrame = EffectBuffer[(i32)((CurrentEffectIndex ^ 0xb))];
-    CurrentEffectIndex = (CurrentEffectIndex + 1) % EFFECT_BUFFER_SIZE;
-
-    *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
-  }
 }
 
 void ClearNoteTable(note_state* Table, i32* Count) {
@@ -145,8 +88,6 @@ note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime) 
 }
 
 i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRate) {
-  if (!AudioEngine.IsPlaying)
-    return NoError;
   TIMER_START();
 
   float* Iter = Bus->Buffer;
@@ -155,7 +96,7 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
   float DeltaTime = AudioEngine.DeltaTime;
 
   ClearNoteTable(&NoteTable[0], &NoteCount);
-  for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex) {
+  for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex, ++Tick) {
     float Frame0 = 0.0f;
     float Frame1 = 0.0f;
 
@@ -200,17 +141,16 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       Frame1 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
     }
     if (Bus->ChannelCount == 2) {
-      *(Iter++) = MasterAmp * Frame0;
-      *(Iter++) = MasterAmp * Frame1;
+      *(Iter++) = Frame0;
+      *(Iter++) = Frame1;
     }
     else {
-      *(Iter++) = MasterAmp * (0.5f * Frame0 + 0.5f * Frame1);
+      *(Iter++) = 0.5f * Frame0 + 0.5f * Frame1;
     }
-    ++Tick;
   }
 
-  WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.1f, 500 + 10 * Sin(Tick / (float)SampleRate));
-  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.3f, 150.0f);
+  // WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.05f, 2000 + 10 * Sin(Tick / (float)SampleRate));
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.3f, 50.0f);
 
   TIMER_END();
   return NoError;
@@ -252,11 +192,9 @@ void OscTestRender() {
 }
 
 i32 OscTestInit(instrument* Ins) {
-  i32 Size = sizeof(osc_test_instrument);
-  osc_test_instrument* OscTestData = M_Malloc(Size);
-  Ins->UserData.Data = (void*)OscTestData;
-  Ins->UserData.Count = Size;
-  return NoError;
+  i32 Result = NoError;
+  Result = InstrumentAllocUserData(Ins, sizeof(osc_test_instrument));
+  return Result;
 }
 
 i32 OscTestFree(instrument* Ins) {

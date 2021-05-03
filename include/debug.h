@@ -1,6 +1,6 @@
 // debug.h
 
-#define DEBUG_TIMER 0
+#define DEBUG_TIMER 1
 
 #include <time.h>
 
@@ -11,6 +11,7 @@
 typedef enum debug_value_type {
   DebugTypeInteger32,
   DebugTypeFloat32,
+  DebugTypeFloat64,
 
   MaxDebugValueType,
 } debug_value_type;
@@ -21,6 +22,7 @@ typedef struct debug_event_info {
   union {
     i32 Integer;
     r32 Float;
+    r64 Double;
   };
 } debug_event_info;
 

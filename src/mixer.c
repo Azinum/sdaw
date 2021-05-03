@@ -1,6 +1,6 @@
 // mixer.c
 
-#define MASTER_CHANNEL_INDEX 0
+#define MASTER_BUS_INDEX 0
 #define MASTER_CHANNEL_COUNT 2
 
 i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
@@ -82,7 +82,7 @@ bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) 
 }
 
 i32 MixerAttachInstrumentToBus(mixer* Mixer, i32 BusIndex, instrument* Ins) {
-  if (BusIndex > MASTER_CHANNEL_INDEX && BusIndex < MAX_AUDIO_BUS) {
+  if (BusIndex > MASTER_BUS_INDEX && BusIndex < MAX_AUDIO_BUS) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Ins) {
       InstrumentFree(Bus->Ins);
@@ -155,11 +155,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   }
 
   // Sum all buses into the master bus
-  for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
+  for (i32 BusIndex = Mixer->BusCount; BusIndex >= 0; --BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     instrument* Ins = Bus->Ins;
     (void)Ins;
-    if (!Bus->Disabled && Bus->Buffer && Bus->InternalBuffer) {
+    if (!Bus->Disabled && Bus->Buffer) {
       float* Iter = &Master->Buffer[0];
       float Frame0 = 0.0f;
       float Frame1 = 0.0f;
@@ -173,7 +173,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
         else {
           Frame0 = Frame1 = Bus->Buffer[FrameIndex * Bus->ChannelCount];
         }
-        if (Bus->Active) {
+        if (Bus->Active && BusIndex != MASTER_BUS_INDEX && Bus->InternalBuffer) {
           *(Iter++) += Frame0 * Bus->Pan.X * Master->Pan.X;
           *(Iter++) += Frame1 * Bus->Pan.Y * Master->Pan.Y;
         }

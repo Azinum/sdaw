@@ -162,7 +162,7 @@ i32 GenAudio(i32 argc, char** argv) {
   char* ImagePath = NULL;
 
   parse_arg Arguments[] = {
-    {0, NULL, "image path", ArgString, 0, &ImagePath},
+    {0, NULL, "image/file path", ArgString, 0, &ImagePath},
     {'f', "frame-copies", "number of copies per frame", ArgInt, 1, &Args.FrameCopies},
     {'c', "channel-count", "number of channels", ArgInt, 1, &Args.ChannelCount},
     {'W', "width-denom", "width denominator (horizontal crop)", ArgFloat, 1, &Args.WDenom},
@@ -178,14 +178,11 @@ i32 GenAudio(i32 argc, char** argv) {
   }
   if (ImagePath) {
     char* Ext = FetchExtension(ImagePath);
+    u8 IsValidImage = 0;
     if (Ext) {
-      if (strncmp(Ext, ".png", MAX_PATH_SIZE) != 0) {
-        fprintf(stderr, "Invalid image file extension (is %s, should be png)\n", Ext + 1);
-        return Error;
+      if (strncmp(Ext, ".png", MAX_PATH_SIZE) == 0) {
+        IsValidImage = 1;
       }
-    }
-    else {
-      fprintf(stderr, "No extension specified in image file, png is assumed\n");
     }
     char OutPath[MAX_PATH_SIZE] = {0};
     i32 Length = 0;
@@ -198,15 +195,26 @@ i32 GenAudio(i32 argc, char** argv) {
     snprintf(OutPath, MAX_PATH_SIZE, "%.*s.wav", Length, ImagePath);
 
     image Image;
-    if (LoadImage(ImagePath, &Image) == NoError) {
-      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, Args.ChannelCount, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
-        fprintf(stderr, "Something went wrong when trying to generate audio for image '%s', of which were going to be generated to '%s'\n", ImagePath, OutPath);
+    u8 LoadedImage = 0;
+    if (IsValidImage) {
+      if (LoadImage(ImagePath, &Image) != NoError) {
+        fprintf(stderr, "Failed to read image file '%s' because it is corrupt or has wrong format\n", ImagePath);
+        return Error;
       }
-      UnloadImage(&Image);
+      LoadedImage = 1;
     }
     else {
-      fprintf(stderr, "Failed to read image file '%s' because it is corrupt or has wrong format\n", ImagePath);
-      return Error;
+      if (LoadFileAsImage(ImagePath, &Image) != NoError) {
+        fprintf(stderr, "Failed to read binary file '%s'\n", ImagePath);
+        return Error;
+      }
+      LoadedImage = 1;
+    }
+    if (LoadedImage) {
+      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, Args.ChannelCount, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
+        fprintf(stderr, "Something went wrong when trying to generate audio from file '%s', of which were going to be generated to '%s'\n", ImagePath, OutPath);
+      }
+      UnloadImage(&Image);
     }
   }
   else {

@@ -12,7 +12,7 @@ static i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount
 
 static void ClearFloatBuffer(float* Buffer, i32 Size);
 
-static void CopyFloatBuffer(float* Buffer, float* Source, i32 Size);
+static void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size);
 
 static i32 LoadAudioSource(const char* Path, audio_source* Source);
 

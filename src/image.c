@@ -3,11 +3,11 @@
 
 #include <png.h>
 
-u8* FetchPixel(const image* Source, i32 X, i32 Y) {
+inline u8* FetchPixel(const image* Source, i32 X, i32 Y) {
   return &Source->PixelBuffer[(Source->BytesPerPixel * ((X + (Y * Source->Width))) % (Source->BytesPerPixel * (Source->Width * Source->Height)))];
 }
 
-static i32 LoadPNGFromFile(FILE* File, image* Image) {
+i32 LoadPNGFromFile(FILE* File, image* Image) {
   i32 Result = NoError;
   png_structp PNG;
   png_infop Info;
@@ -101,7 +101,7 @@ Done:
   return Result;
 }
 
-static i32 StorePNGFromFile(FILE* File, image* Image) {
+i32 StorePNGFromFile(FILE* File, image* Image) {
   i32 Result = Error;
   png_structp PNG = {0};
   png_infop Info = {0};
@@ -160,7 +160,7 @@ Done:
   return Result;
 }
 
-static i32 LoadPNG(const char* Path, image* Image) {
+i32 LoadPNG(const char* Path, image* Image) {
   FILE* File = fopen(Path, "r");
   if (!File) {
     fprintf(stderr, "Failed to open '%s'\n", Path);
@@ -171,7 +171,7 @@ static i32 LoadPNG(const char* Path, image* Image) {
   return Result;
 }
 
-static i32 LoadImage(const char* Path, image* Image) {
+i32 LoadImage(const char* Path, image* Image) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".png", MAX_PATH_SIZE)) {
     return LoadPNG(Path, Image);
@@ -182,7 +182,35 @@ static i32 LoadImage(const char* Path, image* Image) {
   return Error;
 }
 
-static i32 StoreImage(const char* Path, image* Image) {
+i32 LoadFileAsImage(const char* Path, image* Image) {
+  i32 Result = NoError;
+  buffer Buffer;
+  memset(Image, 0, sizeof(image));
+  if ((Result = ReadFile(Path, &Buffer)) == NoError) {
+    i32 BytesPerPixel = 4;
+    i32 Width = 1024;
+    i32 Height = 1024;
+    i32 FileIndex = 0;
+    if ((Result = InitImage(Width, Height, BytesPerPixel, Image)) == NoError) {
+      for (i32 Y = 0; Y < Image->Height; ++Y) {
+        for (i32 X = 0; X < Image->Width; ++X) {
+          color_rgb* Color = (color_rgb*)FetchPixel(Image, X, Y);
+          char Data[] = {
+            Buffer.Data[FileIndex++ % Buffer.Count],
+            Buffer.Data[FileIndex++ % Buffer.Count],
+            Buffer.Data[FileIndex++ % Buffer.Count],
+            Buffer.Data[FileIndex++ % Buffer.Count],
+          };
+          *Color = *(color_rgb*)Data;
+        }
+      }
+    }
+    BufferFree(&Buffer);
+  }
+  return Result;
+}
+
+i32 StoreImage(const char* Path, image* Image) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".png", MAX_PATH_SIZE)) {
     FILE* File = fopen(Path, "w");
@@ -200,7 +228,7 @@ static i32 StoreImage(const char* Path, image* Image) {
   return Error;
 }
 
-static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
+i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
   Assert(Width > 0 && Height > 0 && Image);
   memset(Image, 0, sizeof(image));
   Image->PixelBuffer = M_Malloc(BytesPerPixel * Width * Height * sizeof(u8));
@@ -216,7 +244,7 @@ static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image) {
   return NoError;
 }
 
-static void UnloadImage(image* Image) {
+void UnloadImage(image* Image) {
   Assert(Image);
   if (Image->PixelBuffer != NULL) {
     M_Free(Image->PixelBuffer, sizeof(u8) * Image->Width * Image->Height * Image->BytesPerPixel);

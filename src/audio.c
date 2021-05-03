@@ -15,7 +15,9 @@ i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
 }
 
 void ClearFloatBuffer(float* Buffer, i32 Size) {
-  Assert(Buffer);
+  if (!Buffer) {
+    return;
+  }
   Assert(Size > 0);
 #if USE_SSE
   Assert(!(Size % 4));
@@ -31,12 +33,12 @@ void ClearFloatBuffer(float* Buffer, i32 Size) {
 #endif
 }
 
-void CopyFloatBuffer(float* Buffer, float* Source, i32 Size) {
-  Assert(Buffer && Source);
+void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size) {
+  Assert(DestBuffer && Source);
   Assert(Size > 0);
 #if USE_SSE
   Assert(!(Size % 4));
-  __m128* Dest = (__m128*)Buffer;
+  __m128* Dest = (__m128*)DestBuffer;
   __m128* Src = (__m128*)Source;
   i32 ChunkSize = 4 * sizeof(float);
   i32 MaxChunk = Size / ChunkSize;
@@ -44,7 +46,7 @@ void CopyFloatBuffer(float* Buffer, float* Source, i32 Size) {
     *Dest = *Src;
   }
 #else
-  memcpy(Buffer, Source, Size);
+  memcpy(DestBuffer, Source, Size);
 #endif
 }
 

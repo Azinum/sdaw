@@ -34,7 +34,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 static i32 OpenStream() {
   PaError Error = Pa_OpenStream(
     &Stream,
-    NULL, // &InPort,
+    &InPort,
     &OutPort,
     AudioEngine.SampleRate,
     AudioEngine.FramesPerBuffer,
@@ -66,7 +66,7 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   AudioEngine.Out = NULL;
   AudioEngine.Time = 0.0f;
   AudioEngine.DeltaTime = 0.0f;
-  AudioEngine.IsPlaying = 1;
+  AudioEngine.IsPlaying = 0;
   AudioEngine.Initialized = 1;
 
   i32 InputDevice = Pa_GetDefaultInputDevice();
@@ -83,9 +83,7 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;
   OutPort.hostApiSpecificStreamInfo = NULL;
 
-  if ((Err = Pa_IsFormatSupported(&InPort, &OutPort, SampleRate)) == paFormatIsSupported) {
-  }
-  else {
+  if ((Err = Pa_IsFormatSupported(&InPort, &OutPort, SampleRate)) != paFormatIsSupported) {
     Assert(0);
   }
 

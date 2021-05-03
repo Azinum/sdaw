@@ -31,6 +31,12 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
   MixerAttachInstrumentToBus(Mixer, Index, Sampler);
 }
+{
+  i32 Index = 0;
+  MixerAddBus0(Mixer, 2, NULL, &Index);
+  instrument* AudioInputInstrument = InstrumentCreate(NULL, NULL, AudioInputProcess);
+  MixerAttachInstrumentToBus(Mixer, Index, AudioInputInstrument);
+}
   return NoError;
 }
 
@@ -106,12 +112,13 @@ i32 MixerToggleActiveBus(mixer* Mixer, i32 BusIndex) {
 
 i32 MixerClearBuffers(mixer* Mixer) {
   TIMER_START();
-  for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
+  for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     // NOTE(lucas): The buffer is cleared elsewhere if it is not internal
-    if (Bus->InternalBuffer) {
-      i32 BufferSize = sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer;
-      ClearFloatBuffer(Bus->Buffer, BufferSize);
+    if (Bus->Buffer) {
+      if (Bus->InternalBuffer || (Bus->Buffer && BusIndex == MASTER_BUS_INDEX)) {
+        ClearFloatBuffer(Bus->Buffer, sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer);
+      }
     }
   }
   TIMER_END();
@@ -123,23 +130,9 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 
   bus* Master = &Mixer->Buses[0];
   Master->Buffer = OutBuffer;
-  i32 MasterBufferSize = sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer;
-  ClearFloatBuffer(Master->Buffer, MasterBufferSize);
-  if (!IsPlaying || !Master->Active || Master->Disabled) {
+  if (!IsPlaying || !Master->Active || Master->Disabled || !Master->Buffer) {
     return NoError;
   }
-
-  if (InBuffer) {
-    float* Iter = &Master->Buffer[0];
-    for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
-      float Frame0 = *InBuffer++; InBuffer++;
-      float Frame1 = Frame0;
-      *Iter++ = Frame0;
-      *Iter++ = Frame1;
-    }
-  }
-
-  // CopyFloatBuffer(Master->Buffer, InBuffer, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
 
   // Process all buses
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
@@ -157,10 +150,9 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   // Sum all buses into the master bus
   for (i32 BusIndex = Mixer->BusCount; BusIndex >= 0; --BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
+    float* Iter = &Master->Buffer[0];
     instrument* Ins = Bus->Ins;
-    (void)Ins;
     if (!Bus->Disabled && Bus->Buffer) {
-      float* Iter = &Master->Buffer[0];
       float Frame0 = 0.0f;
       float Frame1 = 0.0f;
       v2 Db = V2(0.0f, 0.0f);

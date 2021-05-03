@@ -6,6 +6,7 @@
 #include "effect.c"
 #include "osc_test.c"
 #include "sampler.c"
+#include "audio_input.c"
 #include "draw.c"
 #include "window.c"
 

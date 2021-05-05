@@ -38,10 +38,10 @@ inline v3 DifferenceV3(v3 A, v3 B) {
   return Result;
 }
 
-inline float Pow(float A, float B) {
+inline float Powf(float A, float B) {
   float Result = 0;
 
-  Result = (float)pow(A, B);
+  Result = powf(A, B);
 
   return Result;
 }
@@ -60,7 +60,7 @@ inline float DistanceV2(v2 A, v2 B) {
   float Result = 0;
   v2 Delta = DifferenceV2(A, B);
 
-  Result = SquareRoot(Pow(Delta.X, 2.0f) + Pow(Delta.Y, 2.0f));
+  Result = SquareRoot(Powf(Delta.X, 2.0f) + Powf(Delta.Y, 2.0f));
 
   return Result;
 }
@@ -69,7 +69,7 @@ inline float DistanceV3(v3 A, v3 B) {
   float Result = 0;
 
   v3 Delta = DifferenceV3(A, B);
-  Result = SquareRoot(Pow(Delta.X, 2.0f) + Pow(Delta.Y, 2.0f) + Pow(Delta.Z, 2.0f));
+  Result = SquareRoot(Powf(Delta.X, 2.0f) + Powf(Delta.Y, 2.0f) + Powf(Delta.Z, 2.0f));
 
   return Result;
 }
@@ -96,7 +96,7 @@ inline v2 LerpV2t(v2 V0, v2 V1, float T) {
   );
 }
 
-inline v3 LerpV3(v3 V0, v3 V1, float T) {
+inline v3 LerpV3t(v3 V0, v3 V1, float T) {
   return V3(
     Lerp(V0.X, V1.X, T),
     Lerp(V0.Y, V1.Y, T),
@@ -266,6 +266,15 @@ inline v3 DivideV3(v3 A, float Value) {
     Result.Y /= Value;
     Result.Z /= Value;
   }
+
+  return Result;
+}
+
+inline v2 AddToV2(v2 A, v2 B) {
+  v2 Result = A;
+
+  Result.X += B.X;
+  Result.Y += B.Y;
 
   return Result;
 }

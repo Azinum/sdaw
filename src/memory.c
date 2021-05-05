@@ -20,9 +20,9 @@ i32 MemoryNumBlocks() {
 
 void MemoryPrintInfo(FILE* File) {
   fprintf(File,
-    "Memory info:\n  Allocated blocks: %i, Total: %.3g KB (%i bytes)\n",
+    "Memory info:\n  Allocated blocks: %i, Total: %g MB (%i bytes)\n",
     MemoryInfo.Blocks,
-    MemoryInfo.Total / 1024.0f,
+    MemoryInfo.Total / (1024.0f * 1024.0f),
     MemoryInfo.Total
   );
 }

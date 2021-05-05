@@ -6,7 +6,11 @@ static i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer);
 
 static bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex);
 
+static i32 MixerRemoveBus(mixer* Mixer, i32 BusIndex);
+
 static i32 MixerAttachInstrumentToBus(mixer* Mixer, i32 BusIndex, instrument* Ins);
+
+static i32 MixerAttachInstrumentToBus0(mixer* Mixer, bus* Bus, instrument* Ins);
 
 static i32 MixerToggleActiveBus(mixer* Mixer, i32 BusIndex);
 

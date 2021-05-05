@@ -51,7 +51,9 @@ i32 SamplerProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       *Iter++ = 0.5f * Frame0 + 0.5f * Frame1;
     }
   }
-  WeirdEffect(Bus->Buffer, 2, FramesPerBuffer, 0.1, 100.0f);
+  // Distortion(Bus->Buffer, 2, FramesPerBuffer, 0.5f, 100.0f);
+  // WeirdEffect(Bus->Buffer, 2, FramesPerBuffer, 0.3f, 100.0f);
+  // Distortion(Bus->Buffer, 2, FramesPerBuffer, 0.5f, 100.0f);
   return NoError;
 }
 

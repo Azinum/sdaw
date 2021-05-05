@@ -15,7 +15,6 @@ void ErrorCallback(i32 ErrCode, const char* ErrString) {
 
 static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
   glViewport(0, 0, Width, Height);
-  glfwGetWindowSize(Win, &Width, &Height);
   Window.Width = Width;
   Window.Height = Height;
   Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);

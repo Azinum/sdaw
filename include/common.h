@@ -73,6 +73,7 @@ typedef string buffer;
 #define Min(A, B) (A < B ? A : B)
 #define DB_MIN (-100.0f)  // Somewhat arbitrary
 #define Log10(Value) (Value <= 0 ? DB_MIN : log10(Value))
+#define MouseOver(M_X, M_Y, X, Y, W, H) (M_X >= X && M_X <= X + W && M_Y >= Y && M_Y <= Y + H)
 
 #if 1
 #define Abs(Value) (Value < 0 ? -Value : Value)

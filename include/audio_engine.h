@@ -2,7 +2,7 @@
 
 static i32 TempoBPM = 120;
 
-#define MAX_AUDIO_BUS 64
+#define MAX_AUDIO_BUS 32
 
 struct instrument;
 struct bus;

@@ -8,6 +8,7 @@
 #include "sampler.c"
 #include "audio_input.c"
 #include "draw.c"
+#include "debug_ui.c"
 #include "window.c"
 
 static i32 BaseNote = 0;
@@ -119,7 +120,27 @@ static i32 EngineRun(audio_engine* Engine) {
         OscTestPlayNote(BaseNote + 17, AttackTime, ReleaseTime);
       }
 
+
+      UI_Begin();
+      if (UI_DoContainer(UI_ID, V2(32, 300), V2(1400, 200), V3(0.15f, 0.15f, 0.15f), 0)) {
+        if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), V3(0.9f, 0.25f, 0.25f))) {
+          MixerRemoveBus(Mixer, Mixer->BusCount - 1);
+        }
+        if (UI_DoButton(UI_ID, V2(0, 32), V2(64, 32), V3(0.25f, 0.8f, 0.25f))) {
+          bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+          if (Bus) {
+            instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
+            MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
+          }
+        }
+        if (UI_DoButton(UI_ID, V2(0, 64), V2(64, 32), V3(0.25f, 0.25f, 0.9f))) {
+          MemoryPrintInfo(stdout);
+        }
+      }
+
       MixerRender(Mixer);
+
+      UI_Render();
 
       WindowSwapBuffers();
       WindowClear(0, 0, 0);
@@ -132,11 +153,16 @@ static i32 EngineRun(audio_engine* Engine) {
 }
 
 i32 EngineInit() {
-  mixer* Mixer = &AudioEngine.Mixer;
+  audio_engine* Engine = &AudioEngine;
+  mixer* Mixer = &Engine->Mixer;
   MixerInit(Mixer, SAMPLE_RATE, FRAMES_PER_BUFFER);
 
   AudioEngineInit(SAMPLE_RATE, FRAMES_PER_BUFFER);
+#if 1
   AudioEngineStart(EngineRun);
+#else
+  EngineRun(Engine);
+#endif
 
   MixerFree(Mixer);
   WindowClose();

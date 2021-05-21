@@ -1,5 +1,17 @@
 // instrument.c
 
+static void* LoaderThread(void* Instrument);
+
+void* LoaderThread(void* Instrument) {
+  instrument* Ins = (instrument*)Instrument;
+  if (Ins->InitCb) {
+    Ins->InitCb(Ins);
+  }
+  Ins->Ready = 1;
+  pthread_join(Ins->LoadThread, NULL);
+  return NULL;
+}
+
 instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrument_process_cb Process) {
   instrument* Ins = M_Malloc(sizeof(instrument));
   if (Ins) {
@@ -9,11 +21,16 @@ instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrum
     Ins->FreeCb = FreeCb;
     Ins->Process = Process;
     if (Ins->InitCb) {
-      Ins->InitCb(Ins);
+      Ins->Ready = 0;
+      pthread_create(&Ins->LoadThread, NULL, LoaderThread, (void*)Ins);
+    }
+    else {
+      Ins->Ready = 1;
     }
   }
   else {
-    // TODO: Handle
+    fprintf(stderr, "Failed to create instrument (out of memory?)\n");
+    return NULL;
   }
   return Ins;
 }

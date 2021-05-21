@@ -10,7 +10,7 @@ prepare:
 	cp -rp ${RES} ${BUILD_DIR}
 
 compile: ${SRC}
-	${CC} ${SRC} ${FLAGS} ${LIB} ${O_RELEASE}
+	${CC} ${SRC} ${FLAGS} ${LIB_LINUX} ${O_RELEASE}
 
 mac: prepare compile_mac run
 
@@ -29,7 +29,7 @@ clean:
 	rm -r sequence/
 
 debug: ${SRC}
-	${CC} ${SRC} ${FLAGS} ${LIB} ${O_DEBUG}
+	${CC} ${SRC} ${FLAGS} ${LIB_LINUX} ${O_DEBUG}
 	gdb ${BUILD_DIR}/${PROG}
 
 run:

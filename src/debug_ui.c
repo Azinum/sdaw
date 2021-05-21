@@ -7,6 +7,7 @@ static i32 DeltaY = 0;
 static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
 static void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type);
+static void UI_Process(ui_state* State);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
 
@@ -78,11 +79,30 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
     E->P.Z = E->Parent->P.Z + 0.01f;
   }
 
+  E->UI = NULL;
+
   E->Pressed = 0;
   E->PressedDown = 0;
   E->Hover = 0;
   E->Movable = 0;
   E->Active = 1;
+}
+
+void UI_Process(ui_state* State) {
+  for (u32 ElementIndex = 0; ElementIndex < State->ElementCount; ++ElementIndex) {
+    ui_element* E = &State->Elements[ElementIndex];
+    if (!E->Interaction) {
+      --State->ElementCount;
+      if (State->ElementCount > 0) {
+        *E = State->Elements[State->ElementCount];
+      }
+      continue;
+    }
+    if (E->Type == ELEMENT_CONTAINER && E->UI && E->Active) {
+      UI_Process(E->UI);
+    }
+    E->Interaction = 0;
+  }
 }
 
 ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
@@ -121,23 +141,11 @@ ui_element* UI_PushElement() {
 
 void UI_Init() {
   UI.ElementCount = 0;
-  UI.ElementIter = 0;
   UI.Container = NULL;
 }
 
 void UI_Begin() {
-  UI.ElementIter = 0;
-  for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
-    ui_element* E = &UI.Elements[ElementIndex];
-    if (!E->Interaction) {
-      --UI.ElementCount;
-      if (UI.ElementCount > 0) {
-        *E = UI.Elements[UI.ElementCount];
-      }
-      continue;
-    }
-    E->Interaction = 0;
-  }
+  UI_Process(&UI);
 }
 
 i32 UI_DoContainer(u32 ID, v2 P, v2 Size, v3 Color, u8 Movable) {

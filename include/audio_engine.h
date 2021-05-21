@@ -1,5 +1,7 @@
 // audio_engine.h
 
+#include <pthread.h>
+
 static i32 TempoBPM = 120;
 
 #define MAX_AUDIO_BUS 32
@@ -16,6 +18,8 @@ typedef struct instrument {
   instrument_cb InitCb;
   instrument_cb FreeCb;
   instrument_process_cb Process;
+  pthread_t LoadThread;
+  u8 Ready;
 } instrument;
 
 typedef struct bus {
@@ -27,6 +31,7 @@ typedef struct bus {
   u8 Active;
   u8 Disabled;
   u8 InternalBuffer;
+  u8 ToRemove;
   instrument* Ins;
 } bus;
 
@@ -35,6 +40,7 @@ typedef struct mixer {
   i32 BusCount;
   i32 SampleRate;
   i32 FramesPerBuffer;
+  u8 Active;
 } mixer;
 
 typedef struct audio_state {

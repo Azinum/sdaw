@@ -4,6 +4,7 @@
 #define MASTER_CHANNEL_COUNT 2
 
 static void FreeBus(mixer* Mixer, bus* Bus);
+static i32 RemoveBus(mixer* Mixer, i32 BusIndex);
 
 void FreeBus(mixer* Mixer, bus* Bus) {
   if (Bus->InternalBuffer) {
@@ -15,9 +16,20 @@ void FreeBus(mixer* Mixer, bus* Bus) {
   memset(Bus, 0, sizeof(bus));
 }
 
+i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
+  if (BusIndex > MASTER_BUS_INDEX && BusIndex < Mixer->BusCount) {
+    bus* Bus = &Mixer->Buses[BusIndex];
+    FreeBus(Mixer, Bus);
+    if (Mixer->BusCount > 0) {
+      *Bus = Mixer->Buses[--Mixer->BusCount];
+    }
+  }
+}
+
 i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Mixer->SampleRate = SampleRate;
   Mixer->FramesPerBuffer = FramesPerBuffer;
+  Mixer->Active = 0;
 
   bus* Master = &Mixer->Buses[0];
   Master->Buffer = NULL;
@@ -28,9 +40,11 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->Active = 1;
   Master->Disabled = 0;
   Master->InternalBuffer = 0;
+  Master->ToRemove = 0;
 
   Mixer->BusCount = 1;
 
+#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
@@ -46,6 +60,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   instrument* AudioInput = InstrumentCreate(NULL, NULL, AudioInputProcess);
   MixerAttachInstrumentToBus0(Mixer, Bus, AudioInput);
 }
+#endif
   return NoError;
 }
 
@@ -66,6 +81,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
     Bus->DbFade = Bus->Db;
     Bus->Active = 1;
     Bus->Disabled = 0;
+    Bus->ToRemove = 0;
     Bus->Ins = NULL;
 
     Mixer->BusCount++;
@@ -98,13 +114,12 @@ bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) 
   return Bus;
 }
 
+// NOTE(lucas): We mark the bus for later removal. This is to make sure we
+// don't simultaneously process and try to free the bus.
 i32 MixerRemoveBus(mixer* Mixer, i32 BusIndex) {
   if (BusIndex > MASTER_BUS_INDEX && BusIndex < Mixer->BusCount) {
     bus* Bus = &Mixer->Buses[BusIndex];
-    FreeBus(Mixer, Bus);
-    if (Mixer->BusCount > 0) {
-      *Bus = Mixer->Buses[--Mixer->BusCount];
-    }
+    Bus->ToRemove = 1;
   }
   return NoError;
 }
@@ -171,10 +186,14 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   // Process all buses
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
+    if (Bus->ToRemove) {
+      RemoveBus(Mixer, BusIndex);
+      continue;
+    }
     instrument* Ins = Bus->Ins;
-    if (Bus->Active && !Bus->Disabled && Bus->Buffer) {
+    if (Bus->Active && !Bus->Disabled && Bus->Buffer && !Bus->ToRemove) {
       if (Ins) {
-        if (Ins->Process) {
+        if (Ins->Process && Ins->Ready) {
           Ins->Process(Ins, Bus, Mixer->FramesPerBuffer, Mixer->SampleRate);
         }
       }
@@ -182,11 +201,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   }
 
   // Sum all buses into the master bus
-  for (i32 BusIndex = Mixer->BusCount; BusIndex >= 0; --BusIndex) {
+  for (i32 BusIndex = Mixer->BusCount - 1; BusIndex >= 0; --BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     float* Iter = &Master->Buffer[0];
     instrument* Ins = Bus->Ins;
-    if (!Bus->Disabled && Bus->Buffer) {
+    if (!Bus->Disabled && !Bus->ToRemove && Bus->Buffer) {
       float Frame0 = 0.0f;
       float Frame1 = 0.0f;
       v2 Db = V2(0.0f, 0.0f);
@@ -230,9 +249,14 @@ i32 MixerRender(mixer* Mixer) {
       v2 Size = V2(TileSize, TileSize);
       v3 Color = V3(0, 0, 0);
       Color = (Bus->Active ? V3(0.25f, 0.25f, 0.90f) : V3(0.30f, 0.30f, 0.30f));
+      if (Bus->Ins) {
+        if (!Bus->Ins->Ready || Bus->ToRemove) {
+          Color = V3(0.1f, 0.1f, 0.1f);
+        }
+      }
       DrawRect(P, Size, Color);
 
-      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), Size, Color)) {
+      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), Size, V3(0.25f, 0.25f, 0.90f))) {
         Bus->Active = !Bus->Active;
       }
     }
@@ -247,12 +271,14 @@ i32 MixerRender(mixer* Mixer) {
       v2 FullSize = Size;
       Size.W *= 0.4f;
       FullSize.Y = 1 + VolumeBarMaxHeight;
-      v3 Color = (Bus->Active ? V3(0.1f, 0.92, 0.1f) : V3(0.10f, 0.5f, 0.10f));
-      DrawRect(P, Size, Color);
+      v3 ColorL = (Bus->Active ? V3(0.1f, 0.92, 0.1f) : V3(0.10f, 0.5f, 0.10f));
+      v3 ColorR = ColorL;
 
+      DrawRect(P, Size, ColorL);
       P.X += OrigSize.W - Size.W;
       Size.H = 1 + (VolumeBarMaxHeight * DbFactorR);
-      DrawRect(P, Size, Color);
+      DrawRect(P, Size, ColorR);
+
       DrawRect(OrigP, FullSize, V3(0.15f, 0.15f, 0.15f));
     }
   }

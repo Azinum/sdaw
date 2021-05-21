@@ -19,6 +19,7 @@ static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     RendererInit();
+    Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
       TIMER_START();
 
@@ -158,17 +159,15 @@ i32 EngineInit() {
   MixerInit(Mixer, SAMPLE_RATE, FRAMES_PER_BUFFER);
 
   AudioEngineInit(SAMPLE_RATE, FRAMES_PER_BUFFER);
-#if 1
-  AudioEngineStart(EngineRun);
-#else
+  AudioEngineStart(NULL);
   EngineRun(Engine);
-#endif
-
-  MixerFree(Mixer);
   WindowClose();
   return NoError;
 }
 
 void EngineFree() {
+  audio_engine* Engine = &AudioEngine;
+  mixer* Mixer = &Engine->Mixer;
   AudioEngineTerminate();
+  MixerFree(Mixer);
 }

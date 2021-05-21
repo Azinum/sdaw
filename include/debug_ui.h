@@ -9,6 +9,8 @@ enum element_type {
   ELEMENT_CONTAINER,
 };
 
+struct ui_state;
+
 typedef struct ui_element {
   u32 ID;
   v3 P;
@@ -17,6 +19,7 @@ typedef struct ui_element {
   i32 Type;
 
   struct ui_element* Parent;
+  struct ui_state* UI;
 
   u8 Pressed;
   u8 PressedDown;
@@ -32,7 +35,6 @@ typedef struct ui_element {
 typedef struct ui_state {
   ui_element Elements[MAX_UI_ELEMENTS];
   u32 ElementCount;
-  u32 ElementIter;
   ui_element* Container;
 } ui_state;
 

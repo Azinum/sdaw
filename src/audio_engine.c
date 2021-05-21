@@ -18,9 +18,13 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
   Engine->Out = (float*)OutBuffer;
   Engine->In = (float*)InBuffer;
 
-  MixerClearBuffers(Mixer);
-  MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
-
+  if (Mixer->Active) {
+    MixerClearBuffers(Mixer);
+    MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
+  }
+  else {
+    ClearFloatBuffer(Engine->Out, sizeof(float) * MASTER_CHANNEL_COUNT * FramesPerBuffer);
+  }
   if (AudioEngine.IsPlaying) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
     Engine->DeltaTime = DeltaTime;
@@ -110,6 +114,8 @@ i32 AudioEngineStart(callback Callback) {
   return NoError;
 }
 
+// FIXME(lucas): This crashes the program if it is run twice or upon exit when it has been run once.
+// Error message: free() invalid pointer / invalid next size (fast).
 i32 AudioEngineRestart() {
   i32 OldSampleRate = AudioEngine.SampleRate;
   i32 OldFramesPerBuffer = AudioEngine.FramesPerBuffer;

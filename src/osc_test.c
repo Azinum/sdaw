@@ -95,24 +95,24 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
   float Time = AudioEngine.Time;
   float DeltaTime = AudioEngine.DeltaTime;
 
+  float TimeStamp = InsTime + (60.0f / TempoBPM);
+  if (Time >= TimeStamp) {
+    float Delta = Time - TimeStamp;
+    InsTime = Time - Delta;
+    i32 Note = MelodyTable[MelodyIndex];
+    if (Note >= 0) {
+      note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], DefaultAttackTime, DefaultReleaseTime);
+      if (NewNote) {
+        NewNote->Velocity = 0.25f;
+      }
+    }
+    MelodyIndex = (MelodyIndex + 1) % ArraySize(MelodyTable);
+  }
+
   ClearNoteTable(&NoteTable[0], &NoteCount);
   for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex, ++Tick) {
     float Frame0 = 0.0f;
     float Frame1 = 0.0f;
-
-    float TimeStamp = InsTime + (60.0f / TempoBPM / 2);
-    if (Time >= TimeStamp) {
-      float Delta = Time - TimeStamp;
-      InsTime = Time - Delta;
-      i32 Note = MelodyTable[MelodyIndex];
-      if (Note >= 0) {
-        note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], DefaultAttackTime, DefaultReleaseTime);
-        if (NewNote) {
-          NewNote->Velocity = 0.25f;
-        }
-      }
-      MelodyIndex = (MelodyIndex + 1) % ArraySize(MelodyTable);
-    }
     for (i32 NoteIndex = 0; NoteIndex < NoteCount; ++NoteIndex) {
       note_state* Note = &NoteTable[NoteIndex];
       switch (Note->State) {
@@ -148,9 +148,6 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       *(Iter++) = 0.5f * Frame0 + 0.5f * Frame1;
     }
   }
-
-  // WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.05f, 2000 + 10 * Sin(Tick / (float)SampleRate));
-  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.3f, 50.0f);
 
   TIMER_END();
   return NoError;

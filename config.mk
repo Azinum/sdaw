@@ -10,9 +10,11 @@ RES=resource
 
 INC=include
 
-LIB=-lpng -lportaudio -lm -lGLEW -lglfw -lGL -lGLU
+LIB_COMMON=-lpthread -lm -lpng -lportaudio -lGLEW -lglfw
 
-LIB_MAC=-lpng -lportaudio -lm -lGLEW -lglfw -framework OpenGL
+LIB_LINUX=${LIB_COMMON} -lGL -lGLU
+
+LIB_MAC=${LIB_COMMON} -framework OpenGL
 
 SRC=src/main.c
 

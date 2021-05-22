@@ -71,13 +71,13 @@ void ClearNoteTable(note_state* Table, i32* Count) {
   }
 }
 
-note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime) {
+note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime, float Velocity) {
   if (NoteCount < MAX_NOTES) {
     note_state Note = (note_state) {
       .Amp = 0.0f,
       .AttackTime = AttackTime,
       .ReleaseTime = ReleaseTime,
-      .Velocity = 0.35f,
+      .Velocity = Velocity,
       .FreqIndex = FreqIndex,
       .State = STATE_ATTACK,
     };
@@ -101,7 +101,7 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
     InsTime = Time - Delta;
     i32 Note = MelodyTable[MelodyIndex];
     if (Note >= 0) {
-      note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], DefaultAttackTime, DefaultReleaseTime);
+      note_state* NewNote = OscTestPlayNote(MelodyTable[MelodyIndex], DefaultAttackTime, DefaultReleaseTime, 0.5f);
       if (NewNote) {
         NewNote->Velocity = 0.25f;
       }

@@ -4,6 +4,7 @@
 #include "instrument.c"
 #include "audio_engine.c"
 #include "effect.c"
+#include "serial_midi.c"
 #include "osc_test.c"
 #include "sampler.c"
 #include "audio_input.c"
@@ -15,13 +16,58 @@ static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
 
+
+// TODO(lucas): Move to elsewhere
+enum midi_message {
+  MIDI_NOTE_ON = 0x90,
+  MIDI_NOTE_ON_HIGH = 0x9,  // NOTE(lucas): High nibble of the midi message
+  MIDI_NOTE_OFF = 0x80,
+  MIDI_NOTE_OFF_HIGH = 0x8,
+};
+
+#define LowNibble(Byte) (u8)(Byte & 0x0f)
+#define HighNibble(Byte) (u8)((Byte & 0xf0) >> 4)
+
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
+
+  SerialMidiInit();
+  OpenSerial("/dev/midi3");
+  midi_event MidiEvents[MAX_MIDI_EVENT] = {0};
+  u32 MidiEventCount = 0;
+
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     RendererInit();
     Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
       TIMER_START();
+
+      MidiEventCount = FetchMidiEvents(MidiEvents);
+
+      if (MidiEventCount > 0) {
+        for (i32 EventIndex = 0; EventIndex < MidiEventCount; ++EventIndex) {
+          midi_event* Event = &MidiEvents[EventIndex];
+          u8 Message = Event->Message;
+          u8 High = HighNibble(Message);
+          u8 Low = LowNibble(Message);
+          u8 A = Event->A;
+          u8 B = Event->B;
+          switch (High) {
+            case MIDI_NOTE_ON_HIGH: {
+              printf("NOTE ON, note: %u, velocity: %u\n", A, B);
+              float Velocity = (float)B / UINT8_MAX;
+              OscTestPlayNote(A, AttackTime, ReleaseTime, Velocity);
+              break;
+            }
+            case MIDI_NOTE_OFF_HIGH: {
+              printf("NOTE OFF, note: %u, velocity: %u\n", A, B);
+              break;
+            }
+            default:
+              break;
+          }
+        }
+      }
 
       if (KeyPressed[GLFW_KEY_SPACE]) {
         Engine->IsPlaying = !Engine->IsPlaying;
@@ -65,7 +111,7 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_9]) {
         ++TempoBPM;
       }
-
+#if 0
       if (KeyPressed[GLFW_KEY_A]) { // A
         OscTestPlayNote(BaseNote + 0, AttackTime, ReleaseTime);
       }
@@ -120,7 +166,7 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_APOSTROPHE]) {
         OscTestPlayNote(BaseNote + 17, AttackTime, ReleaseTime);
       }
-
+#endif
 
       UI_Begin();
       if (UI_DoContainer(UI_ID, V2(32, 300), V2(1400, 200), V3(0.15f, 0.15f, 0.15f), 0)) {
@@ -149,6 +195,7 @@ static i32 EngineRun(audio_engine* Engine) {
       TIMER_END();
     }
     RendererFree();
+    CloseSerial();
   }
   return NoError;
 }

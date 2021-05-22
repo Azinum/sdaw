@@ -37,7 +37,7 @@ void GenSineTable(FILE* File, const char* TableName, int Size) {
 void GenFreqTable(FILE* File, const char* TableName, int Size) {
   fprintf(File, "#define %sSize %i\n", TableName, Size);
   fprintf(File, "static const float %s[%sSize] = {\n  ", TableName, TableName);
-  for (int Index = 0; Index < Size; ++Index) {
+  for (int Index = -9; Index < Size; ++Index) {
     float Value = NOTE_FREQ(Index);
     fprintf(File, "%ff, ", Value);
     if ((Index & Width) == Width) {

@@ -24,6 +24,7 @@ i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
       *Bus = Mixer->Buses[--Mixer->BusCount];
     }
   }
+  return NoError;
 }
 
 i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
@@ -44,12 +45,12 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
 
   Mixer->BusCount = 1;
 
-#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
   MixerAttachInstrumentToBus0(Mixer, Bus, OscTest);
 }
+#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);

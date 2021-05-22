@@ -2,32 +2,35 @@
 // tracks basic memory information
 
 struct {
-  i32 Total;
-  i32 Blocks;
-} MemoryInfo;
+  i64 Total;
+  i64 Blocks;
+} MemoryInfo = {
+  .Total = 0,
+  .Blocks = 0,
+};
 
 #define MemoryInfoUpdate(AddTotal, AddNumBlocks) \
   MemoryInfo.Total += (AddTotal); \
   MemoryInfo.Blocks += (AddNumBlocks)
 
-i32 MemoryTotal() {
+i64 MemoryTotal() {
   return MemoryInfo.Total;
 }
 
-i32 MemoryNumBlocks() {
+i64 MemoryNumBlocks() {
   return MemoryInfo.Blocks;
 }
 
 void MemoryPrintInfo(FILE* File) {
   fprintf(File,
-    "Memory info:\n  Allocated blocks: %i, Total: %g MB (%i bytes)\n",
+    "Memory info:\n  Allocated blocks: %li, Total: %g MB (%li bytes)\n",
     MemoryInfo.Blocks,
     MemoryInfo.Total / (1024.0f * 1024.0f),
     MemoryInfo.Total
   );
 }
 
-void* M_Malloc(const u32 Size) {
+void* M_Malloc(const i32 Size) {
   void* Data = malloc(Size);
   if (!Data)
     return NULL;
@@ -35,7 +38,7 @@ void* M_Malloc(const u32 Size) {
   return Data;
 }
 
-void* M_Calloc(const u32 Size, const u32 Count) {
+void* M_Calloc(const i32 Size, const i32 Count) {
   void* Data = calloc(Size, Count);
   if (!Data)
     return NULL;
@@ -43,7 +46,7 @@ void* M_Calloc(const u32 Size, const u32 Count) {
   return Data;
 }
 
-void* M_Realloc(void* Data, const u32 OldSize, const u32 NewSize) {
+void* M_Realloc(void* Data, const i32 OldSize, const i32 NewSize) {
   assert(Data);
   i32 Diff = NewSize - OldSize;
   void* Temp = realloc(Data, NewSize);
@@ -53,7 +56,7 @@ void* M_Realloc(void* Data, const u32 OldSize, const u32 NewSize) {
   return Temp;
 }
 
-void M_Free(void* Data, const u32 Size) {
+void M_Free(void* Data, const i32 Size) {
   assert(Data);
   free(Data);
   MemoryInfoUpdate(-Size, -1);

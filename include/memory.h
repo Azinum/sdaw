@@ -1,16 +1,16 @@
 // memory.h
 
-i32 MemoryTotal();
+i64 MemoryTotal();
 
-i32 MemoryNumBlocks();
+i64 MemoryNumBlocks();
 
 void MemoryPrintInfo(FILE* File);
 
-void* M_Malloc(const u32 Size);
+void* M_Malloc(const i32 Size);
 
-void* M_Calloc(const u32 Size, const u32 Count);
+void* M_Calloc(const i32 Size, const i32 Count);
 
-void* M_Realloc(void* Data, const u32 OldSize, const u32 NewSize);
+void* M_Realloc(void* Data, const i32 OldSize, const i32 NewSize);
 
-void M_Free(void* Data, const u32 Size);
+void M_Free(void* Data, const i32 Size);
 

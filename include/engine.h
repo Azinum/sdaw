@@ -4,6 +4,7 @@
 #include "mixer.h"
 #include "instrument.h"
 #include "effect.h"
+#include "serial_midi.h"
 #include "osc_test.h"
 #include "sampler.h"
 #include "audio_input.h"

@@ -1,10 +1,10 @@
 // debug.h
 
-#define DEBUG_TIMER 1
-
-#include <time.h>
+#define DEBUG_TIMER 0
 
 #if DEBUG_TIMER
+
+#include <time.h>
 
 #define MAX_DEBUG_EVENT 128
 

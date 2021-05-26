@@ -1,6 +1,6 @@
 // tables.c
 
-#define FreqTableSize 128
+#define FreqTableSize 137
 static const float FreqTable[FreqTableSize] = {
   32.703194f,
   34.647831f, 36.708096f, 38.890873f, 41.203445f, 43.653530f, 46.249302f, 48.999428f, 51.913086f,

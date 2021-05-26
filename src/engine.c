@@ -16,7 +16,6 @@ static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
 
-
 // TODO(lucas): Move to elsewhere
 enum midi_message {
   MIDI_NOTE_ON = 0x90,
@@ -25,6 +24,9 @@ enum midi_message {
   MIDI_NOTE_OFF_HIGH = 0x8,
 };
 
+#define MAX_NOTE 127
+float NoteTable[MAX_NOTE] = {0};
+
 #define LowNibble(Byte) (u8)(Byte & 0x0f)
 #define HighNibble(Byte) (u8)((Byte & 0xf0) >> 4)
 
@@ -32,9 +34,10 @@ static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
 
   SerialMidiInit();
-  OpenSerial("/dev/midi3");
+  OpenSerial("/dev/midi2");
   midi_event MidiEvents[MAX_MIDI_EVENT] = {0};
   u32 MidiEventCount = 0;
+  memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(u8));
 
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     RendererInit();
@@ -56,10 +59,11 @@ static i32 EngineRun(audio_engine* Engine) {
             case MIDI_NOTE_ON_HIGH: {
               printf("NOTE ON, note: %u, velocity: %u\n", A, B);
               float Velocity = (float)B / UINT8_MAX;
-              OscTestPlayNote(A, AttackTime, ReleaseTime, Velocity);
+              NoteTable[A] = Velocity;
               break;
             }
             case MIDI_NOTE_OFF_HIGH: {
+              NoteTable[A] = 0;
               printf("NOTE OFF, note: %u, velocity: %u\n", A, B);
               break;
             }
@@ -82,13 +86,9 @@ static i32 EngineRun(audio_engine* Engine) {
         if (BaseNote >= (FreqTableSize - 12))
           BaseNote = (FreqTableSize - 12);
       }
-      if (KeyPressed[GLFW_KEY_0]) {
-        AudioEngineRestart();
-      }
       if (KeyPressed[GLFW_KEY_9]) {
         MemoryPrintInfo(stdout);
       }
-
       if (KeyPressed[GLFW_KEY_1]) {
         MixerToggleActiveBus(Mixer, 0);
       }

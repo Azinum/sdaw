@@ -12,6 +12,8 @@
 #include "debug_ui.h"
 #include "window.h"
 
+extern float NoteTable[];
+
 static i32 EngineInit();
 
 static void EngineFree();

@@ -35,8 +35,10 @@ typedef struct note_state {
 
 #define MAX_NOTES 32
 
-static note_state NoteTable[MAX_NOTES] = {0};
-static i32 NoteCount = 0;
+#define MAX_NOTE 127
+
+static note_state _NoteTable[MAX_NOTES] = {0};
+static i32 _NoteCount = 0;
 
 typedef struct osc_test_instrument {
 } osc_test_instrument;
@@ -72,7 +74,7 @@ void ClearNoteTable(note_state* Table, i32* Count) {
 }
 
 note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime, float Velocity) {
-  if (NoteCount < MAX_NOTES) {
+  if (_NoteCount < MAX_NOTES) {
     note_state Note = (note_state) {
       .Amp = 0.0f,
       .AttackTime = AttackTime,
@@ -81,8 +83,8 @@ note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime, 
       .FreqIndex = FreqIndex,
       .State = STATE_ATTACK,
     };
-    NoteTable[NoteCount] = Note;
-    return &NoteTable[NoteCount++];
+    _NoteTable[_NoteCount] = Note;
+    return &_NoteTable[_NoteCount++];
   }
   return NULL;
 }
@@ -109,12 +111,13 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
     MelodyIndex = (MelodyIndex + 1) % ArraySize(MelodyTable);
   }
 
-  ClearNoteTable(&NoteTable[0], &NoteCount);
+  ClearNoteTable(&_NoteTable[0], &_NoteCount);
   for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex, ++Tick) {
     float Frame0 = 0.0f;
     float Frame1 = 0.0f;
-    for (i32 NoteIndex = 0; NoteIndex < NoteCount; ++NoteIndex) {
-      note_state* Note = &NoteTable[NoteIndex];
+#if 0
+    for (i32 NoteIndex = 0; NoteIndex < _NoteCount; ++NoteIndex) {
+      note_state* Note = &_NoteTable[NoteIndex];
       switch (Note->State) {
         case STATE_ATTACK: {
           Note->Amp += (1.0f / Note->AttackTime / 60.0f) * DeltaTime;
@@ -140,6 +143,14 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       Frame0 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
       Frame1 += Note->Velocity * Note->Amp * SineWave(Tick, Note->FreqIndex, SampleRate);
     }
+#endif
+    for (i32 NoteIndex = 0; NoteIndex < MAX_NOTE; ++NoteIndex) {
+      float NoteIsPressed = NoteTable[NoteIndex];
+      if (NoteIsPressed > 0.0f) {
+        Frame0 += NoteIsPressed * 0.5f * SineWave(Tick, NoteIndex, SampleRate);
+        Frame1 += NoteIsPressed * 0.5f * SineWave(Tick, NoteIndex, SampleRate);
+      }
+    }
     if (Bus->ChannelCount == 2) {
       *(Iter++) = Frame0;
       *(Iter++) = Frame1;
@@ -148,6 +159,11 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       *(Iter++) = 0.5f * Frame0 + 0.5f * Frame1;
     }
   }
+
+  // WeirdEffect2(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.02f, 50.0f);
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
+  // WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 100.0f);
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
 
   TIMER_END();
   return NoError;
@@ -163,29 +179,6 @@ void OscTestIncrReleaseTime(float Amount) {
   DefaultReleaseTime += Amount;
   if (DefaultReleaseTime <= 0.0f)
     DefaultReleaseTime = 0.001f;
-}
-
-void OscTestRender() {
-  const i32 Gap = 8;
-  const i32 TileSize = 32;
-  for (i32 NoteIndex = 0; NoteIndex < NoteCount; ++NoteIndex) {
-    note_state* Note = &NoteTable[NoteIndex];
-    v3 P = V3((1 + Note->FreqIndex) * TileSize, TileSize * 5, 0);
-    v2 Size = V2(TileSize - Gap, (1 + 10.0f * Note->Amp) * TileSize - Gap);
-    v3 Color = V3(0, 0, 0);
-    switch (Note->State) {
-      case STATE_ATTACK:
-        Color = V3(1.0f * Note->Amp, 0.3f * Note->Amp, 0.3f * Note->Amp);
-        break;
-      case STATE_RELEASE:
-        Color = V3(0.2f * Note->Amp, 0.3f * Note->Amp, 1.0f * Note->Amp);
-        break;
-      case STATE_DONE:
-      default:
-        break;
-    }
-    DrawRect(P, Size, Color);
-  }
 }
 
 i32 OscTestInit(instrument* Ins) {

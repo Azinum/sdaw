@@ -84,9 +84,9 @@ u32 FetchMidiEvents(midi_event* Dest) {
 }
 
 void CloseSerial() {
+  SerialMidi.ShouldExit = 1;
+  pthread_join(SerialMidi.ReadThread, NULL);
   if (SerialMidi.Fd >= 0) {
     close(SerialMidi.Fd);
   }
-  SerialMidi.ShouldExit = 1;
-  pthread_join(SerialMidi.ReadThread, NULL);
 }

@@ -1,6 +1,6 @@
 // effect.c
 
-#define EFFECT_BUFFER_SIZE (1024 * 16)
+#define EFFECT_BUFFER_SIZE (1024 * 32)
 static float EffectBuffer[EFFECT_BUFFER_SIZE] = {0};
 static i32 EffectIndex = 0;
 static i32 CurrentEffectIndex = 0;
@@ -45,8 +45,9 @@ void WeirdEffect2(float* Buffer, i32 ChannelCount, i32 FramesPerBuffer, float Mi
     float WetFrame = *Iter;
     float DryFrame = WetFrame;
 
-    WetFrame = EffectBuffer[(i32)((CurrentEffectIndex ^ 0xb))];
-    CurrentEffectIndex = (CurrentEffectIndex + 1) % EFFECT_BUFFER_SIZE;
+    WetFrame = EffectBuffer[CurrentEffectIndex];
+    EffectBuffer[(i32)(CurrentEffectIndex + (EFFECT_BUFFER_SIZE / (1.0f + FrameIndex))) % EFFECT_BUFFER_SIZE] = DryFrame;
+    CurrentEffectIndex = (CurrentEffectIndex + 5) % EFFECT_BUFFER_SIZE;
 
     *(Iter++) = (DryFrame * Dry) + (WetFrame * Wet);
   }

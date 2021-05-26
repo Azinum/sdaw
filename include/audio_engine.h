@@ -69,6 +69,4 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer);
 
 i32 AudioEngineStart(callback Callback);
 
-i32 AudioEngineRestart();
-
 void AudioEngineTerminate();

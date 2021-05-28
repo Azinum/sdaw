@@ -1,6 +1,6 @@
 // rect.vert
 
-#version 130
+#version 150
 
 in vec4 Vertex;
 

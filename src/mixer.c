@@ -179,7 +179,10 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   TIMER_START();
 
   bus* Master = &Mixer->Buses[0];
-  Master->Buffer = OutBuffer;
+  if (!Master->Buffer) {
+    Master->Buffer = OutBuffer;
+    ClearFloatBuffer(Master->Buffer, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
+  }
   if (!IsPlaying || !Master->Active || Master->Disabled || !Master->Buffer) {
     return NoError;
   }
@@ -243,7 +246,7 @@ i32 MixerRender(mixer* Mixer) {
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Active) {
-      Bus->DbFade = LerpV2t(Bus->DbFade, Bus->Db, 0.5f * AudioEngine.DeltaTime);
+      Bus->DbFade = LerpV2t(Bus->DbFade, Bus->Db, 0.5f);
     }
     { // Draw bus
       v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize, 0);

@@ -56,11 +56,11 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   instrument* AudioInput = InstrumentCreate(NULL, NULL, AudioInputProcess);
   MixerAttachInstrumentToBus0(Mixer, Bus, AudioInput);
 }
-{
-  bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
-  instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
-  MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
-}
+// {
+//   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+//   instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
+//   MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
+// }
 #endif
   return NoError;
 }

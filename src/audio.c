@@ -50,6 +50,30 @@ void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size) {
 #endif
 }
 
+// Eleminates floats that are on even indexes and replaces them with floats that are on uneven indexes
+void CopyFloatBufferEliminateEven(float* DestBuffer, float* SourceBuffer, i32 Size) {
+#if USE_SSE
+  Assert(!(Size % 4));
+  __m128* Dest = (__m128*)DestBuffer;
+  __m128* Source = (__m128*)SourceBuffer;
+  i32 ChunkSize = 4 * sizeof(float);
+  i32 MaxChunk = Size / ChunkSize;
+#define ShuffleMask 0x0
+  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest, ++Source) {
+    *Dest = _mm_shuffle_ps(*Dest, *Source, ShuffleMask);
+  }
+#else
+  float* Dest = DestBuffer;
+  float* Source = SourceBuffer;
+  i32 ChunkSize = sizeof(float);
+  i32 MaxChunk = Size / ChunkSize / 2;
+  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, Dest += 2, Source += 2) {
+    *(Dest) = *Source;
+    *(Dest + 1) = *Source;
+  }
+#endif
+}
+
 i32 LoadAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {

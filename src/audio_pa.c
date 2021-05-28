@@ -38,7 +38,7 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 static i32 OpenStream() {
   PaError Error = Pa_OpenStream(
     &Stream,
-#if 0
+#if 1
     &InPort,
 #else
     NULL,
@@ -78,7 +78,7 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   AudioEngine.IsPlaying = 1;
   AudioEngine.Initialized = 1;
 
-  i32 InputDevice = Pa_GetDefaultInputDevice();
+  i32 InputDevice = 2; // Pa_GetDefaultInputDevice();
   InPort.device = InputDevice;
   InPort.channelCount = 2;
   InPort.sampleFormat = paFloat32;

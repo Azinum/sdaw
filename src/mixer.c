@@ -45,6 +45,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
 
   Mixer->BusCount = 1;
 
+#if 1
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
@@ -55,7 +56,6 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   instrument* AudioInput = InstrumentCreate(NULL, NULL, AudioInputProcess);
   MixerAttachInstrumentToBus0(Mixer, Bus, AudioInput);
 }
-#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);

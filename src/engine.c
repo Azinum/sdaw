@@ -37,7 +37,7 @@ static i32 EngineRun(audio_engine* Engine) {
   OpenSerial("/dev/midi2");
   midi_event MidiEvents[MAX_MIDI_EVENT] = {0};
   u32 MidiEventCount = 0;
-  memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(u8));
+  memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(float));
 
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
     RendererInit();
@@ -208,6 +208,7 @@ i32 EngineInit() {
   AudioEngineInit(SAMPLE_RATE, FRAMES_PER_BUFFER);
   AudioEngineStart(NULL);
   EngineRun(Engine);
+
   WindowClose();
   return NoError;
 }

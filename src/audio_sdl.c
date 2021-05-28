@@ -1,6 +1,7 @@
 // audio_sdl.c
 // SDL audio backend
 
+#include <unistd.h>
 #include <SDL2/SDL.h>
 
 static SDL_AudioSpec InSpec = {0};
@@ -8,11 +9,54 @@ static SDL_AudioSpec OutSpec = {0};
 static SDL_AudioSpec AudioSpec = {0};
 static i32 InputDevice = 0;
 static i32 OutputDevice = 0;
+static u8 StereoThreadShouldExit = 0;
+static pthread_t StereoThread;
 
-static void StereoCallbackIn(void* UserData, u8* Stream, i32 Length);
+static void* StereoThreadCallback(void* UserData);
+
 static void StereoCallback(void* UserData, u8* Stream, i32 Length);
+static void StereoCallbackIn(void* UserData, u8* Stream, i32 Length);
 
-static void StereoCallbackIn(void* UserData, u8* Stream, i32 Length) {
+// FIXME
+// TODO(lucas): Need to handle timings here of when to queue audio
+void* StereoThreadCallback(void* UserData) {
+  audio_engine* Engine = &AudioEngine;
+  mixer* Mixer = &Engine->Mixer;
+
+  u32 BufferSize = sizeof(float) * MASTER_CHANNEL_COUNT * Engine->FramesPerBuffer;
+  float* InBuffer = M_Calloc(BufferSize, 1);
+  float* OutBuffer = M_Calloc(BufferSize, 1);
+  Engine->In = InBuffer;
+  Engine->Out = OutBuffer;
+  while (!StereoThreadShouldExit) {
+    TIMER_START();
+
+    SDL_DequeueAudio(InputDevice, Engine->In, BufferSize);
+
+    if (Mixer->Active) {
+      MixerClearBuffers(Mixer);
+      MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
+    }
+    else {
+      ClearFloatBuffer(Engine->Out, BufferSize);
+    }
+    if (AudioEngine.IsPlaying) {
+      const float DeltaTime = (1.0f / Engine->SampleRate) * Engine->FramesPerBuffer;
+      Engine->DeltaTime = DeltaTime;
+      Engine->Time += DeltaTime;
+      Engine->Tick += Engine->FramesPerBuffer;
+    }
+    SDL_QueueAudio(OutputDevice, Engine->Out, BufferSize);
+    // usleep(Engine->DeltaTime * 1000000);
+    sleep(0);
+    TIMER_END();
+  }
+  M_Free(InBuffer, BufferSize);
+  M_Free(OutBuffer, BufferSize);
+  return NULL;
+}
+
+void StereoCallbackIn(void* UserData, u8* Stream, i32 Length) {
   if (Length <= 0)
     return;
   TIMER_START();
@@ -20,12 +64,12 @@ static void StereoCallbackIn(void* UserData, u8* Stream, i32 Length) {
   audio_engine* Engine = &AudioEngine;
   mixer* Mixer = &Engine->Mixer;
 
-  Engine->In = (float*)Stream;
+  Assert(0 && "Not implemented!");
 
   TIMER_END();
 }
 
-void StereoCallback(void* UserData, u8* Stream, i32 Length /* length in bytes */) {
+void StereoCallback(void* UserData, u8* Stream, i32 Length) {
   if (Length <= 0)
     return;
 
@@ -85,11 +129,12 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
     return Error;
   }
 
+  memset(&InSpec, 0, sizeof(InSpec));
   InSpec.freq = AudioEngine.SampleRate;
   InSpec.format = AUDIO_F32;
   InSpec.channels = 2;
   InSpec.samples = AudioEngine.FramesPerBuffer;
-  InSpec.callback = StereoCallbackIn;
+  InSpec.callback = NULL; // StereoCallbackIn;
 
   if ((InputDevice = SDL_OpenAudioDevice(NULL, 1, &InSpec, &AudioSpec, SDL_AUDIO_ALLOW_FORMAT_CHANGE)) == 0) {
     fprintf(stderr, "Failed to open audio device: %s\n", SDL_GetError());
@@ -109,6 +154,7 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
     fprintf(stdout, "\n");
   }
 
+  memset(&OutSpec, 0, sizeof(OutSpec));
   OutSpec.freq = AudioEngine.SampleRate;
   OutSpec.format = AUDIO_F32;
   OutSpec.channels = 2;
@@ -137,9 +183,12 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
 }
 
 i32 AudioEngineStart(callback Callback) {
+#if 1
   SDL_PauseAudioDevice(OutputDevice, 0);
-  // SDL_PauseAudioDevice(InputDevice, 0);
-
+  SDL_PauseAudioDevice(InputDevice, 0);
+#else
+  pthread_create(&StereoThread, NULL, StereoThreadCallback, NULL);
+#endif
   if (!AudioEngine.Initialized) {
     return Error;
   }
@@ -151,6 +200,9 @@ i32 AudioEngineStart(callback Callback) {
 }
 
 void AudioEngineTerminate() {
+  StereoThreadShouldExit = 1;
+  pthread_join(StereoThread, NULL);
+
   SDL_CloseAudioDevice(InputDevice);
   SDL_CloseAudioDevice(OutputDevice);
   SDL_AudioQuit();

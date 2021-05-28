@@ -1,8 +1,8 @@
 // rect.vert
 
-#version 330 core
+#version 130
 
-layout (location = 0) in vec4 Vertex;
+in vec4 Vertex;
 
 out vec2 TexCoords;
 

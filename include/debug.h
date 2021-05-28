@@ -1,6 +1,6 @@
 // debug.h
 
-#define DEBUG_TIMER 0
+#define DEBUG_TIMER 1
 
 #if DEBUG_TIMER
 

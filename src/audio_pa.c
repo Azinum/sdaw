@@ -92,9 +92,12 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;
   OutPort.hostApiSpecificStreamInfo = NULL;
 
+  fprintf(stdout, "ID | INPUTS | OUTPUTS | SAMPLE RATE | DEVICE NAME\n");
   for (i32 Device = 0; Device < Pa_GetDeviceCount(); ++Device) {
     const PaDeviceInfo* Info = Pa_GetDeviceInfo(Device);
-    fprintf(stdout, "%-2i | %s", Device, Info->name);
+    fprintf(stdout, "%-2i", Device);
+    fprintf(stdout, " | %6i | %7i | %11g", Info->maxInputChannels, Info->maxOutputChannels, Info->defaultSampleRate);
+    fprintf(stdout, " | %s", Info->name);
     if (OutputDevice == Device) {
       fprintf(stdout, " [SELECTED]");
     }

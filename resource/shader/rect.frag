@@ -1,6 +1,6 @@
 // rect.frag
 
-#version 330 core
+#version 130
 
 in vec2 TexCoords;
 out vec4 Color;
@@ -19,5 +19,8 @@ void main() {
 		if (Color.r == 1 && Color.g == 0 && Color.b == 1) {
 			discard;
 		}
+	}
+	else {
+		discard;
 	}
 }

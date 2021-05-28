@@ -10,9 +10,9 @@ RES=resource
 
 INC=include
 
-LIB_AUDIO=-lSDL2
+# LIB_AUDIO=-lSDL2
 
-# LIB_AUDIO=-lportaudio -D USE_PA
+LIB_AUDIO=-lportaudio -D USE_PA
 
 LIB_COMMON=-lpthread -lm -lpng -lGLEW -lglfw ${LIB_AUDIO}
 

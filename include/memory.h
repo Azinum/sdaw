@@ -1,5 +1,8 @@
 // memory.h
 
+#ifndef _MEMORY_H
+#define _MEMORY_H
+
 i64 MemoryTotal();
 
 i64 MemoryNumBlocks();
@@ -14,3 +17,4 @@ void* M_Realloc(void* Data, const i32 OldSize, const i32 NewSize);
 
 void M_Free(void* Data, const i32 Size);
 
+#endif

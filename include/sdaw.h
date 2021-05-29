@@ -1,5 +1,8 @@
 // sdaw.h
 
+#ifndef _SDAW_H
+#define _SDAW_H
+
 #include "common.h"
 #include "config.h"
 #include "tables.h"
@@ -18,3 +21,5 @@
 #include "engine.h"
 
 i32 SdawStart(i32 argc, char** argv);
+
+#endif

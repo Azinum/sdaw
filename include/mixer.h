@@ -1,5 +1,8 @@
 // mixer.h
 
+#ifndef _MIXER_H
+#define _MIXER_H
+
 static i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer);
 
 static i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer);
@@ -21,3 +24,5 @@ static i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* In
 static i32 MixerRender(mixer* Mixer);
 
 static void MixerFree(mixer* Mixer);
+
+#endif

@@ -1,5 +1,8 @@
 // common.h
 
+#ifndef _COMMON_H
+#define _COMMON_H
+
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
@@ -91,3 +94,5 @@ char* FetchExtension(const char* Path);
 i32 ReadFile(const char* Path, buffer* Buffer);
 
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);
+
+#endif

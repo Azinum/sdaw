@@ -1,5 +1,8 @@
 // list.h
 
+#ifndef _LIST_H
+#define _LIST_H
+
 #define ListPush(List, Count, Element) do { \
 	if (List == NULL) { \
     List = ListInit(sizeof(Element), 1); List[0] = Element; Count = 1; break; \
@@ -47,3 +50,5 @@ void BufferFree(buffer* Buffer);
 // Size of type
 // Count of elements to allocate
 void* ListInit(const u32 Size, const u32 Count);
+
+#endif

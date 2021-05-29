@@ -1,6 +1,6 @@
 // effect.c
 
-#define EFFECT_BUFFER_SIZE (1024 * 32)
+#define EFFECT_BUFFER_SIZE (1024 * 24)
 static float EffectBuffer[EFFECT_BUFFER_SIZE] = {0};
 static i32 EffectIndex = 0;
 static i32 CurrentEffectIndex = 0;

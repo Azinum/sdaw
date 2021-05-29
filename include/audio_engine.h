@@ -1,5 +1,8 @@
 // audio_engine.h
 
+#ifndef _AUDIO_ENGINE_H
+#define _AUDIO_ENGINE_H
+
 #include <pthread.h>
 
 static i32 TempoBPM = 120;
@@ -70,3 +73,5 @@ i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer);
 i32 AudioEngineStart(callback Callback);
 
 void AudioEngineTerminate();
+
+#endif

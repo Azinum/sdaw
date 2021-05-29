@@ -1,5 +1,8 @@
 // riff.h
 
+#ifndef _RIFF_H
+#define _RIFF_H
+
 typedef struct wave_header {
   char RiffId[4];
   i32 Size;
@@ -29,3 +32,5 @@ typedef struct wave_chunk {
 static i32 StoreWAVE(const char* Path, audio_source* Source);
 
 static i32 LoadWAVE(const char* Path, audio_source* Source);
+
+#endif

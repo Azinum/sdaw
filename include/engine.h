@@ -1,5 +1,8 @@
 // engine.h
 
+#ifndef _ENGINE_H
+#define _ENGINE_H
+
 #include "audio_engine.h"
 #include "mixer.h"
 #include "instrument.h"
@@ -14,6 +17,8 @@
 
 extern float NoteTable[];
 
-static i32 EngineInit();
+i32 EngineInit();
 
-static void EngineFree();
+void EngineFree();
+
+#endif

@@ -1,5 +1,8 @@
 // debug.h
 
+#ifndef _DEBUG_H
+#define _DEBUG_H
+
 #define DEBUG_TIMER 1
 
 #if DEBUG_TIMER
@@ -62,3 +65,4 @@ static i32 DebugNumEvents = 0;
 
 #endif
 
+#endif

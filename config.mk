@@ -22,10 +22,16 @@ LIB_MAC=${LIB_COMMON} -framework OpenGL
 
 SRC=src/main.c
 
-FLAGS=-o ${BUILD_DIR}/${PROG} -I${INC} -Wall
+FLAGS=-I${INC} -Wall
 
-O_RELEASE=-O2 -ffast-math
+O_RELEASE=-O3 -ffast-math
 
 O_DEBUG=-O0 -g -W -Wall
 
 INSTALL_DIR=/usr/local/bin
+
+LIB_PATH=/usr/local/lib
+
+LIB_NAME=lib${PROG}
+
+LIB_INC=/usr/local/include/${PROG}

@@ -1,5 +1,8 @@
 // arg_parser.h
 
+#ifndef _ARG_PARSER_H
+#define _ARG_PARSER_H
+
 typedef enum arg_type {
   ArgInt = 0,
   ArgFloat,
@@ -28,3 +31,5 @@ typedef struct parse_arg {
 void ArgsPrintHelp(FILE* File, parse_arg* Args, i32 NumArgs, i32 argc, char** argv);
 
 i32 ParseArgs(parse_arg* Args, i32 NumArgs, i32 argc, char** argv);
+
+#endif

@@ -1,5 +1,8 @@
 // debug_ui.h
 
+#ifndef _DEBUG_UI_H
+#define _DEBUG_UI_H
+
 // TODO(lucas): Temporary
 #define UI_ID (__LINE__)
 
@@ -47,3 +50,5 @@ i32 UI_DoContainer(u32 ID, v2 P, v2 Size, v3 Color, u8 Movable);
 i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color);
 
 void UI_Render();
+
+#endif

@@ -1,5 +1,8 @@
 // window.h
 
+#ifndef _WINDOW_H
+#define _WINDOW_H
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -37,3 +40,5 @@ static i8 MouseState = 0;
 
 #define MiddleMouseDown    (MouseState & (1 << 3))
 #define MiddleMousePressed (MouseState & (1 << 2))
+
+#endif

@@ -1,5 +1,8 @@
 // image.h
 
+#ifndef _IMAGE_H
+#define _IMAGE_H
+
 typedef struct image {
   u8* PixelBuffer;
   i32 Width;
@@ -54,3 +57,5 @@ static i32 StoreImage(const char* Path, image* Image);
 static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image);
 
 static void UnloadImage(image* Image);
+
+#endif

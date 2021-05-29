@@ -2,6 +2,12 @@
 
 static void* LoaderThread(void* Instrument);
 
+instrument_def Instruments[MAX_INSTRUMENT_DEF] = {
+  {"Oscillator Test", OscTestInit, OscTestFree, OscTestProcess},
+  {"Sampler", SamplerInit, SamplerFree, SamplerProcess},
+  {"Audio Input", NULL, NULL, AudioInputProcess},
+};
+
 void* LoaderThread(void* Instrument) {
   instrument* Ins = (instrument*)Instrument;
   if (Ins->InitCb) {

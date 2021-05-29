@@ -1,5 +1,8 @@
 // math_util.h
 
+#ifndef _MATH_UTIL_H
+#define _MATH_UTIL_H
+
 #ifndef NO_SSE
 
 #if __SSE__
@@ -80,4 +83,6 @@ extern void PrintV3(FILE* File, v3 A);
 #if USE_SSE
 extern mat4 Transpose(mat4 A);
 extern __m128 LinearCombineSSE(__m128 Left, mat4 Right);
+#endif
+
 #endif

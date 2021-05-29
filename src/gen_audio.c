@@ -29,7 +29,7 @@ static i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Ima
 i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
   float* Iter = Source->Buffer;
   for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
-    float Frame = Amp * sin((SampleIndex * Freq * 2 * PI32) / SAMPLE_RATE);
+    float Frame = Amp * sin((SampleIndex * Freq * 2 * PI32) / G_SampleRate);
     Amp = Lerp(Amp, 0.0f, 0.00005f);
     if (Source->ChannelCount == 2) {
       *(Iter++) += Frame;
@@ -211,7 +211,7 @@ i32 GenAudio(i32 argc, char** argv) {
       LoadedImage = 1;
     }
     if (LoadedImage) {
-      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, SAMPLE_RATE, Args.FrameCopies, Args.ChannelCount, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
+      if (GenerateFromImage(OutPath, ImagePath, &Image, 0.9f, G_SampleRate, Args.FrameCopies, Args.ChannelCount, Args.WDenom, Args.HDenom, Args.XSpeed, Args.YSpeed, Args.SamplingStrategy) != NoError) {
         fprintf(stderr, "Something went wrong when trying to generate audio from file '%s', of which were going to be generated to '%s'\n", ImagePath, OutPath);
       }
       UnloadImage(&Image);

@@ -10,7 +10,7 @@ typedef union midi_event {
     u8 Message;
     u8 A;
     u8 B;
-    u8 C;
+    u8 C; // Unused
   };
   struct {
     u32 Data;

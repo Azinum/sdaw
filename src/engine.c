@@ -203,9 +203,9 @@ static i32 EngineRun(audio_engine* Engine) {
 i32 EngineInit() {
   audio_engine* Engine = &AudioEngine;
   mixer* Mixer = &Engine->Mixer;
-  MixerInit(Mixer, SAMPLE_RATE, FRAMES_PER_BUFFER);
+  MixerInit(Mixer, G_SampleRate, G_FramesPerBuffer);
 
-  AudioEngineInit(SAMPLE_RATE, FRAMES_PER_BUFFER);
+  AudioEngineStateInit(G_SampleRate, G_FramesPerBuffer);
   AudioEngineStart(NULL);
   EngineRun(Engine);
 

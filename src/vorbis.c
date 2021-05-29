@@ -19,8 +19,8 @@ static i32 LoadOgg(const char* Path, audio_source* Source) {
     fprintf(stderr, "%s: Failed to decode file '%s'\n", __FUNCTION__, Path);
     return Error;
   }
-  if (SampleRate != SAMPLE_RATE) {
-    fprintf(stderr, "%s: Warning: Using unsupported sample rate %i in file '%s'\n", __FUNCTION__, SampleRate, Path);
+  if (SampleRate != G_SampleRate) {
+    fprintf(stderr, "%s: Warning: Using sample rate (%i) which is different from the configured sample rate (%i) in file '%s'\n", __FUNCTION__, SampleRate, G_SampleRate, Path);
   }
   Source->ChannelCount = ChannelCount;
   Source->SampleCount = SampleCount * ChannelCount;

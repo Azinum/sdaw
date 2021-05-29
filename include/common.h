@@ -3,6 +3,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#include <unistd.h>
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
@@ -65,11 +66,9 @@ typedef string buffer;
 #define V3(_X, _Y, _Z) ((v3) { .X = _X, .Y = _Y, .Z = _Z })
 #define V4(_X, _Y, _Z, _W) ((v4) { .X = _X, .Y = _Y, .Z = _Z, .W = _W })
 
-#define SAMPLE_RATE 44100
-#define FRAMES_PER_BUFFER 128
 #define PI32 3.14159265359f
-#define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 #define MAX_PATH_SIZE 512
+#define ArraySize(Arr) ((sizeof(Arr)) / (sizeof(Arr[0])))
 
 #define Assert(VALUE) assert(VALUE)
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
@@ -90,6 +89,10 @@ typedef enum error_code {
 } error_code;
 
 char* FetchExtension(const char* Path);
+
+char* HomePath();
+
+char* FromDataPath(char* FileName);
 
 i32 ReadFile(const char* Path, buffer* Buffer);
 

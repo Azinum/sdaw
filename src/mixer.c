@@ -246,7 +246,7 @@ i32 MixerRender(mixer* Mixer) {
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Active) {
-      Bus->DbFade = LerpV2t(Bus->DbFade, Bus->Db, 0.5f);
+      Bus->DbFade = Bus->Db;
     }
     { // Draw bus
       v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize, 0);

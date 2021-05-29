@@ -68,7 +68,9 @@ extern audio_engine AudioEngine;
 
 typedef i32 (*callback)(audio_engine*);
 
-i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer);
+i32 AudioEngineStateInit(i32 SampleRate, i32 FramesPerBuffer);
+
+i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer);
 
 i32 AudioEngineStart(callback Callback);
 

@@ -51,11 +51,11 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
   }
 
   if (Result == NoError) {
-    i32 NumFrames = ((float)(Audio->SampleCount / Audio->ChannelCount) / SAMPLE_RATE) * Args->SeqFrameRate;
+    i32 NumFrames = ((float)(Audio->SampleCount / Audio->ChannelCount) / G_SampleRate) * Args->SeqFrameRate;
     if (Args->NumFrames > 0) {
       NumFrames = Clamp(Args->NumFrames, 0, NumFrames);
     }
-    i32 FrameSize = (float)(SAMPLE_RATE * Audio->ChannelCount) / Args->SeqFrameRate;
+    i32 FrameSize = (float)(G_SampleRate * Audio->ChannelCount) / Args->SeqFrameRate;
     i32 WindowSize = FrameSize;
     float ImageSize = DistanceV2(V2(0, 0), V2(Image.Width, Image.Height));
     i32 MaxFrames = Args->StartIndex + NumFrames;

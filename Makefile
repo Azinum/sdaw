@@ -40,7 +40,7 @@ shared_mac:
 	cp -R ${INC}/* ${LIB_INC}
 
 shared:
-	${CC} ${SRC} ${FLAGS} ${LIB_LINUX} ${O_RELEASE}
+	${CC} ${SRC} -o ${BUILD_DIR}/${LIB_NAME}.so ${FLAGS} ${LIB_LINUX} ${O_RELEASE} -shared -fPIC -D NDEBUG
 	chmod o+x ${BUILD_DIR}/${LIB_NAME}.so
 	cp ${BUILD_DIR}/${LIB_NAME}.so ${LIB_PATH}/
 	mkdir -p ${LIB_INC}

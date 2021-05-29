@@ -5,12 +5,16 @@ char* FetchExtension(const char* Path) {
   return Ext;
 }
 
+char* HomePath() {
+  return getenv("HOME");
+}
+
 i32 ReadFile(const char* Path, buffer* Buffer) {
   i32 Result = NoError;
 
   FILE* File = fopen(Path, "rb");
   if (!File) {
-    fprintf(stderr, "Failed to open file '%s'\n", Path);
+    // fprintf(stderr, "Failed to open file '%s'\n", Path);
     return Error;
   }
 

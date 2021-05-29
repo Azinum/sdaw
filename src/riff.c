@@ -136,7 +136,7 @@ static i32 StoreWAVE(const char* Path, audio_source* Source) {
   InitWaveHeader(&WaveHeader, TotalSize);
 
   wave_format WaveFormat;
-  InitWaveFormat(&WaveFormat, SAMPLE_RATE, Source->ChannelCount, BitsPerSample);
+  InitWaveFormat(&WaveFormat, SAMPLE_RATE_DEFAULT, Source->ChannelCount, BitsPerSample);
 
   wave_chunk WaveChunk;
   InitWaveDataChunk(&WaveChunk, DataChunkSize);

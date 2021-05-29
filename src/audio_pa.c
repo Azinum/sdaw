@@ -1,5 +1,4 @@
 // audio_pa.c
-// portaudio audio backend
 
 #include <portaudio.h>
 
@@ -10,33 +9,13 @@ static PaStreamParameters InPort;
 static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long FramesPerBuffer, const PaStreamCallbackTimeInfo* TimeInfo, PaStreamCallbackFlags Flags, void* UserData) {
   (void)InBuffer; (void)TimeInfo; (void)Flags; (void)UserData;
 
-  TIMER_START();
+  AudioEngineProcess(InBuffer, OutBuffer);
 
-  audio_engine* Engine = &AudioEngine;
-  mixer* Mixer = &Engine->Mixer;
-
-  Engine->Out = (float*)OutBuffer;
-  Engine->In = (float*)InBuffer;
-
-  if (Mixer->Active) {
-    MixerClearBuffers(Mixer);
-    MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
-  }
-  else {
-    ClearFloatBuffer(Engine->Out, sizeof(float) * MASTER_CHANNEL_COUNT * FramesPerBuffer);
-  }
-  if (AudioEngine.IsPlaying) {
-    const float DeltaTime = (1.0f / Engine->SampleRate) * FramesPerBuffer;
-    Engine->DeltaTime = DeltaTime;
-    Engine->Time += DeltaTime;
-    Engine->Tick += FramesPerBuffer;
-  }
-  TIMER_END();
   return paContinue;
 }
 
 static i32 OpenStream() {
-  PaError Error = Pa_OpenStream(
+  PaError Err = Pa_OpenStream(
     &Stream,
 #if 0
     &InPort,
@@ -51,32 +30,27 @@ static i32 OpenStream() {
     NULL
   );
 
-  if (Error != paNoError) {
+  if (Err != paNoError) {
     Pa_Terminate();
     fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Error));
     return Error;
   }
-  Pa_StartStream(Stream);
+  Err = Pa_StartStream(Stream);
+  if (Err != paNoError) {
+    Pa_Terminate();
+    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Error));
+    return Error;
+  }
   return NoError;
 }
 
-i32 AudioEngineInit(i32 SampleRate, i32 FramesPerBuffer) {
+i32 AudioEngineInit(audio_engine* Engine, i32 SampleRate, i32 FramesPerBuffer) {
   PaError Err = Pa_Initialize();
   if (Err != paNoError) {
     Pa_Terminate();
     fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Err));
     return -1;
   }
-
-  AudioEngine.SampleRate = SampleRate;
-  AudioEngine.FramesPerBuffer = FramesPerBuffer;
-  AudioEngine.Tick = 0;
-  AudioEngine.Out = NULL;
-  AudioEngine.In = NULL;
-  AudioEngine.Time = 0.0f;
-  AudioEngine.DeltaTime = 0.0f;
-  AudioEngine.IsPlaying = 1;
-  AudioEngine.Initialized = 1;
 
   i32 InputDevice = Pa_GetDefaultInputDevice();
   InPort.device = InputDevice;

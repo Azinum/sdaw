@@ -88,13 +88,21 @@ typedef enum error_code {
   Error = -1,
 } error_code;
 
+extern char DataPath[];
+
 char* FetchExtension(const char* Path);
 
 char* HomePath();
 
 char* FromDataPath(char* FileName);
 
+const char* GetDataPath();
+
+const char* DataPathConcat(const char* Path);
+
 i32 ReadFile(const char* Path, buffer* Buffer);
+
+i32 ReadFileFromDataPath(const char* Path, buffer* Buffer);
 
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);
 

@@ -34,3 +34,9 @@ LIB_PATH=/usr/local/lib
 LIB_NAME=lib${PROG}
 
 LIB_INC=/usr/local/include/${PROG}
+
+VAR_DATA_PATH=/var/lib/${PROG}
+
+DATA_PATH=/usr/local/lib/${PROG}
+
+AUDIO_PATH=audio

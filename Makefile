@@ -5,8 +5,8 @@ include config.mk
 all: prepare compile run
 
 prepare:
-	mkdir -p ${BUILD_DIR}
 	mkdir -p sequence
+	mkdir -p ${BUILD_DIR}
 	cp -rp ${RES} ${BUILD_DIR}
 
 compile: ${SRC}
@@ -20,6 +20,9 @@ compile_mac: ${SRC}
 install:
 	chmod o+x ${BUILD_DIR}/${PROG}
 	cp ${BUILD_DIR}/${PROG} ${INSTALL_DIR}/
+	mkdir -p ${DATA_PATH}
+	cp -rp ${RES} ${DATA_PATH}/
+	cp -rp audio ${DATA_PATH}/
 
 uninstall:
 	rm ${INSTALL_DIR}/${PROG}

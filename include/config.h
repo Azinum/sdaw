@@ -6,7 +6,10 @@
 #define TITLE "sdaw"
 
 #define PROG_NAME "sdaw"
-#define DATA_PATH "/var/lib/" PROG_NAME
+
+#define LOCAL_DATA_PATH "./build"
+#define DATA_PATH "/usr/local/lib/" PROG_NAME
+#define RES_DIR "resource"
 
 #define SAMPLE_RATE_DEFAULT 44100
 #define FRAMES_PER_BUFFER_DEFAULT 512
@@ -24,6 +27,8 @@ static const char* S_WindowWidth = "window_width";
 static const char* S_WindowHeight = "window_height";
 static const char* S_FullScreen = "fullscreen";
 static const char* S_Vsync = "vsync";
+
+i32 WriteConfig(const char* Path);
 
 i32 LoadConfig();
 

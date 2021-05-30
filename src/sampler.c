@@ -12,7 +12,7 @@ i32 SamplerInit(instrument* Ins) {
     sampler_instrument_data* Sampler = (sampler_instrument_data*)Ins->UserData.Data;
     Sampler->TimeStamp = 0;
     Sampler->Index = 0;
-    Result = LoadAudioSource("audio/basic_kick.ogg", &Sampler->Source);
+    Result = LoadAudioSource(DataPathConcat("audio/basic_kick.ogg"), &Sampler->Source);
   }
   return Result;
 }

@@ -1,5 +1,10 @@
 // common.c
 
+#include <errno.h>
+#include <dirent.h> // opendir
+
+char DataPath[MAX_PATH_SIZE] = {};
+
 char* FetchExtension(const char* Path) {
   char* Ext = strrchr(Path, '.');
   return Ext;
@@ -39,6 +44,35 @@ i32 ReadFile(const char* Path, buffer* Buffer) {
 Done:
   fclose(File);
   return Result;
+}
+
+const char* GetDataPath() {
+  DIR* Dir = opendir(LOCAL_DATA_PATH);
+  if (Dir) {
+    closedir(Dir);
+    return LOCAL_DATA_PATH;
+  }
+  else if (errno == ENOENT) {
+    Dir = opendir(DATA_PATH);
+    if (Dir) {
+      closedir(Dir);
+      return DATA_PATH;
+    }
+  }
+  Assert(0 && "No data directory exists");
+  return NULL;
+}
+
+const char* DataPathConcat(const char* Path) {
+  const char* Data = GetDataPath();
+  snprintf(DataPath, MAX_PATH_SIZE, "%s/%s", Data, Path);
+  return DataPath;
+}
+
+i32 ReadFileFromDataPath(const char* Path, buffer* Buffer) {
+  char FullPath[MAX_PATH_SIZE];
+  snprintf(FullPath, MAX_PATH_SIZE, "%s/%s", GetDataPath(), Path);
+  return ReadFile(FullPath, Buffer);
 }
 
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer) {

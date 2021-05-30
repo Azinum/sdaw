@@ -125,7 +125,7 @@ void RendererInit() {
   InitQuadData();
   View = Mat4D(1.0f);
   Model = Mat4D(1.0f);
-  CompileShader("resource/shader/rect", &RectShader);
+  CompileShader(DataPathConcat("resource/shader/rect"), &RectShader);
 }
 
 void DrawRect(v3 P, v2 Size, v3 Color) {

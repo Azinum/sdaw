@@ -11,7 +11,6 @@
 #define MAX_WORD_SIZE 128
 
 static i32 ParseConfig(buffer* Buffer);
-static i32 WriteDefaultConfig(const char* Path);
 
 i32 ParseConfig(buffer* Buffer) {
   i32 Result = NoError;
@@ -49,8 +48,8 @@ i32 ParseConfig(buffer* Buffer) {
 }
 
 // Need to automate this in some way, some day
-i32 WriteDefaultConfig(const char* Path) {
-  FILE* File = fopen(Path, "ab");
+i32 WriteConfig(const char* Path) {
+  FILE* File = fopen(Path, "w");
   if (File) {
     fprintf(File, "%s %i\n", S_SampleRate, G_SampleRate);
     fprintf(File, "%s %i\n", S_FramesPerBuffer, G_FramesPerBuffer);
@@ -58,10 +57,11 @@ i32 WriteDefaultConfig(const char* Path) {
     fprintf(File, "%s %i\n", S_WindowHeight, G_WindowHeight);
     fprintf(File, "%s %i\n", S_FullScreen, G_FullScreen);
     fprintf(File, "%s %i\n", S_Vsync, G_Vsync);
+
     fclose(File);
   }
   else {
-    fprintf(stderr, "Failed to write default config file '%s'\n", Path);
+    fprintf(stderr, "Failed to write config file '%s'\n", Path);
     return Error;
   }
   return NoError;
@@ -75,7 +75,7 @@ i32 LoadConfig() {
   snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", Home, CONFIG_FILE_NAME);
   FILE* File = fopen(Path, "r");
   if (!File) {
-    if (WriteDefaultConfig(Path) == NoError) {
+    if (WriteConfig(Path) == NoError) {
       fprintf(stdout, "Default configuration file written to '%s'\n", Path);
     }
     else {
@@ -83,7 +83,7 @@ i32 LoadConfig() {
       File = fopen(Path, "r");
       if (!File) {
         fprintf(stderr, "Failed to open configuration file '%s'\n", Path);
-        if (WriteDefaultConfig(Path) == NoError) {
+        if (WriteConfig(Path) == NoError) {
           fprintf(stdout, "Default configuration file written to '%s'\n", Path);
         }
         Result = NoError;

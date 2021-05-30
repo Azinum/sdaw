@@ -19,7 +19,7 @@ static i32 G_FramesPerBuffer = FRAMES_PER_BUFFER_DEFAULT;
 static i32 G_WindowWidth = 800;
 static i32 G_WindowHeight = 600;
 static i32 G_FullScreen = 0;
-static i32 G_Vsync = 1;
+static i32 G_Vsync = 0;
 
 static const char* S_SampleRate = "sample_rate";
 static const char* S_FramesPerBuffer = "frames_per_buffer";

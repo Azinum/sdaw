@@ -172,6 +172,17 @@ i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color) {
   return E->Released;
 }
 
+i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    UI_InitElement(E, ID, P, Size, Color, ELEMENT_BUTTON);
+  }
+  UI_AlignToContainer(E, E->Parent, P);
+  UI_Interaction(E);
+  return E->PressedDown;
+}
+
 void UI_Render() {
   for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
     ui_element* E = &UI.Elements[ElementIndex];

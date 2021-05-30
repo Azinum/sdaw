@@ -86,9 +86,6 @@ static i32 EngineRun(audio_engine* Engine) {
         if (BaseNote >= (FreqTableSize - 12))
           BaseNote = (FreqTableSize - 12);
       }
-      if (KeyPressed[GLFW_KEY_9]) {
-        MemoryPrintInfo(stdout);
-      }
       if (KeyPressed[GLFW_KEY_1]) {
         MixerToggleActiveBus(Mixer, 0);
       }
@@ -101,6 +98,21 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_4]) {
         MixerToggleActiveBus(Mixer, 3);
       }
+      if (KeyPressed[GLFW_KEY_5]) {
+        MixerToggleActiveBus(Mixer, 4);
+      }
+      if (KeyPressed[GLFW_KEY_6]) {
+        MixerToggleActiveBus(Mixer, 5);
+      }
+      if (KeyPressed[GLFW_KEY_7]) {
+        MixerToggleActiveBus(Mixer, 6);
+      }
+      if (KeyPressed[GLFW_KEY_8]) {
+        MixerToggleActiveBus(Mixer, 7);
+      }
+      if (KeyPressed[GLFW_KEY_9]) {
+        MixerToggleActiveBus(Mixer, 8);
+      }
 
       if (KeyPressed[GLFW_KEY_0]) {
         TempoBPM = 120;
@@ -111,65 +123,12 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_9]) {
         ++TempoBPM;
       }
-#if 0
-      if (KeyPressed[GLFW_KEY_A]) { // A
-        OscTestPlayNote(BaseNote + 0, AttackTime, ReleaseTime);
+      if (KeyPressed[GLFW_KEY_M]) {
+        MemoryPrintInfo(stdout);
       }
-        if (KeyPressed[GLFW_KEY_W]) {
-          OscTestPlayNote(BaseNote + 1, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_S]) {
-        OscTestPlayNote(BaseNote + 2, AttackTime, ReleaseTime);
-      }
-      if (KeyPressed[GLFW_KEY_D]) {
-        OscTestPlayNote(BaseNote + 3, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_R]) {
-          OscTestPlayNote(BaseNote + 4, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_F]) {
-        OscTestPlayNote(BaseNote + 5, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_T]) {
-          OscTestPlayNote(BaseNote + 6, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_G]) {
-        OscTestPlayNote(BaseNote + 7, AttackTime, ReleaseTime);
-      }
-      if (KeyPressed[GLFW_KEY_H]) {
-        OscTestPlayNote(BaseNote + 8, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_U]) {
-          OscTestPlayNote(BaseNote + 9, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_J]) {
-        OscTestPlayNote(BaseNote + 10, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_I]) {
-          OscTestPlayNote(BaseNote + 11, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_K]) { // A
-        OscTestPlayNote(BaseNote + 12, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_O]) {
-          OscTestPlayNote(BaseNote + 13, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_L]) {
-        OscTestPlayNote(BaseNote + 14, AttackTime, ReleaseTime);
-      }
-      if (KeyPressed[GLFW_KEY_SEMICOLON]) {
-        OscTestPlayNote(BaseNote + 15, AttackTime, ReleaseTime);
-      }
-        if (KeyPressed[GLFW_KEY_LEFT_BRACKET]) {
-          OscTestPlayNote(BaseNote + 16, AttackTime, ReleaseTime);
-        }
-      if (KeyPressed[GLFW_KEY_APOSTROPHE]) {
-        OscTestPlayNote(BaseNote + 17, AttackTime, ReleaseTime);
-      }
-#endif
 
       UI_Begin();
-      if (UI_DoContainer(UI_ID, V2(32, 300), V2(1400, 200), V3(0.15f, 0.15f, 0.15f), 0)) {
+      if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
         if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), V3(0.9f, 0.25f, 0.25f))) {
           MixerRemoveBus(Mixer, Mixer->BusCount - 1);
         }
@@ -180,8 +139,36 @@ static i32 EngineRun(audio_engine* Engine) {
             MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
           }
         }
-        if (UI_DoButton(UI_ID, V2(0, 64), V2(64, 32), V3(0.25f, 0.25f, 0.9f))) {
-          MemoryPrintInfo(stdout);
+        if (UI_DoButton(UI_ID, V2(0, 128), V2(32, 32), V3(0.4f, 0.1f, 0.9f))) {
+          BaseNote = Clamp(BaseNote - 12, 0, MAX_NOTE - 12);
+        }
+        if (UI_DoButton(UI_ID, V2(32, 128), V2(32, 32), V3(0.5f, 0.4f, 0.9f))) {
+          BaseNote = Clamp(BaseNote + 12, 0, MAX_NOTE - 12);
+        }
+        {
+          v2 P = V2(0, 160);
+          v2 Size = V2(16, 64);
+#if 0
+          for (i32 KeyIndex = 0; KeyIndex < 12; ++KeyIndex) {
+            if (UI_DoSpecialButton(UI_ID + KeyIndex, P, Size, V3(0.7f, 0.7f, 0.7f))) {
+              NoteTable[BaseNote + KeyIndex] = 0.15f;
+            }
+            else {
+              NoteTable[BaseNote + KeyIndex] = 0.0f;
+            }
+            P.X += Size.W + 3;
+          }
+#else
+          for (i32 KeyIndex = 0; KeyIndex < (MAX_NOTE * 0.75f) - 12; ++KeyIndex) {
+            if (UI_DoSpecialButton(UI_ID + KeyIndex, P, Size, V3(0.7f, 0.7f, 0.7f))) {
+              NoteTable[KeyIndex] = 0.15f;
+            }
+            else {
+              NoteTable[KeyIndex] = 0.0f;
+            }
+            P.X += Size.W + 2;
+          }
+#endif
         }
       }
 

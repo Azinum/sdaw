@@ -63,6 +63,7 @@ const char* GetDataPath() {
   return NULL;
 }
 
+// NOTE(lucas): Not thread safe
 const char* DataPathConcat(const char* Path) {
   const char* Data = GetDataPath();
   snprintf(DataPath, MAX_PATH_SIZE, "%s/%s", Data, Path);

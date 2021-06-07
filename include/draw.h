@@ -12,6 +12,8 @@ void RendererInit();
 
 void DrawRect(v3 P, v2 Size, v3 Color);
 
+void DrawText(v3 P, v2 Size, v3 Color, const char* Text);
+
 void RendererFree();
 
 #endif

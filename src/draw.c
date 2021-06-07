@@ -152,6 +152,46 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glUseProgram(0);
 }
 
+void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {
+  float Kerning = 1.2f;
+  float Leading = 1.5f;
+  i32 TextSize = 8;
+  i32 FontSize = 10;
+  i32 TextLength = strlen(Text);
+  v3 GlyphP = P;
+  v2 GlyphSize = V2(
+    TextSize,
+    TextSize
+  );
+  v2 GlyphArea = V2(
+    TextSize * Kerning,
+    TextSize * Leading
+  );
+
+  for (i32 Index = 0; Index < TextLength; ++Index) {
+    char Ch = Text[Index];
+    if (Ch == '\0') {
+      break;
+    }
+    if (GlyphP.X + GlyphArea.W >= P.X + Size.W || GlyphP.Y + GlyphArea.H >= P.Y + Size.H) {
+      break;
+    }
+    if (Ch >= 32 && Ch < 127 && Ch != '\n') {
+      v2 Offset = V2(
+        0,
+        (Ch - 32) * FontSize
+      );
+      v2 Range = V2(FontSize, FontSize);
+      DrawRect(GlyphP, GlyphSize, Color);
+      GlyphP.X += GlyphArea.W;
+    }
+    if (Ch == '\n') {
+      GlyphP.X = P.X;
+      GlyphP.Y += GlyphArea.H;
+    }
+  }
+}
+
 void RendererFree() {
   glDeleteShader(RectShader);
   glDeleteVertexArrays(1, &QuadVAO);

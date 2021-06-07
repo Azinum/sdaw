@@ -37,7 +37,6 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->ChannelCount = MASTER_CHANNEL_COUNT;
   Master->Pan = V2(1, 1);
   Master->Db = V2(DB_MIN, DB_MIN);
-  Master->DbFade = Master->Db;
   Master->Active = 1;
   Master->Disabled = 0;
   Master->InternalBuffer = 0;
@@ -79,7 +78,6 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
     Bus->ChannelCount = ChannelCount;
     Bus->Pan = V2(1, 1);
     Bus->Db = V2(DB_MIN, DB_MIN);
-    Bus->DbFade = Bus->Db;
     Bus->Active = 1;
     Bus->Disabled = 0;
     Bus->ToRemove = 0;
@@ -246,27 +244,26 @@ i32 MixerRender(mixer* Mixer) {
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Active) {
-      Bus->DbFade = Bus->Db;
     }
     { // Draw bus
       v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize, 0);
       v2 Size = V2(TileSize, TileSize);
       v3 Color = V3(0, 0, 0);
-      Color = (Bus->Active ? V3(0.25f, 0.25f, 0.90f) : V3(0.30f, 0.30f, 0.30f));
+      Color = (Bus->Active ? UIColorStandard : UIColorInactive);
       if (Bus->Ins) {
         if (!Bus->Ins->Ready || Bus->ToRemove) {
-          Color = V3(0.1f, 0.1f, 0.1f);
+          Color = UIColorNotPresent;
         }
       }
       DrawRect(P, Size, Color);
 
-      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), Size, V3(0.25f, 0.25f, 0.90f))) {
+      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), Size, UIColorStandard)) {
         Bus->Active = !Bus->Active;
       }
     }
     { // Draw bus volume
-      float DbFactorL = 1.0f / (1 + (Abs(Bus->DbFade.L)));
-      float DbFactorR = 1.0f / (1 + (Abs(Bus->DbFade.R)));
+      float DbFactorL = 1.0f / (1 + (Abs(Bus->Db.L)));
+      float DbFactorR = 1.0f / (1 + (Abs(Bus->Db.R)));
       float VolumeBarMaxHeight = 200;
       v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize * 2, 0);
       v3 OrigP = P;

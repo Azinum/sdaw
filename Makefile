@@ -50,4 +50,4 @@ shared:
 	cp -R ${INC}/* ${LIB_INC}
 
 run:
-	./${BUILD_DIR}/${PROG}
+	./${BUILD_DIR}/${PROG} -i audio/sample_maniac.wav --verbose --sequence -s 3 --num-frames 0 --mask images/bonkerser5.png --output-path sequence/frame_ --width 960 --height 960 -r 24

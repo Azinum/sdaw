@@ -218,12 +218,30 @@ inline v3 MultiplyV3(v3 A, float Value) {
   return Result;
 }
 
+inline v2 MultiplyV2(v2 A, float Value) {
+  v2 Result = A;
+
+  Result.X *= Value;
+  Result.Y *= Value;
+
+  return Result;
+}
+
 inline v3 MultiplyToV3(v3 A, v3 B) {
   v3 Result = A;
 
   Result.X *= B.X;
   Result.Y *= B.Y;
   Result.Z *= B.Z;
+
+  return Result;
+}
+
+inline v2 MultiplyToV2(v2 A, v2 B) {
+  v2 Result = A;
+
+  Result.X *= B.X;
+  Result.Y *= B.Y;
 
   return Result;
 }

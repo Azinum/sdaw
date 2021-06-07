@@ -7,6 +7,8 @@ enum gen_image_strategy {
   IMG_GEN_STRAT_DEFAULT = 0,
   IMG_GEN_STRAT_EXPERIMENTAL,
   IMG_GEN_STRAT_LOUDNESS,
+  IMG_GEN_STRAT_LUCAS,
+
   MAX_STRATEGY,
 };
 
@@ -14,6 +16,7 @@ static const char* GenImageStrategyDesc[MAX_STRATEGY] = {
   "default",
   "experimental",
   "loudness",
+  "lucas",
 };
 
 typedef struct gen_image_args {
@@ -59,12 +62,14 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
     i32 WindowSize = FrameSize;
     float ImageSize = DistanceV2(V2(0, 0), V2(Image.Width, Image.Height));
     i32 MaxFrames = Args->StartIndex + NumFrames;
+    float AnimationTime = 0;
+    float TimePerFrame = 1.0f / Args->SeqFrameRate;
 
     struct timeval TimeNow = {0};
     gettimeofday(&TimeNow, NULL);
     struct timeval TimeLast = {0};
 
-    for (i32 FrameIndex = Args->StartIndex; FrameIndex < MaxFrames; ++FrameIndex) {
+    for (i32 FrameIndex = Args->StartIndex; FrameIndex < MaxFrames; ++FrameIndex, AnimationTime += TimePerFrame) {
       TimeLast = TimeNow;
       gettimeofday(&TimeNow, NULL);
       float DeltaTime = ((((TimeNow.tv_sec - TimeLast.tv_sec) * 1000000.0f) + TimeNow.tv_usec) - (TimeLast.tv_usec)) / 1000000.0f;
@@ -82,7 +87,7 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
 
       i32 FramesLeft = MaxFrames - FrameIndex;
       float TimeLeft = DeltaTime * FramesLeft;
-      Vprintf(Args->Verbose, "frame = %4i/%i, fps = %3i, last = %.4g ms, strategy = %s, est. time left = %3.3g s\n", FrameIndex, MaxFrames, (i32)(1.0f / DeltaTime), DeltaTime, GenImageStrategyDesc[Args->Strategy], TimeLeft);
+      Vprintf(Args->Verbose, "frame = %4i/%i, fps = %3i, last = %.4g ms, strategy = %s, est. time left = %3.3g s\n", FrameIndex, MaxFrames - 1, (i32)(1.0f / DeltaTime), DeltaTime, GenImageStrategyDesc[Args->Strategy], TimeLeft);
 
       switch (Args->Strategy) {
         case IMG_GEN_STRAT_DEFAULT: {
@@ -105,8 +110,6 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
               }
             }
           }
-          snprintf(OutputPath, MAX_PATH_SIZE, "%s%04i.png", Path, FrameIndex);
-          StoreImage(OutputPath, &Image);
           break;
         }
         case IMG_GEN_STRAT_EXPERIMENTAL: {
@@ -139,8 +142,6 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
               Color->B = (Amp * Abs(Frame2[0])) * UINT8_MAX;
             }
           }
-          snprintf(OutputPath, MAX_PATH_SIZE, "%s%04i.png", Path, FrameIndex);
-          StoreImage(OutputPath, &Image);
           break;
         }
         case IMG_GEN_STRAT_LOUDNESS: {
@@ -173,8 +174,52 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
               }
             }
           }
-          snprintf(OutputPath, MAX_PATH_SIZE, "%s%04i.png", Path, FrameIndex);
-          StoreImage(OutputPath, &Image);
+          break;
+        }
+        case IMG_GEN_STRAT_LUCAS: {
+          for (i32 Y = 0; Y < Image.Height; ++Y) {
+            for (i32 X = 0; X < Image.Width; ++X) {
+              color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
+              v2 Vector = V2(0, 0); // Vector which represents the movement strength and direction of this pixel
+
+              v2 Center = V2(Image.Width / 2, Image.Height / 2);
+              v2 P = V2(X, Y);
+              v2 DirectionVector = DifferenceV2(Center, P);
+              Vector = MultiplyV2(DirectionVector, 0.0001f * (log10(Db)));
+              if (!(Y % 2)) {
+                Vector.X += 20 * sin(AnimationTime / 10.0f);
+              }
+              if (UseMask) {
+                v2 MaskScaling = V2(
+                  (float)Mask.Width / Image.Width,
+                  (float)Mask.Height / Image.Height
+                );
+                v2 TexelSample = V2(
+                  X * MaskScaling.Y,
+                  Y * MaskScaling.Y
+                );
+                if (!(Y % 3)) {
+                  TexelSample.X += 20 * sin(AnimationTime * 10.0f);
+                }
+                if (!(Y % 17)) {
+                  TexelSample.Y += 20 * cos(AnimationTime * 10.0f);
+                }
+                TexelSample = AddToV2(TexelSample, MultiplyToV2(TexelSample, Vector));
+                color_rgba* MaskPixel = (color_rgba*)FetchPixel(&Mask, Abs((i32)TexelSample.X % Mask.Width), Abs((i32)TexelSample.Y % Mask.Height));
+                if (MaskPixel && Color) {
+                  Color->R = Clamp(Color->R + MaskPixel->R, 0, UINT8_MAX);
+                  Color->G = Clamp(Color->G + MaskPixel->G, 0, UINT8_MAX);
+                  Color->B = Clamp(Color->B + MaskPixel->B, 0, UINT8_MAX);
+                  float DbDenom = 1 + Db * 0.00005f;
+                  if (DbDenom != 0) { // Just to be safe
+                    Color->R /= DbDenom;
+                    Color->G /= DbDenom;
+                    Color->B /= DbDenom;
+                  }
+                }
+              }
+            }
+          }
           break;
         }
         default: {
@@ -183,6 +228,8 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
           goto Done;
         }
       }
+      snprintf(OutputPath, MAX_PATH_SIZE, "%s%04i.png", Path, FrameIndex);
+      StoreImage(OutputPath, &Image);
     }
   }
   else {

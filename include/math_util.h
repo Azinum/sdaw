@@ -55,7 +55,9 @@ extern v3 NormalizeVec3(v3 A);
 extern v3 Cross(v3 A, v3 B);
 
 extern v3 MultiplyV3(v3 A, float Value);
+extern v2 MultiplyV2(v2 A, float Value);
 extern v3 MultiplyToV3(v3 A, v3 B);
+extern v2 MultiplyToV2(v2 A, v2 B);
 extern v2 AddV2(v2 A, float Value);
 extern v3 AddV3(v3 A, float Value);
 extern v2 DivideV2(v2 A, float Value);

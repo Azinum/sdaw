@@ -9,6 +9,7 @@
 enum element_type {
   ELEMENT_NONE = 0,
   ELEMENT_BUTTON,
+  ELEMENT_TEXT_BUTTON,
   ELEMENT_CONTAINER,
 };
 
@@ -24,6 +25,8 @@ typedef struct ui_element {
   struct ui_element* Parent;
   struct ui_state* UI;
 
+  const char* Text;
+
   u8 Pressed;
   u8 PressedDown;
   u8 Released;
@@ -33,7 +36,7 @@ typedef struct ui_element {
   u8 Interaction;
 } ui_element;
 
-#define MAX_UI_ELEMENTS 128
+#define MAX_UI_ELEMENTS 256
 
 typedef struct ui_state {
   ui_element Elements[MAX_UI_ELEMENTS];
@@ -48,6 +51,8 @@ void UI_Begin();
 i32 UI_DoContainer(u32 ID, v2 P, v2 Size, v3 Color, u8 Movable);
 
 i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color);
+
+i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);
 
 i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color);
 

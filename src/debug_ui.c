@@ -81,6 +81,8 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
 
   E->UI = NULL;
 
+  E->Text = NULL;
+
   E->Pressed = 0;
   E->PressedDown = 0;
   E->Hover = 0;
@@ -89,6 +91,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
 }
 
 void UI_Process(ui_state* State) {
+  TIMER_START();
   for (u32 ElementIndex = 0; ElementIndex < State->ElementCount; ++ElementIndex) {
     ui_element* E = &State->Elements[ElementIndex];
     if (!E->Interaction) {
@@ -103,6 +106,7 @@ void UI_Process(ui_state* State) {
     }
     E->Interaction = 0;
   }
+  TIMER_END();
 }
 
 ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
@@ -172,6 +176,18 @@ i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color) {
   return E->Released;
 }
 
+i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    UI_InitElement(E, ID, P, Size, Color, ELEMENT_TEXT_BUTTON);
+  }
+  E->Text = Text;
+  UI_AlignToContainer(E, E->Parent, P);
+  UI_Interaction(E);
+  return E->Released;
+}
+
 i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
@@ -197,6 +213,11 @@ void UI_Render() {
         }
       }
       DrawRect(E->P, E->Size, Color);
+      if (E->Type == ELEMENT_TEXT_BUTTON) {
+        v3 TextP = E->P;
+        TextP.Z += 0.01f;
+        DrawText(TextP, E->Size, V3(1, 1, 1), E->Text);
+      }
     }
   }
 }

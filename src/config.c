@@ -43,6 +43,31 @@ i32 ParseConfig(buffer* Buffer) {
     else if (!strncmp(Word, S_Vsync, MAX_WORD_SIZE)) {
       Scan(ScanResult, Iterator, "%i", &G_Vsync);
     }
+
+    else if (!strncmp(Word, S_UIColorAccept, MAX_WORD_SIZE)) {
+      v3* V = &UIColorAccept;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
+    else if (!strncmp(Word, S_UIColorDecline, MAX_WORD_SIZE)) {
+      v3* V = &UIColorDecline;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
+    else if (!strncmp(Word, S_UIColorStandard, MAX_WORD_SIZE)) {
+      v3* V = &UIColorStandard;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
+    else if (!strncmp(Word, S_UIColorLight, MAX_WORD_SIZE)) {
+      v3* V = &UIColorLight;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
+    else if (!strncmp(Word, S_UIColorInactive, MAX_WORD_SIZE)) {
+      v3* V = &UIColorInactive;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
+    else if (!strncmp(Word, S_UIColorNotPresent, MAX_WORD_SIZE)) {
+      v3* V = &UIColorNotPresent;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
   }
   return Result;
 }
@@ -57,6 +82,14 @@ i32 WriteConfig(const char* Path) {
     fprintf(File, "%s %i\n", S_WindowHeight, G_WindowHeight);
     fprintf(File, "%s %i\n", S_FullScreen, G_FullScreen);
     fprintf(File, "%s %i\n", S_Vsync, G_Vsync);
+
+    fprintf(File, "\n");
+    fprintf(File, "%s %f %f %f\n", S_UIColorAccept, UIColorAccept.R, UIColorAccept.G, UIColorAccept.B);
+    fprintf(File, "%s %f %f %f\n", S_UIColorDecline, UIColorDecline.R, UIColorDecline.G, UIColorDecline.B);
+    fprintf(File, "%s %f %f %f\n", S_UIColorStandard, UIColorStandard.R, UIColorStandard.G, UIColorStandard.B);
+    fprintf(File, "%s %f %f %f\n", S_UIColorLight, UIColorLight.R, UIColorLight.G, UIColorLight.B);
+    fprintf(File, "%s %f %f %f\n", S_UIColorInactive, UIColorInactive.R, UIColorInactive.G, UIColorInactive.B);
+    fprintf(File, "%s %f %f %f\n", S_UIColorNotPresent, UIColorNotPresent.R, UIColorNotPresent.G, UIColorNotPresent.B);
 
     fclose(File);
   }

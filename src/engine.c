@@ -129,10 +129,10 @@ static i32 EngineRun(audio_engine* Engine) {
 
       UI_Begin();
       if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
-        if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), V3(0.9f, 0.25f, 0.25f))) {
+        if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {
           MixerRemoveBus(Mixer, Mixer->BusCount - 1);
         }
-        if (UI_DoButton(UI_ID, V2(0, 32), V2(64, 32), V3(0.25f, 0.8f, 0.25f))) {
+        if (UI_DoButton(UI_ID, V2(0, 32), V2(64, 32), UIColorAccept)) {
           bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
           if (Bus) {
             instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
@@ -148,17 +148,6 @@ static i32 EngineRun(audio_engine* Engine) {
         {
           v2 P = V2(0, 160);
           v2 Size = V2(16, 64);
-#if 0
-          for (i32 KeyIndex = 0; KeyIndex < 12; ++KeyIndex) {
-            if (UI_DoSpecialButton(UI_ID + KeyIndex, P, Size, V3(0.7f, 0.7f, 0.7f))) {
-              NoteTable[BaseNote + KeyIndex] = 0.15f;
-            }
-            else {
-              NoteTable[BaseNote + KeyIndex] = 0.0f;
-            }
-            P.X += Size.W + 3;
-          }
-#else
           for (i32 KeyIndex = 0; KeyIndex < (MAX_NOTE * 0.75f) - 12; ++KeyIndex) {
             if (UI_DoSpecialButton(UI_ID + KeyIndex, P, Size, V3(0.7f, 0.7f, 0.7f))) {
               NoteTable[KeyIndex] = 0.15f;
@@ -168,7 +157,6 @@ static i32 EngineRun(audio_engine* Engine) {
             }
             P.X += Size.W + 2;
           }
-#endif
         }
       }
 

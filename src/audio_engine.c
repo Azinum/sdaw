@@ -13,15 +13,15 @@ i32 AudioEngineInit(audio_engine* Engine, i32 SampleRate, i32 FramesPerBuffer);
 i32 AudioEngineStateInit(i32 SampleRate, i32 FramesPerBuffer) {
   audio_engine* Engine = &AudioEngine;
 
-  AudioEngine.SampleRate = SampleRate;
-  AudioEngine.FramesPerBuffer = FramesPerBuffer;
-  AudioEngine.Tick = 0;
-  AudioEngine.Out = NULL;
-  AudioEngine.In = NULL;
-  AudioEngine.Time = 0.0f;
-  AudioEngine.DeltaTime = 0.0f;
-  AudioEngine.IsPlaying = 1;
-  AudioEngine.Initialized = 1;
+  Engine->SampleRate = SampleRate;
+  Engine->FramesPerBuffer = FramesPerBuffer;
+  Engine->Tick = 0;
+  Engine->Out = NULL;
+  Engine->In = NULL;
+  Engine->Time = 0.0f;
+  Engine->DeltaTime = 0.0f;
+  Engine->IsPlaying = 1;
+  Engine->Initialized = 1;
 
   i32 Result = NoError;
   if ((Result = AudioEngineInit(Engine, SampleRate, FramesPerBuffer) != NoError)) {

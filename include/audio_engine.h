@@ -30,7 +30,6 @@ typedef struct bus {
   i32 ChannelCount;
   v2 Pan;
   v2 Db;
-  v2 DbFade;  // NOTE(lucas): Temporary, for rendering
   u8 Active;
   u8 Disabled;
   u8 InternalBuffer;

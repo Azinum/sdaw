@@ -1,0 +1,15 @@
+#!/bin/bash
+
+AUDIO_DIR=audio
+AUDIO_FILE=sample_maniac.wav
+OUT_DIR=output
+SEQ_DIR=sequence
+W=960
+H=960
+FPS=24
+
+if [ -f ${AUDIO_DIR}/${AUDIO_FILE} ]; then
+	ffmpeg -r ${FPS} -f image2 -s "${W}x${H}" -i ${SEQ_DIR}/frame_%04d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ${OUT_DIR}/${AUDIO_FILE}.mkv -i ${AUDIO_DIR}/${AUDIO_FILE} -acodec copy
+else
+	echo "Audio file '${AUDIO_FILE}' does not exist"
+fi

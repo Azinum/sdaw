@@ -42,20 +42,20 @@ typedef struct color_rgb16 {
 
 extern u8* FetchPixel(const image* Source, i32 X, i32 Y);
 
-static i32 LoadPNGFromFile(FILE* File, image* Image);
+i32 LoadPNGFromFile(FILE* File, image* Image);
 
-static i32 StorePNGFromFile(FILE* File, image* Image);
+i32 StorePNGFromFile(FILE* File, image* Image);
 
-static i32 LoadPNG(const char* Path, image* Image);
+i32 LoadPNG(const char* Path, image* Image);
 
-static i32 LoadImage(const char* Path, image* Image);
+i32 LoadImage(const char* Path, image* Image);
 
-static i32 LoadFileAsImage(const char* Path, image* Image);
+i32 LoadFileAsImage(const char* Path, image* Image);
 
-static i32 StoreImage(const char* Path, image* Image);
+i32 StoreImage(const char* Path, image* Image);
 
-static i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image);
+i32 InitImage(i32 Width, i32 Height, u16 BytesPerPixel, image* Image);
 
-static void UnloadImage(image* Image);
+void UnloadImage(image* Image);
 
 #endif

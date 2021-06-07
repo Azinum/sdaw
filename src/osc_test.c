@@ -162,9 +162,9 @@ i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
   }
 
   // WeirdEffect2(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.02f, 50.0f);
-  Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
-  WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 100.0f);
-  Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
+  // WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 100.0f);
+  // Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.5f, 230.0f);
 
   TIMER_END();
   return NoError;

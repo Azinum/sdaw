@@ -3,12 +3,12 @@
 
 #include "ext/stb_vorbis.c"
 
-static i32 StoreOgg(const char* Path, audio_source* Source) {
-  // Not implemented
+i32 StoreOgg(const char* Path, audio_source* Source) {
+  Assert("Not implemented" && 0);
   return Error;
 }
 
-static i32 LoadOgg(const char* Path, audio_source* Source) {
+i32 LoadOgg(const char* Path, audio_source* Source) {
   i32 Result = NoError;
   i32 ChannelCount = 0;
   i32 SampleRate = 0;

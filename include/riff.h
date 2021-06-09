@@ -29,8 +29,8 @@ typedef struct wave_chunk {
 
 #define FORMAT_PCM 0x1
 
-static i32 StoreWAVE(const char* Path, audio_source* Source);
+i32 StoreWAVE(const char* Path, audio_source* Source);
 
-static i32 LoadWAVE(const char* Path, audio_source* Source);
+i32 LoadWAVE(const char* Path, audio_source* Source);
 
 #endif

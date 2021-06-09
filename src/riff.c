@@ -119,7 +119,7 @@ static void InitWaveDataChunk(wave_chunk* Header, i32 Size) {
   Header->Size = Size;
 }
 
-static i32 StoreWAVE(const char* Path, audio_source* Source) {
+i32 StoreWAVE(const char* Path, audio_source* Source) {
   i32 Result = NoError;
   FILE* File = fopen(Path, "w");
   if (!File) {
@@ -186,7 +186,7 @@ Done:
   return Result;
 }
 
-static i32 LoadWAVE(const char* Path, audio_source* Source) {
+i32 LoadWAVE(const char* Path, audio_source* Source) {
   i32 Result = NoError;
   FILE* File = fopen(Path, "r");
   if (!File) {

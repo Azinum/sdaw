@@ -196,11 +196,12 @@ i32 LoadFileAsImage(const char* Path, image* Image) {
         for (i32 X = 0; X < Image->Width; ++X) {
           color_rgb* Color = (color_rgb*)FetchPixel(Image, X, Y);
           char Data[] = {
-            Buffer.Data[FileIndex++ % Buffer.Count],
-            Buffer.Data[FileIndex++ % Buffer.Count],
-            Buffer.Data[FileIndex++ % Buffer.Count],
-            Buffer.Data[FileIndex++ % Buffer.Count],
+            Buffer.Data[(FileIndex + 0) % Buffer.Count],
+            Buffer.Data[(FileIndex + 1) % Buffer.Count],
+            Buffer.Data[(FileIndex + 2) % Buffer.Count],
+            Buffer.Data[(FileIndex + 3) % Buffer.Count],
           };
+          FileIndex += 4;
           *Color = *(color_rgb*)Data;
         }
       }

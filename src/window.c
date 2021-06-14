@@ -14,10 +14,10 @@ void ErrorCallback(i32 ErrCode, const char* ErrString) {
 }
 
 static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
-  glViewport(0, 0, Width, Height);
 #if __APPLE__
   glfwGetWindowSize(Win, &Width, &Height);
-  // glViewport(0, 0, Width, Height);
+#else
+  glViewport(0, 0, Width, Height);
 #endif
   Window.Width = Width;
   Window.Height = Height;

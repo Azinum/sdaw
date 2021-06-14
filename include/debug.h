@@ -29,7 +29,7 @@ typedef struct debug_event_info {
   };
 } debug_event_info;
 
-static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {0};
+static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {};
 
 static i32 DebugNumEvents = 0;
 

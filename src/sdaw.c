@@ -3,6 +3,7 @@
 #include "sdaw.h"
 
 #include "common.c"
+#include "module.c"
 #include "config.c"
 #include "tables.c"
 #include "debug.c"
@@ -14,8 +15,8 @@
 #include "audio.c"
 #include "riff.c"
 #include "vorbis.c"
+#include "image_seq.c"
 #include "gen_audio.c"
-#include "gen_image.c"
 #include "image_interp.c"
 #include "engine.c"
 
@@ -25,7 +26,7 @@ i32 ImageInterpolation = 0;
 
 static parse_arg Arguments[] = {
   {'a', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
-  {'i', "image-gen", "audio to image generator", ArgInt, 0, &AudioToImageGen},
+  {'i', "image-seq", "audio to image sequence generator", ArgInt, 0, &AudioToImageGen},
   {'I', "image-interpolate", "image interpolation", ArgInt, 0, &ImageInterpolation},
 };
 
@@ -42,12 +43,11 @@ i32 SdawStart(i32 argc, char** argv) {
     if (Result != NoError) {
       return Result;
     }
-
     if (ImageToAudioGen) {
       Result = GenAudio(argc - 1, &argv[1]);
     }
     else if (AudioToImageGen) {
-      Result = GenImage(argc - 1, &argv[1]);
+      Result = ImageSeq(argc - 1, &argv[1]);
     }
     else if (ImageInterpolation) {
       Result = ImageInterp(argc - 1, &argv[1]);

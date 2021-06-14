@@ -4,6 +4,7 @@
 #define _SDAW_H
 
 #include "common.h"
+#include "module.h"
 #include "config.h"
 #include "tables.h"
 #include "debug.h"
@@ -15,8 +16,8 @@
 #include "audio.h"
 #include "riff.h"
 #include "vorbis.h"
+#include "image_seq.h"
 #include "gen_audio.h"
-#include "gen_image.h"
 #include "image_interp.h"
 #include "engine.h"
 

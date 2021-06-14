@@ -22,7 +22,6 @@ install:
 	cp ${BUILD_DIR}/${PROG} ${INSTALL_DIR}/
 	mkdir -p ${DATA_PATH}
 	cp -rp ${RES} ${DATA_PATH}/
-	cp -rp audio ${DATA_PATH}/
 
 uninstall:
 	rm ${INSTALL_DIR}/${PROG}
@@ -35,19 +34,22 @@ debug: ${SRC}
 	${CC} ${SRC} ${FLAGS} ${LIB_LINUX} ${O_DEBUG}
 	gdb ${BUILD_DIR}/${PROG}
 
+shared_mac: FLAGS += -shared -fPIC -D NDEBUG
 shared_mac:
-	${CC} ${SRC} -o ${BUILD_DIR}/${LIB_NAME}.so ${FLAGS} ${LIB_MAC} ${O_RELEASE} -shared -fPIC -D NDEBUG
+	${CC} ${SRC} -o ${BUILD_DIR}/${LIB_NAME}.so ${FLAGS} ${LIB_MAC} ${O_RELEASE}
 	chmod o+x ${BUILD_DIR}/${LIB_NAME}.so
 	cp ${BUILD_DIR}/${LIB_NAME}.so ${LIB_PATH}/
 	mkdir -p ${LIB_INC}
 	cp -R ${INC}/* ${LIB_INC}
 
+shared: FLAGS += -shared -fPIC -D NDEBUG
 shared:
-	${CC} ${SRC} -o ${BUILD_DIR}/${LIB_NAME}.so ${FLAGS} ${LIB_LINUX} ${O_RELEASE} -shared -fPIC -D NDEBUG
+	${CC} ${SRC} -o ${BUILD_DIR}/${LIB_NAME}.so ${FLAGS} ${LIB_LINUX} ${O_RELEASE}
 	chmod o+x ${BUILD_DIR}/${LIB_NAME}.so
 	cp ${BUILD_DIR}/${LIB_NAME}.so ${LIB_PATH}/
 	mkdir -p ${LIB_INC}
 	cp -R ${INC}/* ${LIB_INC}
 
 run:
-	./${BUILD_DIR}/${PROG} -i audio/sample_maniac.wav --verbose --sequence -s 3 --num-frames 0 --mask images/bonkerser5.png --output-path sequence/frame_ --width 960 --height 960 -r 24
+	./${BUILD_DIR}/${PROG}
+#	./${BUILD_DIR}/${PROG} -i resource/audio/dark_wind.ogg --width 512 --height 512 -v -s resource/plugins/modules/image_seq/test.mod -o sequence/frame_ --mask images/dark_wind.png

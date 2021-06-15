@@ -13,7 +13,6 @@ void FreeBus(mixer* Mixer, bus* Bus) {
   if (Bus->Ins) {
     InstrumentFree(Bus->Ins);
   }
-  memset(Bus, 0, sizeof(bus));
 }
 
 i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
@@ -44,7 +43,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
 
   Mixer->BusCount = 1;
 
-#if 1
+#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
@@ -122,7 +121,8 @@ i32 MixerAttachInstrumentToBus(mixer* Mixer, i32 BusIndex, instrument* Ins) {
   if (BusIndex > MASTER_BUS_INDEX && BusIndex < MAX_AUDIO_BUS) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->Ins) {
-      InstrumentFree(Bus->Ins);
+      instrument* Instrument = Bus->Ins;
+      InstrumentFree(Instrument);
       Bus->Ins = NULL;
     }
     Bus->Ins = Ins;
@@ -138,7 +138,8 @@ i32 MixerAttachInstrumentToBus0(mixer* Mixer, bus* Bus, instrument* Ins) {
     return Error;
   }
   if (Bus->Ins) {
-    InstrumentFree(Bus->Ins);
+    instrument* Instrument = Bus->Ins;
+    InstrumentFree(Instrument);
     Bus->Ins = NULL;
   }
   Bus->Ins = Ins;
@@ -184,6 +185,12 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     if (Bus->ToRemove) {
+      if (Bus->Ins) {
+        if (!Bus->Ins->Ready) {
+          // We are processing this instrument (loading/unloading), thus we cannot remove it as of yet
+          continue;
+        }
+      }
       RemoveBus(Mixer, BusIndex);
       continue;
     }
@@ -233,7 +240,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 
 // TODO(lucas): This is temporary. Replace all of this when proper ui code is implemented.
 i32 MixerRender(mixer* Mixer) {
-  const i32 TileSize = 32;
+  const i32 TileSize = 18;
   const i32 Gap = 8;
 
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
@@ -251,11 +258,15 @@ i32 MixerRender(mixer* Mixer) {
         }
       }
       DrawRect(P, Size, Color);
+    }
 
-      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), Size, UIColorStandard)) {
+    {
+      v3 P = V3((1 + BusIndex) * (32 + Gap), 32, 0);
+      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), V2(32, 32), UIColorStandard)) {
         Bus->Active = !Bus->Active;
       }
     }
+
     { // Draw bus volume
       float DbFactorL = 1.0f / (1 + (Abs(Bus->Db.L)));
       float DbFactorR = 1.0f / (1 + (Abs(Bus->Db.R)));
@@ -281,9 +292,36 @@ i32 MixerRender(mixer* Mixer) {
   return NoError;
 }
 
+// NOTE(lucas): We spin and wait for buses to be completely free'd
 void MixerFree(mixer* Mixer) {
-  for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Buses[BusIndex];
-    FreeBus(Mixer, Bus);
-  }
+  TIMER_START();
+
+  u8 Spin = 0;
+  u32 SpinCounter = 0;
+  (void)SpinCounter;
+  u8 InvokedFree = 0;
+
+  do {
+    Spin = 0;
+    for (i32 BusIndex = 1; BusIndex < Mixer->BusCount; ++BusIndex) {
+      bus* Bus = &Mixer->Buses[BusIndex];
+      if (!InvokedFree) {
+        FreeBus(Mixer, Bus);
+      }
+      if (Bus->Ins) {
+        if (!Bus->Ins->Ready) {
+          Spin = 1; // Continue spinning because we are not done processing this bus
+        }
+      }
+    }
+    InvokedFree = 1;
+    ++SpinCounter;
+    sleep(0);
+  } while (Spin);
+
+  TIMER_END(
+#if 0
+    printf("%s: SpinCounter: %i. Done in %g s.\n", __FUNCTION__, SpinCounter, _DeltaTime);
+#endif
+  );
 }

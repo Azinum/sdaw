@@ -1,6 +1,7 @@
 // instrument.c
 
-static void* LoaderThread(void* Instrument);
+static void* LoadThread(void* Instrument);
+static void* UnloadThread(void* Instrument);
 
 instrument_def Instruments[MAX_INSTRUMENT_DEF] = {
   {"Oscillator Test", OscTestInit, OscTestFree, OscTestProcess},
@@ -8,13 +9,34 @@ instrument_def Instruments[MAX_INSTRUMENT_DEF] = {
   {"Audio Input", NULL, NULL, AudioInputProcess},
 };
 
-void* LoaderThread(void* Instrument) {
+void* LoadThread(void* Instrument) {
+  TIMER_START();
+
   instrument* Ins = (instrument*)Instrument;
   if (Ins->InitCb) {
     Ins->InitCb(Ins);
   }
   Ins->Ready = 1;
   pthread_join(Ins->LoadThread, NULL);
+
+  TIMER_END();
+  return NULL;
+}
+
+void* UnloadThread(void* Instrument) {
+  TIMER_START();
+
+  instrument* Ins = (instrument*)Instrument;
+  if (Ins->FreeCb) {
+    Ins->FreeCb(Ins);
+  }
+  BufferFree(&Ins->UserData);
+  M_Free(Ins, sizeof(instrument));
+
+  Ins->Ready = 1;
+  pthread_join(Ins->LoadThread, NULL);
+
+  TIMER_END();
   return NULL;
 }
 
@@ -28,7 +50,7 @@ instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrum
     Ins->Process = Process;
     if (Ins->InitCb) {
       Ins->Ready = 0;
-      pthread_create(&Ins->LoadThread, NULL, LoaderThread, (void*)Ins);
+      pthread_create(&Ins->LoadThread, NULL, LoadThread, (void*)Ins);
     }
     else {
       Ins->Ready = 1;
@@ -56,9 +78,6 @@ i32 InstrumentAllocUserData(instrument* Ins, i32 Size) {
 }
 
 void InstrumentFree(instrument* Ins) {
-  if (Ins->FreeCb) {
-    Ins->FreeCb(Ins);
-  }
-  BufferFree(&Ins->UserData);
-  M_Free(Ins, sizeof(instrument));
+  Ins->Ready = 0;
+  pthread_create(&Ins->LoadThread, NULL, UnloadThread, (void*)Ins);
 }

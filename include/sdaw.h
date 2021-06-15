@@ -6,7 +6,7 @@
 #include "common.h"
 #include "module.h"
 #include "config.h"
-#include "tables.h"
+#include "lut.h"
 #include "debug.h"
 #include "memory.h"
 #include "list.h"

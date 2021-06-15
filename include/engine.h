@@ -12,7 +12,7 @@
 #include "sampler.h"
 #include "audio_input.h"
 #include "draw.h"
-#include "debug_ui.h"
+#include "ui.h"
 #include "window.h"
 
 extern float NoteTable[];

@@ -21,7 +21,7 @@ LIB_MAC=${LIB_COMMON} -framework OpenGL
 
 SRC=src/main.c
 
-FLAGS=-I${INC} -Wall
+FLAGS=-I${INC} -Wall -Wno-missing-braces
 
 O_RELEASE=-O3 -ffast-math
 

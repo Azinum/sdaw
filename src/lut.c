@@ -1,4 +1,4 @@
-// tables.c
+// lut.c
 
 #define FreqTableSize 137
 const float FreqTable[FreqTableSize] = {

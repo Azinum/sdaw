@@ -142,7 +142,11 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+
   glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
+  glUniform4f(glGetUniformLocation(Handle, "InBorderColor"), Color.R, Color.G, Color.B, 1.0f);
+  glUniform1f(glGetUniformLocation(Handle, "Thickness"), 0);
+  glUniform2f(glGetUniformLocation(Handle, "RectSize"), Size.W, Size.H);
   glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
 
   glBindVertexArray(QuadVAO);
@@ -150,6 +154,35 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glBindVertexArray(0);
 
   glUseProgram(0);
+}
+
+void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness) {
+  u32 Handle = RectShader;
+  glUseProgram(Handle);
+
+  Model = Translate(P);
+
+  Model = Translate2D(Model, 0.5f * Size.W, 0.5f * Size.H);
+  Model = Rotate2D(Model, 0);
+  Model = Translate2D(Model, -0.5f * Size.W, -0.5f * Size.H);
+  Model = Scale2D(Model, Size.W, Size.H);
+
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+
+  glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
+  glUniform4f(glGetUniformLocation(Handle, "InBorderColor"), BorderColor.R, BorderColor.G, BorderColor.B, 1.0f);
+  glUniform1f(glGetUniformLocation(Handle, "Thickness"), Thickness);
+  glUniform2f(glGetUniformLocation(Handle, "RectSize"), Size.W, Size.H);
+  glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
+
+  glBindVertexArray(QuadVAO);
+  glDrawArrays(GL_TRIANGLES, 0, ArraySize(QuadVertices) / 4);
+  glBindVertexArray(0);
+
+  glUseProgram(0);
+
 }
 
 void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {

@@ -5,7 +5,7 @@
 #include "common.c"
 #include "module.c"
 #include "config.c"
-#include "tables.c"
+#include "lut.c"
 #include "debug.c"
 #include "memory.c"
 #include "list.c"

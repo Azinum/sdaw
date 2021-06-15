@@ -9,7 +9,7 @@
 #include "sampler.c"
 #include "audio_input.c"
 #include "draw.c"
-#include "debug_ui.c"
+#include "ui.c"
 #include "window.c"
 
 static i32 BaseNote = 0;
@@ -138,12 +138,6 @@ static i32 EngineRun(audio_engine* Engine) {
             instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
             MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
           }
-        }
-        if (UI_DoButton(UI_ID, V2(0, 128), V2(32, 32), V3(0.4f, 0.1f, 0.9f))) {
-          BaseNote = Clamp(BaseNote - 12, 0, MAX_NOTE - 12);
-        }
-        if (UI_DoButton(UI_ID, V2(32, 128), V2(32, 32), V3(0.5f, 0.4f, 0.9f))) {
-          BaseNote = Clamp(BaseNote + 12, 0, MAX_NOTE - 12);
         }
         {
           v2 P = V2(0, 160);

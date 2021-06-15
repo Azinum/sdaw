@@ -1,7 +1,7 @@
-// debug_ui.h
+// ui.h
 
-#ifndef _DEBUG_UI_H
-#define _DEBUG_UI_H
+#ifndef _UI_H
+#define _UI_H
 
 // TODO(lucas): Temporary
 #define UI_ID (__LINE__)
@@ -20,6 +20,7 @@ typedef struct ui_element {
   v3 P;
   v2 Size;
   v3 Color;
+  v3 BorderColor;
   i32 Type;
 
   struct ui_element* Parent;

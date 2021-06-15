@@ -34,8 +34,20 @@ i32 GenImageSequence(gen_image_args* Args) {
   i32 Result = NoError;
   float TotalRenderTime = 0.0f;
   float TotalTime = 0.0f;
+  float AnimationTime = 0.0f;
+  const float TimePerFrame = 1.0f / Args->FrameRate;
+  char OutputPath[MAX_PATH_SIZE] = {};
+
+  image_seq_cb InitCb = NULL;
+  image_seq_cb DestroyCb = NULL;
+  image_seq_proc_cb ProcessCb = NULL;
+  void* ModuleHandle = NULL;
+
   image_seq Seq = {
+    .Output = NULL,
+    .Mask = NULL,
   };
+
   image Image;
   Result = InitImage(Args->Width, Args->Height, 4, &Image);
   if (Result != NoError) {
@@ -56,22 +68,12 @@ i32 GenImageSequence(gen_image_args* Args) {
     goto Done;
   }
 
-  char OutputPath[MAX_PATH_SIZE] = {};
-
   i32 NumFrames = ((float)(Audio.SampleCount / Audio.ChannelCount) / G_SampleRate) * Args->FrameRate;
   if (Args->NumFrames > 0) {
     NumFrames = Clamp(Args->NumFrames, 0, NumFrames);
   }
   i32 MaxFrames = Args->StartIndex + NumFrames;
 
-  float AnimationTime = 0.0f;
-  const float TimePerFrame = 1.0f / Args->FrameRate;
-
-  image_seq_cb InitCb = NULL;
-  image_seq_cb DestroyCb = NULL;
-  image_seq_proc_cb ProcessCb = NULL;
-
-  void* ModuleHandle = NULL;
   if (Args->Module) {
     ModuleHandle = ModuleOpen(Args->Module);
     if (ModuleHandle) {
@@ -121,10 +123,10 @@ i32 GenImageSequence(gen_image_args* Args) {
     StoreImage(OutputPath, &Image);
   }
 Done:
-  if (DestroyCb) DestroyCb(&Seq);
   UnloadImage(&Image);
   UnloadImage(&Mask);
   UnloadAudioSource(&Audio);
+  if (DestroyCb) DestroyCb(&Seq);
   ModuleClose(ModuleHandle);
   return Result;
 }
@@ -136,7 +138,7 @@ i32 ImageSeq(i32 argc, char** argv) {
 
   gen_image_args Args = {
     .Path = NULL,
-    .OutputPath = "sequence/frame_",
+    .OutputPath = "frame_",
     .MaskPath = NULL,
     .Module = NULL,
     .Width = 1024,

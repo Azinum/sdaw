@@ -1,4 +1,4 @@
-// debug_ui.c
+// ui.c
 
 ui_state UI;
 static i32 DeltaX = 0;
@@ -71,6 +71,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
   E->P = V3(P.X, P.Y, 0);
   E->Size = Size;
   E->Color = Color;
+  E->BorderColor = Color;
   E->Type = Type;
 
   E->Parent = UI.Container != E ? UI.Container : NULL;
@@ -203,6 +204,8 @@ void UI_Render() {
   for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
     ui_element* E = &UI.Elements[ElementIndex];
     if (E->Active) {
+      float BorderThickness = 0.0f;
+      v3 BorderColor = LerpV3t(E->Color, V3(1, 1, 1), 0.75f);
       v3 Color = E->Color;
       if (E->Type != ELEMENT_CONTAINER) {
         if (E->Pressed || E->PressedDown) {
@@ -210,9 +213,10 @@ void UI_Render() {
         }
         else if (E->Hover) {
           Color = LerpV3t(E->Color, V3(1, 1, 1), 0.2f);
+          BorderThickness = 1.0f;
         }
       }
-      DrawRect(E->P, E->Size, Color);
+      DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);
       if (E->Type == ELEMENT_TEXT_BUTTON) {
         v3 TextP = E->P;
         TextP.Z += 0.01f;

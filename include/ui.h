@@ -11,9 +11,16 @@ enum element_type {
   ELEMENT_BUTTON,
   ELEMENT_TEXT_BUTTON,
   ELEMENT_CONTAINER,
+  ELEMENT_TOGGLE,
 };
 
 struct ui_state;
+
+typedef union element_data {
+  struct {
+    u8 ToggleValue;
+  };
+} element_data;
 
 typedef struct ui_element {
   u32 ID;
@@ -27,6 +34,7 @@ typedef struct ui_element {
   struct ui_state* UI;
 
   const char* Text;
+  element_data Data;
 
   u8 Pressed;
   u8 PressedDown;
@@ -56,6 +64,8 @@ i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color);
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);
 
 i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color);
+
+i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value);
 
 void UI_Render();
 

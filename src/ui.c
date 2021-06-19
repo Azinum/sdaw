@@ -51,6 +51,17 @@ void UI_Interaction(ui_element* E) {
     E->PressedDown = 0;
     E->Released = 0;
   }
+  if (E->Pressed) {
+    switch (E->Type) {
+      case ELEMENT_TOGGLE: {
+        E->Data.ToggleValue = !E->Data.ToggleValue;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
   E->Interaction = 1;
 }
 
@@ -83,6 +94,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
   E->UI = NULL;
 
   E->Text = NULL;
+  E->Data = (element_data) { .ToggleValue = 1, };
 
   E->Pressed = 0;
   E->PressedDown = 0;
@@ -200,20 +212,40 @@ i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color) {
   return E->PressedDown;
 }
 
+i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    UI_InitElement(E, ID, P, Size, Color, ELEMENT_TOGGLE);
+  }
+  UI_AlignToContainer(E, E->Parent, P);
+  UI_Interaction(E);
+  if (Value) {
+    *Value = E->Data.ToggleValue;
+  }
+  return E->Released;
+}
+
 void UI_Render() {
   for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
     ui_element* E = &UI.Elements[ElementIndex];
     if (E->Active) {
-      float BorderThickness = 0.0f;
-      v3 BorderColor = LerpV3t(E->Color, V3(1, 1, 1), 0.75f);
+      float BorderThickness = 1.0f;
       v3 Color = E->Color;
+      v3 BorderColor = V3(0, 0, 0);
       if (E->Type != ELEMENT_CONTAINER) {
+        if (E->Type == ELEMENT_TOGGLE) {
+          if (!E->Data.ToggleValue) {
+            Color = UIColorInactive;
+          }
+        }
         if (E->Pressed || E->PressedDown) {
           Color = LerpV3t(E->Color, V3(0, 0, 0), 0.2f);
         }
         else if (E->Hover) {
-          Color = LerpV3t(E->Color, V3(1, 1, 1), 0.2f);
           BorderThickness = 1.0f;
+          Color = LerpV3t(Color, V3(1, 1, 1), 0.2f);
+          BorderColor = LerpV3t(Color, V3(0, 0, 0), 0.25f);
         }
       }
       DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);

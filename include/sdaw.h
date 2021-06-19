@@ -19,7 +19,10 @@
 #include "image_seq.h"
 #include "gen_audio.h"
 #include "image_interp.h"
-#include "engine.h"
+
+#ifndef NO_ENGINE
+  #include "engine.h"
+#endif
 
 i32 SdawStart(i32 argc, char** argv);
 

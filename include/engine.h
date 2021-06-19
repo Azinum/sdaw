@@ -7,7 +7,13 @@
 #include "mixer.h"
 #include "instrument.h"
 #include "effect.h"
-#include "serial_midi.h"
+
+#include "midi.h"
+#include "midi_serial.h"
+#if __APPLE__
+  #include "midi_apple.h"
+#endif
+
 #include "osc_test.h"
 #include "sampler.h"
 #include "audio_input.h"

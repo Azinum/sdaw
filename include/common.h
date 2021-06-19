@@ -83,6 +83,14 @@ typedef string buffer;
 #define Abs(Value) abs(Value)
 #endif
 
+#define LowNibble(Byte) (u8)(Byte & 0x0f)
+#define HighNibble(Byte) (u8)((Byte & 0xf0) >> 4)
+
+#define CALL(Callback, ...) (Callback ? (Callback(__VA_ARGS__)) : (void)0)
+
+#define TruthString(Value) (Value ? "yes" : "no")
+#define TRUTH_STRING(Value) (Value ? "YES" : "NO")
+
 typedef enum error_code {
   NoError = 0,
   Error = -1,

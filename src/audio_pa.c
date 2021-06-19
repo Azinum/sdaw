@@ -15,13 +15,10 @@ static i32 StereoCallback(const void* InBuffer, void* OutBuffer, unsigned long F
 }
 
 static i32 OpenStream() {
+  PaStreamParameters* InputPort = G_AudioInput ? &InPort : NULL;
   PaError Err = Pa_OpenStream(
     &Stream,
-#if 0
-    &InPort,
-#else
-    NULL,
-#endif
+    InputPort,
     &OutPort,
     AudioEngine.SampleRate,
     AudioEngine.FramesPerBuffer,

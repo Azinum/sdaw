@@ -17,7 +17,7 @@ LIB_COMMON=-lpthread -lm -lpng -lGLEW -lglfw ${LIB_AUDIO}
 
 LIB_LINUX=${LIB_COMMON} -lGL -lGLU
 
-LIB_MAC=${LIB_COMMON} -framework OpenGL
+LIB_MAC=${LIB_COMMON} -framework OpenGL -framework CoreMIDI -framework CoreFoundation
 
 SRC=src/main.c
 

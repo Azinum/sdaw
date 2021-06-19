@@ -43,7 +43,14 @@ i32 ParseConfig(buffer* Buffer) {
     else if (!strncmp(Word, S_Vsync, MAX_WORD_SIZE)) {
       Scan(ScanResult, Iterator, "%i", &G_Vsync);
     }
+    else if (!strncmp(Word, S_AudioInput, MAX_WORD_SIZE)) {
+      Scan(ScanResult, Iterator, "%i", &G_AudioInput);
+    }
 
+    else if (!strncmp(Word, S_UIColorBackground, MAX_WORD_SIZE)) {
+      v3* V = &UIColorBackground;
+      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
+    }
     else if (!strncmp(Word, S_UIColorAccept, MAX_WORD_SIZE)) {
       v3* V = &UIColorAccept;
       Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
@@ -82,8 +89,10 @@ i32 WriteConfig(const char* Path) {
     fprintf(File, "%s %i\n", S_WindowHeight, G_WindowHeight);
     fprintf(File, "%s %i\n", S_FullScreen, G_FullScreen);
     fprintf(File, "%s %i\n", S_Vsync, G_Vsync);
+    fprintf(File, "%s %i\n", S_AudioInput, G_AudioInput);
 
     fprintf(File, "\n");
+    fprintf(File, "%s %f %f %f\n", S_UIColorBackground, UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
     fprintf(File, "%s %f %f %f\n", S_UIColorAccept, UIColorAccept.R, UIColorAccept.G, UIColorAccept.B);
     fprintf(File, "%s %f %f %f\n", S_UIColorDecline, UIColorDecline.R, UIColorDecline.G, UIColorDecline.B);
     fprintf(File, "%s %f %f %f\n", S_UIColorStandard, UIColorStandard.R, UIColorStandard.G, UIColorStandard.B);

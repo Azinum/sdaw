@@ -20,7 +20,9 @@ static i32 G_WindowWidth = 800;
 static i32 G_WindowHeight = 600;
 static i32 G_FullScreen = 0;
 static i32 G_Vsync = 0;
+static i32 G_AudioInput = 0;
 
+static v3 UIColorBackground = V3(0.7f, 0.7f, 0.7f);
 static v3 UIColorAccept = V3(0.25f, 0.8f, 0.25f);
 static v3 UIColorDecline = V3(0.9f, 0.25f, 0.25f);
 static v3 UIColorStandard = V3(0.25f, 0.25f, 0.90f);
@@ -34,7 +36,9 @@ static const char* S_WindowWidth = "window_width";
 static const char* S_WindowHeight = "window_height";
 static const char* S_FullScreen = "fullscreen";
 static const char* S_Vsync = "vsync";
+static const char* S_AudioInput = "audio_input";
 
+static const char* S_UIColorBackground = "ui_color_background";
 static const char* S_UIColorAccept = "ui_color_accept";
 static const char* S_UIColorDecline = "ui_color_decline";
 static const char* S_UIColorStandard = "ui_color_standard";

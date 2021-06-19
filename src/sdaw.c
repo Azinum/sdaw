@@ -18,7 +18,13 @@
 #include "image_seq.c"
 #include "gen_audio.c"
 #include "image_interp.c"
-#include "engine.c"
+
+#ifndef NO_ENGINE
+  #include "engine.c"
+#else
+  #define EngineInit() NoError
+  #define EngineFree()
+#endif
 
 i32 ImageToAudioGen = 0;
 i32 AudioToImageGen = 0;

@@ -4,6 +4,10 @@ void BufferPush(buffer* Buffer, char Element) {
   ListPush(Buffer->Data, Buffer->Count, Element);
 }
 
+void BufferPushString(buffer* Buffer, const char* format, ...) {
+
+}
+
 void BufferFree(buffer* Buffer) {
   ListFree(Buffer->Data, Buffer->Count);
 }

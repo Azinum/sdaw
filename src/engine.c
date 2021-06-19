@@ -4,7 +4,13 @@
 #include "instrument.c"
 #include "audio_engine.c"
 #include "effect.c"
-#include "serial_midi.c"
+
+#include "midi.c"
+#include "midi_serial.c"
+#if __APPLE__
+  #include "midi_apple.c"
+#endif
+
 #include "osc_test.c"
 #include "sampler.c"
 #include "audio_input.c"
@@ -16,25 +22,17 @@ static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
 
-// TODO(lucas): Move to elsewhere
-enum midi_message {
-  MIDI_NOTE_ON = 0x90,
-  MIDI_NOTE_ON_HIGH = 0x9,  // NOTE(lucas): High nibble of the midi message
-  MIDI_NOTE_OFF = 0x80,
-  MIDI_NOTE_OFF_HIGH = 0x8,
-};
-
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};
-
-#define LowNibble(Byte) (u8)(Byte & 0x0f)
-#define HighNibble(Byte) (u8)((Byte & 0xf0) >> 4)
 
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
 
-  SerialMidiInit();
-  OpenSerial("/dev/midi2");
+  MidiInitHandle(MIDI_HANDLE_APPLE);
+  MidiInit();
+  MidiOpenDevices();
+
+  // OpenSerial("/dev/midi2");
   midi_event MidiEvents[MAX_MIDI_EVENT] = {0};
   u32 MidiEventCount = 0;
   memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(float));
@@ -45,7 +43,7 @@ static i32 EngineRun(audio_engine* Engine) {
     while (WindowPollEvents() == 0) {
       TIMER_START();
 
-      MidiEventCount = FetchMidiEvents(MidiEvents);
+      MidiEventCount = MidiFetchEvents(MidiEvents);
 
       if (MidiEventCount > 0) {
         for (i32 EventIndex = 0; EventIndex < MidiEventCount; ++EventIndex) {
@@ -55,14 +53,14 @@ static i32 EngineRun(audio_engine* Engine) {
           u8 Low = LowNibble(Message);
           u8 A = Event->A;
           u8 B = Event->B;
-          switch (High) {
-            case MIDI_NOTE_ON_HIGH: {
+          switch (Message) {
+            case MIDI_NOTE_ON: {
               printf("NOTE ON, note: %u, velocity: %u\n", A, B);
               float Velocity = (float)B / UINT8_MAX;
               NoteTable[A] = Velocity;
               break;
             }
-            case MIDI_NOTE_OFF_HIGH: {
+            case MIDI_NOTE_OFF: {
               NoteTable[A] = 0;
               printf("NOTE OFF, note: %u, velocity: %u\n", A, B);
               break;
@@ -132,13 +130,14 @@ static i32 EngineRun(audio_engine* Engine) {
         if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {
           MixerRemoveBus(Mixer, Mixer->BusCount - 1);
         }
-        if (UI_DoButton(UI_ID, V2(0, 32), V2(64, 32), UIColorAccept)) {
+        if (UI_DoButton(UI_ID, V2(0, 33), V2(64, 32), UIColorAccept)) {
           bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
           if (Bus) {
             instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
             MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
           }
         }
+#if 0
         {
           v2 P = V2(0, 160);
           v2 Size = V2(16, 64);
@@ -152,6 +151,7 @@ static i32 EngineRun(audio_engine* Engine) {
             P.X += Size.W + 2;
           }
         }
+#endif
       }
 
       MixerRender(Mixer);
@@ -159,12 +159,13 @@ static i32 EngineRun(audio_engine* Engine) {
       UI_Render();
 
       WindowSwapBuffers();
-      WindowClear(0, 0, 0);
+      WindowClear(UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
 
       TIMER_END();
     }
     RendererFree();
     CloseSerial();
+    MidiCloseDevices();
   }
   return NoError;
 }

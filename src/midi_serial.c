@@ -1,4 +1,5 @@
-// serial_midi.c
+// midi_serial.c
+// midi from serial connection
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -46,12 +47,31 @@ i32 ReadEvent(i32 Fd, midi_event* Event) {
   return (read(Fd, &Event->Data, 3)) == 3;
 }
 
-void SerialMidiInit() {
+i32 MidiSerialInit() {
   SerialMidi.Mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
   SerialMidi.EventCount = 0;
   SerialMidi.Fd = -1;
   SerialMidi.HasInitialized = 1;
   SerialMidi.ShouldExit = 0;
+  return NoError;
+}
+
+i32 MidiSerialOpenDevices() {
+  return NoError;
+}
+
+u32 MidiSerialFetchEvents(midi_event* Dest) {
+  u32 Count = 0;
+  serial_midi_state* Serial = &SerialMidi;
+  if (pthread_mutex_trylock(&Serial->Mutex)) {
+    for (i32 EventIndex = 0; EventIndex < Serial->EventCount; ++EventIndex) {
+      Dest[EventIndex] = Serial->MidiEvents[EventIndex];
+    }
+    Count = Serial->EventCount;
+    Serial->EventCount = 0;
+    pthread_mutex_unlock(&Serial->Mutex);
+  }
+  return Count;
 }
 
 i32 OpenSerial(const char* Device) {
@@ -69,24 +89,14 @@ i32 OpenSerial(const char* Device) {
   return NoError;
 }
 
-u32 FetchMidiEvents(midi_event* Dest) {
-  u32 Count = 0;
-  serial_midi_state* Serial = &SerialMidi;
-  if (pthread_mutex_trylock(&Serial->Mutex)) {
-    for (i32 EventIndex = 0; EventIndex < Serial->EventCount; ++EventIndex) {
-      Dest[EventIndex] = Serial->MidiEvents[EventIndex];
-    }
-    Count = Serial->EventCount;
-    Serial->EventCount = 0;
-    pthread_mutex_unlock(&Serial->Mutex);
-  }
-  return Count;
-}
-
 void CloseSerial() {
   SerialMidi.ShouldExit = 1;
   pthread_join(SerialMidi.ReadThread, NULL);
   if (SerialMidi.Fd >= 0) {
     close(SerialMidi.Fd);
   }
+}
+
+void MidiSerialCloseDevices() {
+
 }

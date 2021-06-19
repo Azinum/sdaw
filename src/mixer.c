@@ -42,8 +42,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->ToRemove = 0;
 
   Mixer->BusCount = 1;
-
-#if 0
+#if 1
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
@@ -262,14 +261,12 @@ i32 MixerRender(mixer* Mixer) {
 
     {
       v3 P = V3((1 + BusIndex) * (32 + Gap), 32, 0);
-      if (UI_DoButton(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), V2(32, 32), UIColorStandard)) {
-        Bus->Active = !Bus->Active;
-      }
+      UI_DoToggle(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), V2(32, 32), UIColorStandard, &Bus->Active);
     }
 
     { // Draw bus volume
-      float DbFactorL = 1.0f / (1 + (Abs(Bus->Db.L)));
-      float DbFactorR = 1.0f / (1 + (Abs(Bus->Db.R)));
+      float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
+      float DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
       float VolumeBarMaxHeight = 200;
       v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize * 2, 0);
       v3 OrigP = P;

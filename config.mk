@@ -13,7 +13,7 @@ INC=include
 # LIB_AUDIO=-lSDL2 -D USE_SDL
 LIB_AUDIO=-lportaudio
 
-LIB_COMMON=-lpthread -lm -lpng -lGLEW -lglfw ${LIB_AUDIO}
+LIB_COMMON=-lpthread -lm -lpng -lGLEW -lglfw -ldl ${LIB_AUDIO}
 
 LIB_LINUX=${LIB_COMMON} -lGL -lGLU
 

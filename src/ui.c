@@ -4,9 +4,11 @@ ui_state UI;
 static i32 DeltaX = 0;
 static i32 DeltaY = 0;
 
+static float UIMargin = 2.0f;
+
 static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
-static void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type);
+static void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type);
 static void UI_Process(ui_state* State);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
@@ -51,17 +53,6 @@ void UI_Interaction(ui_element* E) {
     E->PressedDown = 0;
     E->Released = 0;
   }
-  if (E->Pressed) {
-    switch (E->Type) {
-      case ELEMENT_TOGGLE: {
-        E->Data.ToggleValue = !E->Data.ToggleValue;
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
   E->Interaction = 1;
 }
 
@@ -76,13 +67,21 @@ void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P) {
   );
 }
 
-void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
+void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   Assert(E);
+
+  if (!UI.Container) {
+    Size = V2(
+      WindowWidth(),
+      WindowHeight()
+    );
+  }
+
   E->ID = ID;
-  E->P = V3(P.X, P.Y, 0);
+  E->P = V3(0, 0, 0);
   E->Size = Size;
-  E->Color = Color;
-  E->BorderColor = Color;
+  E->Color = V3(0.85f, 0.85f, 0.85f);  // Temp
+  E->BorderColor = V3(0, 0, 0); // Temp
   E->Type = Type;
 
   E->Parent = UI.Container != E ? UI.Container : NULL;
@@ -101,6 +100,35 @@ void UI_InitElement(ui_element* E, u32 ID, v2 P, v2 Size, v3 Color, i32 Type) {
   E->Hover = 0;
   E->Movable = 0;
   E->Active = 1;
+
+  switch (E->Type) {
+    case ELEMENT_CONTAINER: {
+      UI.Container = E;
+      break;
+    }
+    default:
+      break;
+  }
+
+  if (E->Parent != UI.Prev && E->Parent != NULL) {
+    switch (UI.PlacementMode) {
+      case PLACEMENT_NEXT: {
+        if (UI.Prev->P.X + UI.Prev->Size.W + UIMargin + E->Size.W  < E->Parent->Size.W) {
+          E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
+          break;
+        }
+        // Fall through to use the PLACEMENT_BELOW element alignment mode
+      }
+      case PLACEMENT_BELOW: {
+        E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  UI.Prev = E;
 }
 
 void UI_Process(ui_state* State) {
@@ -159,36 +187,38 @@ ui_element* UI_PushElement() {
 void UI_Init() {
   UI.ElementCount = 0;
   UI.Container = NULL;
+  UI.Prev = NULL;
+  UI.PlacementMode = PLACEMENT_BELOW;
 }
 
 void UI_Begin() {
   UI_Process(&UI);
 }
 
-i32 UI_DoContainer(u32 ID, v2 P, v2 Size, v3 Color, u8 Movable) {
+i32 UI_DoContainer(u32 ID) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
-    UI_InitElement(E, ID, P, Size, Color, ELEMENT_CONTAINER);
-    E->Movable = Movable;
-    UI.Container = E;
+    UI_InitElement(E, ID, V2(0, 0), ELEMENT_CONTAINER);
   }
-  UI_AlignToContainer(E, E->Parent, P);
+  // UI_AlignToContainer(E, E->Parent, P);
   UI_Interaction(E);
   return E->Active;
 }
 
-i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color) {
+i32 UI_DoButton(u32 ID) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
-    UI_InitElement(E, ID, P, Size, Color, ELEMENT_BUTTON);
+    v2 Size = UIButtonSize;
+    UI_InitElement(E, ID, Size, ELEMENT_BUTTON);
   }
-  UI_AlignToContainer(E, E->Parent, P);
+  // UI_AlignToContainer(E, E->Parent, P);
   UI_Interaction(E);
   return E->Released;
 }
 
+#if 0
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
@@ -220,10 +250,21 @@ i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value) {
   }
   UI_AlignToContainer(E, E->Parent, P);
   UI_Interaction(E);
-  if (Value) {
-    *Value = E->Data.ToggleValue;
+  if (E->Released) {
+    E->Data.ToggleValue = !E->Data.ToggleValue;
+    if (Value)
+      *Value = E->Data.ToggleValue;
   }
   return E->Released;
+}
+#endif
+
+void UI_SetPlacement(element_placement_mode Mode) {
+  UI.PlacementMode = Mode;
+}
+
+void UI_WindowResizeCallback(i32 Width, i32 Height) {
+  UI_Init();
 }
 
 void UI_Render() {

@@ -119,7 +119,7 @@ i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, flo
             LastFrame = Frame;
             float TickAdd = (float)(Color->R * Color->G * Color->B) / (255 * 255);
             Tick += TickAdd;
-            Frame = Amp * sin((Tick * PI32 * 2 * 100) / SampleRate);
+            Frame = Amp * sin((Tick * PI32 * 2 * 55.0f) / SampleRate);
             Frame = Clamp(Frame, -1.0f, 1.0f);
 
             float InterpFactor = (fabs(LastFrame - Frame));

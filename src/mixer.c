@@ -239,6 +239,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 
 // TODO(lucas): This is temporary. Replace all of this when proper ui code is implemented.
 i32 MixerRender(mixer* Mixer) {
+#if 0
   const i32 TileSize = 18;
   const i32 Gap = 8;
 
@@ -286,6 +287,7 @@ i32 MixerRender(mixer* Mixer) {
       DrawRect(OrigP, FullSize, V3(0.15f, 0.15f, 0.15f));
     }
   }
+#endif
   return NoError;
 }
 

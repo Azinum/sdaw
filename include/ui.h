@@ -14,6 +14,11 @@ enum element_type {
   ELEMENT_TOGGLE,
 };
 
+typedef enum element_placement_mode {
+  PLACEMENT_BELOW = 0,
+  PLACEMENT_NEXT,
+} element_placement_mode;
+
 struct ui_state;
 
 typedef union element_data {
@@ -51,21 +56,29 @@ typedef struct ui_state {
   ui_element Elements[MAX_UI_ELEMENTS];
   u32 ElementCount;
   ui_element* Container;
+  ui_element* Prev;
+  element_placement_mode PlacementMode;
 } ui_state;
 
 void UI_Init();
 
 void UI_Begin();
 
-i32 UI_DoContainer(u32 ID, v2 P, v2 Size, v3 Color, u8 Movable);
+i32 UI_DoContainer(u32 ID);
 
-i32 UI_DoButton(u32 ID, v2 P, v2 Size, v3 Color);
+i32 UI_DoButton(u32 ID);
 
+#if 0
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);
 
 i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color);
 
 i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value);
+#endif
+
+void UI_SetPlacement(element_placement_mode Mode);
+
+void UI_WindowResizeCallback(i32 Width, i32 Height);
 
 void UI_Render();
 

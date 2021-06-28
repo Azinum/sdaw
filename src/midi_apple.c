@@ -1,5 +1,7 @@
 // midi_apple.c
 
+#if __APPLE__
+
 #include <CoreMIDI/CoreMIDI.h>
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -257,3 +259,5 @@ void MidiAppleCloseDevices() {
     // Clean up!!!
   }
 }
+
+#endif  // __APPLE__

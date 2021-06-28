@@ -13,6 +13,18 @@ void ErrorCallback(i32 ErrCode, const char* ErrString) {
   // fprintf(stderr, "GLFW error(%i): %s\n", ErrCode, ErrString);
 }
 
+i32 WindowWidth() {
+  return Window.Width;
+}
+
+i32 WindowHeight() {
+  return Window.Height;
+}
+
+void WindowSetResizeCallback(window_resize_callback Callback) {
+  Window.WindowResize = Callback;
+}
+
 static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
 #if __APPLE__
   glfwGetWindowSize(Win, &Width, &Height);
@@ -23,6 +35,9 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
   Window.Height = Height;
   Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
   Clip = V4(0.0f, 0.0f, Window.Width, Window.Height); // Origo (0, 0) is at bottom-left
+  if (Window.WindowResize) {
+    Window.WindowResize(Window.Width, Window.Height);
+  }
 }
 
 static void ConfigureOpenGL() {

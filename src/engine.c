@@ -7,9 +7,7 @@
 
 #include "midi.c"
 #include "midi_serial.c"
-#if __APPLE__
-  #include "midi_apple.c"
-#endif
+#include "midi_apple.c"
 
 #include "osc_test.c"
 #include "sampler.c"
@@ -32,12 +30,12 @@ static i32 EngineRun(audio_engine* Engine) {
   MidiInit();
   MidiOpenDevices();
 
-  // OpenSerial("/dev/midi2");
   midi_event MidiEvents[MAX_MIDI_EVENT] = {0};
   u32 MidiEventCount = 0;
   memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(float));
 
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
+    WindowSetResizeCallback(UI_WindowResizeCallback);
     RendererInit();
     Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
@@ -126,6 +124,17 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       UI_Begin();
+      UI_SetPlacement(PLACEMENT_BELOW);
+
+      if (UI_DoContainer(UI_ID)) {
+        if (UI_DoButton(UI_ID)) {
+          puts("A");
+        }
+        if (UI_DoButton(UI_ID)) {
+          puts("B");
+        }
+      }
+#if 0
       if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
         if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {
           MixerRemoveBus(Mixer, Mixer->BusCount - 1);
@@ -137,22 +146,8 @@ static i32 EngineRun(audio_engine* Engine) {
             MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
           }
         }
-#if 0
-        {
-          v2 P = V2(0, 160);
-          v2 Size = V2(16, 64);
-          for (i32 KeyIndex = 0; KeyIndex < (MAX_NOTE * 0.75f) - 12; ++KeyIndex) {
-            if (UI_DoSpecialButton(UI_ID + KeyIndex, P, Size, V3(0.7f, 0.7f, 0.7f))) {
-              NoteTable[KeyIndex] = 0.15f;
-            }
-            else {
-              NoteTable[KeyIndex] = 0.0f;
-            }
-            P.X += Size.W + 2;
-          }
-        }
-#endif
       }
+#endif
 
       MixerRender(Mixer);
 

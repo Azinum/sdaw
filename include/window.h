@@ -17,6 +17,8 @@
 
 #endif
 
+typedef void (*window_resize_callback)(i32 Width, i32 Height);
+
 typedef struct window {
   const char* Title;
   u8 FullScreen;
@@ -25,6 +27,7 @@ typedef struct window {
   u32 InitWidth;
   u32 InitHeight;
   void* Window;
+  window_resize_callback WindowResize;
 } window;
 
 extern window Window;
@@ -40,5 +43,11 @@ static i8 MouseState = 0;
 
 #define MiddleMouseDown    (MouseState & (1 << 3))
 #define MiddleMousePressed (MouseState & (1 << 2))
+
+i32 WindowWidth();
+
+i32 WindowHeight();
+
+void WindowSetResizeCallback(window_resize_callback Callback);
 
 #endif

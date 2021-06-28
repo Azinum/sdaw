@@ -22,13 +22,15 @@ static i32 G_FullScreen = 0;
 static i32 G_Vsync = 0;
 static i32 G_AudioInput = 0;
 
-static v3 UIColorBackground = V3(0.7f, 0.7f, 0.7f);
+static v3 UIColorBackground = V3(0.0f, 0.0f, 0.0f);
 static v3 UIColorAccept = V3(0.25f, 0.8f, 0.25f);
 static v3 UIColorDecline = V3(0.9f, 0.25f, 0.25f);
 static v3 UIColorStandard = V3(0.25f, 0.25f, 0.90f);
 static v3 UIColorLight = V3(0.5f, 0.5f, 0.5f);
 static v3 UIColorInactive = V3(0.3f, 0.3f, 0.3f);
 static v3 UIColorNotPresent = V3(0.1f, 0.1f, 0.1f);
+
+static v2 UIButtonSize = V2(48, 24);
 
 static const char* S_SampleRate = "sample_rate";
 static const char* S_FramesPerBuffer = "frames_per_buffer";

@@ -40,6 +40,7 @@ i32 SdawStart(i32 argc, char** argv) {
   i32 Result = NoError;
   srand(time(NULL));
   LoadConfig();
+
   if (argc <= 1) {
     Result = EngineInit();
     EngineFree();

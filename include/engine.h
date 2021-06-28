@@ -10,9 +10,7 @@
 
 #include "midi.h"
 #include "midi_serial.h"
-#if __APPLE__
-  #include "midi_apple.h"
-#endif
+#include "midi_apple.h"
 
 #include "osc_test.h"
 #include "sampler.h"

@@ -18,7 +18,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#define FONT_SIZE 16
+#define FONT_SIZE 128
 
 #define min(a,b) ((a)>(b)?(b):(a))
 
@@ -103,8 +103,8 @@ int main(int argc, char *argv[]) {
 	// SDL_SetSurfacePalette(tileset, pal);
 	
 	// Change the Y value for srect if the glyphs are cut off in the output
-	SDL_Rect srect  = { 0, 4, 16, 16 };
-	SDL_Rect drect  = { 0, 0, 16, 16 };
+	SDL_Rect srect  = { 0, 4, FONT_SIZE, FONT_SIZE };
+	SDL_Rect drect  = { 0, 0, FONT_SIZE, FONT_SIZE };
 	
 	for(uint16_t i = 0; i < kanjiSize;) {
 		// Put the next UTF-8 char into a string and render it
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 		}
 		int32_t w = 0;
 		TTF_SizeUTF8(font, str, &w, NULL);
-		drect.x = 8 - w / 2;
+		drect.x = (FONT_SIZE / 2) - w / 2;
 #if 0
 		SDL_Surface *text = TTF_RenderUTF8_Shaded(font, str, color[15], color[0]);
 #else
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 		SDL_BlitSurface(text, &srect, tileset, &drect);
 		SDL_FreeSurface(text);
 		i += bytes;
-		drect.y += 16;
+		drect.y += FONT_SIZE;
 	}
 	
 	SDL_SaveBMP(tileset, argv[3]);

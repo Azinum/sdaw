@@ -29,13 +29,13 @@ static i32 OpenStream() {
 
   if (Err != paNoError) {
     Pa_Terminate();
-    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Error));
+    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Err));
     return Error;
   }
   Err = Pa_StartStream(Stream);
   if (Err != paNoError) {
     Pa_Terminate();
-    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Error));
+    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Err));
     return Error;
   }
   return NoError;
@@ -76,7 +76,9 @@ i32 AudioEngineInit(audio_engine* Engine, i32 SampleRate, i32 FramesPerBuffer) {
   }
 
   if ((Err = Pa_IsFormatSupported(&InPort, &OutPort, SampleRate)) != paFormatIsSupported) {
-    Assert(0);
+    // Assert(0);
+    fprintf(stderr, "[PortAudio Error]: %s\n", Pa_GetErrorText(Err));
+    return Error;
   }
   fprintf(stdout, "Using portaudio audio backend\n");
   return NoError;

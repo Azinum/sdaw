@@ -23,13 +23,18 @@ static float QuadVertices[] = {
 
 static u32 QuadVAO = 0;
 static u32 QuadVBO = 0;
-static u32 RectShader = 0;
+static u32 RectShader = 0,
+  TextShader = 0;
+
+static image FontTexture;
+static u32 FontTextureId;
 
 #define ERR_BUFFER_SIZE 512
 
 static i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program);
 static i32 CompileShader(const char* Path, u32* Program);
 static void InitQuadData();
+static void UploadTexture(image* Texture, u32* TextureId);
 
 i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program) {
   i32 Result = NoError;
@@ -121,11 +126,40 @@ void InitQuadData() {
   glBindVertexArray(0);
 }
 
+void UploadTexture(image* Texture, u32* TextureId) {
+  i32 TextureFormat = Texture->BytesPerPixel == 4 ? GL_RGBA : GL_RGB;
+  glGenTextures(1, TextureId);
+  glBindTexture(GL_TEXTURE_2D, *TextureId);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, TextureFormat, Texture->Width, Texture->Height, 0, TextureFormat, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RendererInit() {
   InitQuadData();
   View = Mat4D(1.0f);
   Model = Mat4D(1.0f);
   CompileShader(DataPathConcat("resource/shader/rect"), &RectShader);
+  CompileShader(DataPathConcat("resource/shader/text"), &TextShader);
+  LoadImage(DataPathConcat("resource/texture/font_source_code.png"), &FontTexture);
+  UploadTexture(&FontTexture, &FontTextureId);
+  RendererUpdateMatrices();
+}
+
+// Make function name a bit more descriptive
+void RendererUpdateMatrices() {
+  Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
+  Clip = V4(0.0f, 0.0f, Window.Width, Window.Height);
+}
+
+void SetClipping(v4 Clipping) {
+  Clip = Clipping;
 }
 
 void DrawRect(v3 P, v2 Size, v3 Color) {
@@ -139,6 +173,7 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   Model = Translate2D(Model, -0.5f * Size.W, -0.5f * Size.H);
   Model = Scale2D(Model, Size.W, Size.H);
 
+  // TODO(lucas): Pre-calculate the model-view-projection matrices into one single matrix
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
@@ -185,11 +220,14 @@ void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness) {
 
 }
 
-void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {
-  float Kerning = 1.2f;
-  float Leading = 1.5f;
-  i32 TextSize = 8;
-  i32 FontSize = 10;
+void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text) {
+  u32 Handle = TextShader;
+  glUseProgram(Handle);
+
+  image* Texture = &FontTexture;
+  u32 TextureId = FontTextureId;
+
+  i32 FontSize = Texture->Width;
   i32 TextLength = strlen(Text);
   v3 GlyphP = P;
   v2 GlyphSize = V2(
@@ -200,6 +238,19 @@ void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {
     TextSize * Kerning,
     TextSize * Leading
   );
+
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+  glUniform4f(glGetUniformLocation(Handle, "Tint"), Color.R, Color.G, Color.B, 1.0f);
+  glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
+
+  if (!Texture) {
+    return;
+  }
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, TextureId);
+  glBindVertexArray(QuadVAO);
 
   for (i32 Index = 0; Index < TextLength; ++Index) {
     char Ch = Text[Index];
@@ -215,7 +266,16 @@ void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {
         (Ch - 32) * FontSize
       );
       v2 Range = V2(FontSize, FontSize);
-      DrawRect(GlyphP, GlyphSize, Color);
+
+      Model = Translate(GlyphP);
+      Model = Scale2D(Model, TextSize, TextSize);
+
+      glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+      glUniform2f(glGetUniformLocation(Handle, "Offset"), Offset.X / Texture->Width, Offset.Y / Texture->Height);
+      glUniform2f(glGetUniformLocation(Handle, "Range"), Range.X / Texture->Width, Range.Y / Texture->Height);
+
+      glDrawArrays(GL_TRIANGLES, 0, ArraySize(QuadVertices) / 4);
+
       GlyphP.X += GlyphArea.W;
     }
     if (Ch == '\n') {
@@ -223,10 +283,19 @@ void DrawText(v3 P, v2 Size, v3 Color, const char* Text) {
       GlyphP.Y += GlyphArea.H;
     }
   }
+
+  glBindVertexArray(0);
+}
+
+void RendererResizeWindowCallback(i32 Width, i32 Height) {
+  RendererUpdateMatrices();
 }
 
 void RendererFree() {
+  UnloadImage(&FontTexture);
+  glDeleteTextures(1, &FontTextureId);
   glDeleteShader(RectShader);
+  glDeleteShader(TextShader);
   glDeleteVertexArrays(1, &QuadVAO);
   glDeleteVertexArrays(1, &QuadVBO);
 }

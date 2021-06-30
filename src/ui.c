@@ -4,7 +4,10 @@ ui_state UI;
 static i32 DeltaX = 0;
 static i32 DeltaY = 0;
 
-static float UIMargin = 2.0f;
+static float UIMargin = 4.0f;
+static i32 UITextSize = 14;
+static float UITextKerning = 0.6f;
+static float UITextLeading = 1.5f;
 
 static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
@@ -103,6 +106,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
 
   switch (E->Type) {
     case ELEMENT_CONTAINER: {
+      E->Color = V3(0.3f, 0.3f, 0.3f);  // Temp
       UI.Container = E;
       break;
     }
@@ -110,16 +114,21 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
       break;
   }
 
-  if (E->Parent != UI.Prev && E->Parent != NULL) {
+  if (E->Parent != UI.Prev && UI.Prev != NULL && E->Parent != NULL) {
     switch (UI.PlacementMode) {
-      case PLACEMENT_NEXT: {
-        if (UI.Prev->P.X + UI.Prev->Size.W + UIMargin + E->Size.W  < E->Parent->Size.W) {
+      case PLACEMENT_HORIZONTAL: {
+Horizontal:
+        if (UI.Prev->P.X + UI.Prev->Size.W + UIMargin + E->Size.W < E->Parent->P.X + E->Parent->Size.W) {
           E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
+          E->P.Y = UI.Prev->P.Y;
           break;
         }
-        // Fall through to use the PLACEMENT_BELOW element alignment mode
+        E->P.X = E->Parent->P.X;
+        goto Vertical;
       }
-      case PLACEMENT_BELOW: {
+      case PLACEMENT_VERTICAL: {
+Vertical:
+        E->P.X += UIMargin;
         E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
         break;
       }
@@ -127,7 +136,13 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
         break;
     }
   }
-
+  else if (E->Parent && E->Parent != NULL && UI.Prev == NULL) {
+    E->P = V3(
+      E->Parent->P.X + UIMargin,
+      E->Parent->P.Y + UIMargin,
+      E->P.Z
+    );
+  }
   UI.Prev = E;
 }
 
@@ -188,10 +203,20 @@ void UI_Init() {
   UI.ElementCount = 0;
   UI.Container = NULL;
   UI.Prev = NULL;
-  UI.PlacementMode = PLACEMENT_BELOW;
+  UI.PlacementMode = PLACEMENT_VERTICAL;
+  UI.ShouldRefresh = 0;
+  UI.ContainerSize = V2(0, 0);
+}
+
+// Refresh the ui upon removing elements. The way this works is subject to change.
+void UI_Refresh() {
+  UI.ShouldRefresh = 1;
 }
 
 void UI_Begin() {
+  if (UI.ShouldRefresh) {
+    UI_Init();
+  }
   UI_Process(&UI);
 }
 
@@ -199,11 +224,16 @@ i32 UI_DoContainer(u32 ID) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
-    UI_InitElement(E, ID, V2(0, 0), ELEMENT_CONTAINER);
+    UI_InitElement(E, ID, UI.ContainerSize, ELEMENT_CONTAINER);
+    UI.Prev = NULL;
   }
-  // UI_AlignToContainer(E, E->Parent, P);
   UI_Interaction(E);
   return E->Active;
+}
+
+i32 UI_SetContainerSize(v2 Size) {
+  UI.ContainerSize = Size;
+  return NoError;
 }
 
 i32 UI_DoButton(u32 ID) {
@@ -213,7 +243,18 @@ i32 UI_DoButton(u32 ID) {
     v2 Size = UIButtonSize;
     UI_InitElement(E, ID, Size, ELEMENT_BUTTON);
   }
-  // UI_AlignToContainer(E, E->Parent, P);
+  UI_Interaction(E);
+  return E->Released;
+}
+
+i32 UI_DoTextButton(u32 ID, const char* Text) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    v2 Size = UIButtonSize;
+    UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
+  }
+  E->Text = Text;
   UI_Interaction(E);
   return E->Released;
 }
@@ -292,8 +333,10 @@ void UI_Render() {
       DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);
       if (E->Type == ELEMENT_TEXT_BUTTON) {
         v3 TextP = E->P;
+        TextP.Y += E->Size.H / 2.0f - UITextSize / 2.0f;
         TextP.Z += 0.01f;
-        DrawText(TextP, E->Size, V3(1, 1, 1), E->Text);
+        v3 TextColor = ColorInvert(E->Color);
+        DrawText(TextP, E->Size, TextColor, UITextKerning, UITextLeading, UITextSize, E->Text);
       }
     }
   }

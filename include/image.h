@@ -43,6 +43,8 @@ typedef struct color_rgb16 {
 
 extern u8* FetchPixel(const image* Source, i32 X, i32 Y);
 
+v3 ColorInvert(v3 Color);
+
 i32 LoadPNGFromFile(FILE* File, image* Image);
 
 i32 StorePNGFromFile(FILE* File, image* Image);

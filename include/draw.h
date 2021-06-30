@@ -10,11 +10,17 @@ static v4 Clip;
 
 void RendererInit();
 
+void RendererUpdateMatrices();
+
+void SetClipping(v4 Clipping);
+
 void DrawRect(v3 P, v2 Size, v3 Color);
 
 void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness);
 
-void DrawText(v3 P, v2 Size, v3 Color, const char* Text);
+void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text);
+
+void RendererResizeWindowCallback(i32 Width, i32 Height);
 
 void RendererFree();
 

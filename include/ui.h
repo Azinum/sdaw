@@ -15,8 +15,9 @@ enum element_type {
 };
 
 typedef enum element_placement_mode {
-  PLACEMENT_BELOW = 0,
-  PLACEMENT_NEXT,
+  PLACEMENT_VERTICAL = 0,
+  PLACEMENT_HORIZONTAL,
+  PLACEMENT_FILL,
 } element_placement_mode;
 
 struct ui_state;
@@ -58,15 +59,23 @@ typedef struct ui_state {
   ui_element* Container;
   ui_element* Prev;
   element_placement_mode PlacementMode;
+  u8 ShouldRefresh;
+  v2 ContainerSize;
 } ui_state;
 
 void UI_Init();
+
+void UI_Refresh();
 
 void UI_Begin();
 
 i32 UI_DoContainer(u32 ID);
 
+i32 UI_SetContainerSize(v2 Size);
+
 i32 UI_DoButton(u32 ID);
+
+i32 UI_DoTextButton(u32 ID, const char* Text);
 
 #if 0
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);

@@ -21,8 +21,14 @@ i32 WindowHeight() {
   return Window.Height;
 }
 
-void WindowSetResizeCallback(window_resize_callback Callback) {
-  Window.WindowResize = Callback;
+// Returns a reference to the location of the stored callback. This is so that the user can NULL-ify the callback, thus unsubscribing from the callback invocations.
+window_resize_callback* WindowAddResizeCallback(window_resize_callback Callback) {
+  if (Window.WindowResizeCallbackCount < MAX_RESIZE_CALLBACK) {
+    window_resize_callback* CallbackReference = &Window.WindowResize[Window.WindowResizeCallbackCount++];
+    *CallbackReference = Callback;
+    return CallbackReference;
+  }
+  return NULL;
 }
 
 static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
@@ -33,10 +39,11 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
 #endif
   Window.Width = Width;
   Window.Height = Height;
-  Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
-  Clip = V4(0.0f, 0.0f, Window.Width, Window.Height); // Origo (0, 0) is at bottom-left
-  if (Window.WindowResize) {
-    Window.WindowResize(Window.Width, Window.Height);
+  for (i32 CallbackIndex = 0; CallbackIndex < Window.WindowResizeCallbackCount; ++CallbackIndex) {
+    window_resize_callback Callback = Window.WindowResize[CallbackIndex];
+    if (Callback) {
+      Callback(Window.Width, Window.Height);
+    }
   }
 }
 
@@ -55,6 +62,7 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync, u8 Ful
   Window.FullScreen = FullScreen;
   Window.Width = Window.InitWidth = Width;
   Window.Height = Window.InitHeight = Height;
+  Window.WindowResizeCallbackCount = 0;
 
   glfwSetErrorCallback(ErrorCallback);
 

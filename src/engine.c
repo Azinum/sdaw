@@ -20,6 +20,8 @@ static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
 
+static i32 ButtonCount = 0;
+
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};
 
@@ -35,7 +37,9 @@ static i32 EngineRun(audio_engine* Engine) {
   memset(NoteTable, 0, ArraySize(NoteTable) * sizeof(float));
 
   if (WindowOpen(G_WindowWidth, G_WindowHeight, TITLE, G_Vsync, G_FullScreen) == NoError) {
-    WindowSetResizeCallback(UI_WindowResizeCallback);
+    WindowAddResizeCallback(UI_WindowResizeCallback);
+    WindowAddResizeCallback(RendererResizeWindowCallback);
+
     RendererInit();
     Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
@@ -124,16 +128,38 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       UI_Begin();
-      UI_SetPlacement(PLACEMENT_BELOW);
+      UI_SetPlacement(PLACEMENT_VERTICAL);
 
+#if 1
       if (UI_DoContainer(UI_ID)) {
-        if (UI_DoButton(UI_ID)) {
+        if (UI_DoTextButton(UI_ID, "A")) {
           puts("A");
         }
-        if (UI_DoButton(UI_ID)) {
+        if (UI_DoTextButton(UI_ID, "B")) {
           puts("B");
         }
+        if (UI_DoTextButton(UI_ID, "C")) {
+          puts("C");
+        }
+        UI_SetContainerSize(V2(480, 128));
+        if (UI_DoContainer(UI_ID)) {
+          UI_SetPlacement(PLACEMENT_HORIZONTAL);
+          if (UI_DoTextButton(UI_ID, "Add")) {
+            ButtonCount = Clamp(ButtonCount + 1, 0, 100);
+            UI_Refresh();
+          }
+          if (UI_DoTextButton(UI_ID, "Remove")) {
+            ButtonCount = Clamp(ButtonCount - 1, 0, 100);
+            UI_Refresh(); // Refresh ui when removing elements
+          }
+          for (i32 ButtonIndex = 0; ButtonIndex < ButtonCount; ++ButtonIndex) {
+            if (UI_DoTextButton(UI_ID + ButtonIndex, "A")) {
+              printf("ID: %u\n", UI_ID + ButtonIndex);
+            }
+          }
+        }
       }
+#endif
 #if 0
       if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
         if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {

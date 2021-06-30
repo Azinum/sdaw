@@ -1,10 +1,18 @@
 // image.c
-// utility for storing and loading of image files
+// utility for storing and loading of image files among other things
 
 #include <png.h>
 
 inline u8* FetchPixel(const image* Source, i32 X, i32 Y) {
   return &Source->PixelBuffer[(Source->BytesPerPixel * ((X + (Y * Source->Width))) % (Source->BytesPerPixel * (Source->Width * Source->Height)))];
+}
+
+v3 ColorInvert(v3 Color) {
+  return V3(
+    1.0f - Color.R,
+    1.0f - Color.G,
+    1.0f - Color.B
+  );
 }
 
 i32 LoadPNGFromFile(FILE* File, image* Image) {

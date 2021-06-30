@@ -17,6 +17,8 @@
 
 #endif
 
+#define MAX_RESIZE_CALLBACK 8
+
 typedef void (*window_resize_callback)(i32 Width, i32 Height);
 
 typedef struct window {
@@ -27,7 +29,8 @@ typedef struct window {
   u32 InitWidth;
   u32 InitHeight;
   void* Window;
-  window_resize_callback WindowResize;
+  window_resize_callback WindowResize[MAX_RESIZE_CALLBACK];
+  u32 WindowResizeCallbackCount;
 } window;
 
 extern window Window;
@@ -48,6 +51,6 @@ i32 WindowWidth();
 
 i32 WindowHeight();
 
-void WindowSetResizeCallback(window_resize_callback Callback);
+window_resize_callback* WindowAddResizeCallback(window_resize_callback Callback);
 
 #endif

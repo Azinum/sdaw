@@ -83,7 +83,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   E->ID = ID;
   E->P = V3(0, 0, 0);
   E->Size = Size;
-  E->Color = V3(0.85f, 0.85f, 0.85f);  // Temp
+  E->Color = V3(0.9f, 0.9f, 0.9f);  // Temp
   E->BorderColor = V3(0, 0, 0); // Temp
   E->Type = Type;
 
@@ -309,12 +309,30 @@ void UI_WindowResizeCallback(i32 Width, i32 Height) {
 }
 
 void UI_Render() {
+  v4 DefaultClipping = Clip;
+  v4 Clipping = Clip;
   for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
     ui_element* E = &UI.Elements[ElementIndex];
     if (E->Active) {
+      if (E->Parent) {
+        v3 P = E->Parent->P;
+        v2 Size = E->Parent->Size;
+        // Clipping = V4(
+        //   P.X, P.Y,
+        //   P.X + Size.W, P.Y + Size.H
+        // );
+        Clipping = V4(
+          0, 0,
+          Size.W, Size.H
+        );
+        // SetClipping(Clipping);
+      }
+      else {
+        SetClipping(DefaultClipping);
+      }
       float BorderThickness = 1.0f;
       v3 Color = E->Color;
-      v3 BorderColor = V3(0, 0, 0);
+      v3 BorderColor = E->BorderColor;
       if (E->Type != ELEMENT_CONTAINER) {
         if (E->Type == ELEMENT_TOGGLE) {
           if (!E->Data.ToggleValue) {
@@ -322,12 +340,11 @@ void UI_Render() {
           }
         }
         if (E->Pressed || E->PressedDown) {
-          Color = LerpV3t(E->Color, V3(0, 0, 0), 0.2f);
+          Color = LerpV3t(E->Color, V3(0, 0, 0), 0.35f);
         }
         else if (E->Hover) {
-          BorderThickness = 1.0f;
-          Color = LerpV3t(Color, V3(1, 1, 1), 0.2f);
-          BorderColor = LerpV3t(Color, V3(0, 0, 0), 0.25f);
+          Color = LerpV3t(Color, V3(0, 0, 0), 0.15f);
+          BorderColor = LerpV3t(BorderColor, V3(0, 0, 0), 0.2f);
         }
       }
       DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);
@@ -340,4 +357,5 @@ void UI_Render() {
       }
     }
   }
+  SetClipping(DefaultClipping); // Go back to the original clipping value
 }

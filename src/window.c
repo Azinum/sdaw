@@ -35,6 +35,7 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
 #if __APPLE__
   glfwGetWindowSize(Win, &Width, &Height);
 #else
+  // glViewport(0, 0, Width, Height);
   glViewport(0, 0, Width, Height);
 #endif
   Window.Width = Width;
@@ -127,7 +128,7 @@ static void WindowToggleFullScreen() {
   glfwSetWindowSize(Window.Window, Window.Width, Window.Height);
 }
 
-static i32 WindowPollEvents() {
+i32 WindowPollEvents() {
   glfwPollEvents();
   glfwGetCursorPos(Window.Window, &MouseX, &MouseY);
 
@@ -165,11 +166,11 @@ static i32 WindowPollEvents() {
   return 0;
 }
 
-static void WindowSwapBuffers() {
+void WindowSwapBuffers() {
   glfwSwapBuffers(Window.Window);
 }
 
-static void WindowClear(float R, float G, float B) {
+void WindowClear(float R, float G, float B) {
   glClearColor(R, G, B, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

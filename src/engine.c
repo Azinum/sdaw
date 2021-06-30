@@ -127,6 +127,8 @@ static i32 EngineRun(audio_engine* Engine) {
         MemoryPrintInfo(stdout);
       }
 
+      RendererBeginFrame();
+
       UI_Begin();
       UI_SetPlacement(PLACEMENT_VERTICAL);
 
@@ -179,8 +181,7 @@ static i32 EngineRun(audio_engine* Engine) {
 
       UI_Render();
 
-      WindowSwapBuffers();
-      WindowClear(UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
+      RendererEndFrame();
 
       TIMER_END();
     }

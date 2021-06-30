@@ -53,4 +53,10 @@ i32 WindowHeight();
 
 window_resize_callback* WindowAddResizeCallback(window_resize_callback Callback);
 
+i32 WindowPollEvents();
+
+void WindowSwapBuffers();
+
+void WindowClear(float R, float G, float B);
+
 #endif

@@ -152,10 +152,18 @@ void RendererInit() {
   RendererUpdateMatrices();
 }
 
+void RendererBeginFrame() {
+  Clip = V4(0.0f, 0.0f, Window.Width, Window.Height);
+}
+
+void RendererEndFrame() {
+  WindowSwapBuffers();
+  WindowClear(UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
+}
+
 // Make function name a bit more descriptive
 void RendererUpdateMatrices() {
-  Projection = Orthographic(0.0f, Window.Width, Window.Height, 0.0f, -1.0f, 1.0f);
-  Clip = V4(0.0f, 0.0f, Window.Width, Window.Height);
+  Projection = Orthographic(0.0f, (float)Window.Width, (float)Window.Height, 0.0f, -1.0f, 1.0f);
 }
 
 void SetClipping(v4 Clipping) {

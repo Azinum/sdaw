@@ -10,6 +10,10 @@ static v4 Clip;
 
 void RendererInit();
 
+void RendererBeginFrame();
+
+void RendererEndFrame();
+
 void RendererUpdateMatrices();
 
 void SetClipping(v4 Clipping);

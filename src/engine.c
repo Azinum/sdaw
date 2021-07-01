@@ -1,5 +1,8 @@
 // engine.c
 
+#undef ID_NUMBER
+#define ID_NUMBER 100000
+
 #include "mixer.c"
 #include "instrument.c"
 #include "audio_engine.c"
@@ -137,55 +140,30 @@ static i32 EngineRun(audio_engine* Engine) {
         UI_SetContainerSize(V2(0.32f, 1.0f));
 
         if (UI_DoContainer(UI_ID)) {
-          UI_SetPlacement(PLACEMENT_VERTICAL);
-          UI_DoTextButton(UI_ID, "A");
-          UI_DoTextButton(UI_ID, "B");
-          UI_DoTextButton(UI_ID, "C");
-          UI_DoTextButton(UI_ID, "D");
-          UI_DoTextButton(UI_ID, "E");
-          UI_SetPlacement(PLACEMENT_HORIZONTAL);
+          if (UI_DoTextButton(UI_ID, "Add")) {
+            bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+            if (Bus) {
+              instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
+              MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
+            }
+            UI_Refresh();
+          }
+          if (UI_DoTextButton(UI_ID, "Remove")) {
+            MixerRemoveBus(Mixer, Mixer->BusCount - 1);
+            UI_Refresh();
+          }
           UI_EndContainer();
         }
         if (UI_DoContainer(UI_ID)) {
-          UI_DoTextButton(UI_ID, "B");
+          MixerRender(Mixer);
           UI_EndContainer();
         }
+        UI_SetPlacement(PLACEMENT_HORIZONTAL);
         if (UI_DoContainer(UI_ID)) {
-          UI_DoTextButton(UI_ID, "C");
           UI_EndContainer();
         }
         UI_EndContainer();
       }
-#if 0
-      if (UI_DoContainer(UI_ID)) {
-        if (UI_DoTextButton(UI_ID, "A")) {
-          puts("A");
-        }
-        if (UI_DoTextButton(UI_ID, "B")) {
-          puts("B");
-        }
-        if (UI_DoTextButton(UI_ID, "C")) {
-          puts("C");
-        }
-        UI_SetContainerSize(V2(480, 128));
-        if (UI_DoContainer(UI_ID)) {
-          UI_SetPlacement(PLACEMENT_HORIZONTAL);
-          if (UI_DoTextButton(UI_ID, "Add")) {
-            ButtonCount = Clamp(ButtonCount + 1, 0, 100);
-            UI_Refresh();
-          }
-          if (UI_DoTextButton(UI_ID, "Remove")) {
-            ButtonCount = Clamp(ButtonCount - 1, 0, 100);
-            UI_Refresh(); // Refresh ui when removing elements
-          }
-          for (i32 ButtonIndex = 0; ButtonIndex < ButtonCount; ++ButtonIndex) {
-            if (UI_DoTextButton(UI_ID + ButtonIndex, "A")) {
-              printf("ID: %u\n", UI_ID + ButtonIndex);
-            }
-          }
-        }
-      }
-#endif
 #if 0
       if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
         if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {

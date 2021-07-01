@@ -7,7 +7,7 @@ static i32 DeltaY = 0;
 #define UI_TESTING 0
 
 static float UIMargin = 4.0f;
-static i32 UITextSize = 14;
+static i32 UITextSize = 12;
 static float UITextKerning = 0.6f;
 static float UITextLeading = 1.5f;
 
@@ -16,6 +16,7 @@ static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
 static void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type);
 static void UI_Process(ui_state* State);
+static void UI_AlignElement(ui_element* E);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
 
@@ -45,6 +46,10 @@ v2 UI_GetContainerSize(ui_element* E) {
 }
 
 void UI_Interaction(ui_element* E) {
+  if (!E->Movable) {
+    // Only align non-movable elements
+    UI_AlignElement(E);
+  }
   if (MouseOver(MouseX, MouseY, E->P.X, E->P.Y, E->Size.W, E->Size.H)) {
     E->Hover = 1;
   }
@@ -178,6 +183,7 @@ Horizontal:
       case PLACEMENT_VERTICAL: {
 Vertical:
         E->P.X = UI.Prev->P.X;
+        // E->P.X += UIMargin;
         E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
         break;
       }
@@ -212,6 +218,9 @@ void UI_Process(ui_state* State) {
     E->Interaction = 0;
   }
   TIMER_END();
+}
+
+void UI_AlignElement(ui_element* E) {
 }
 
 ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
@@ -268,7 +277,7 @@ void UI_Refresh() {
 
 void UI_Begin() {
   if (UI.ShouldRefresh) {
-    UI_Init();
+    // UI_Init();
   }
   UI_Process(&UI);
 }
@@ -327,6 +336,17 @@ i32 UI_DoTextButton(u32 ID, const char* Text) {
   return E->Released;
 }
 
+i32 UI_DoBox(u32 ID, v2 Size, v3 Color) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    UI_InitElement(E, ID, Size, ELEMENT_BUTTON);
+  }
+  E->Color = Color;
+  UI_Interaction(E);
+  return E->Released;
+}
+
 #if 0
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text) {
   i32 Prev = 0;
@@ -373,7 +393,7 @@ void UI_SetPlacement(element_placement_mode Mode) {
 }
 
 void UI_WindowResizeCallback(i32 Width, i32 Height) {
-  UI_Init();
+  // UI_Init();
 }
 
 void UI_Render() {

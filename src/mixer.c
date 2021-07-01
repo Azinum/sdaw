@@ -237,8 +237,18 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
   return NoError;
 }
 
-// TODO(lucas): This is temporary. Replace all of this when proper ui code is implemented.
 i32 MixerRender(mixer* Mixer) {
+  UI_SetPlacement(PLACEMENT_VERTICAL);
+  const i32 TileSize = 24;
+  for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
+    bus* Bus = &Mixer->Buses[BusIndex];
+    float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
+    float DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
+    float DbFactorAverage = (DbFactorL + DbFactorR) / 2.0f;
+    if (UI_DoBox(UI_ID + BusIndex, V2(TileSize, TileSize), ColorGain(V3(0.3f, 1.0f, 0.3f), 10 * DbFactorAverage))) {
+      Bus->Active = !Bus->Active;
+    }
+  }
 #if 0
   const i32 TileSize = 18;
   const i32 Gap = 8;

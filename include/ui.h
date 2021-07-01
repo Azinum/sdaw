@@ -3,8 +3,10 @@
 #ifndef _UI_H
 #define _UI_H
 
+#define ID_NUMBER 0
+
 // TODO(lucas): Temporary
-#define UI_ID (__LINE__)
+#define UI_ID (ID_NUMBER + __LINE__)
 
 enum element_type {
   ELEMENT_NONE = 0,
@@ -89,6 +91,8 @@ i32 UI_SetContainerSize(v2 Size);
 i32 UI_DoButton(u32 ID);
 
 i32 UI_DoTextButton(u32 ID, const char* Text);
+
+i32 UI_DoBox(u32 ID, v2 Size, v3 Color);
 
 #if 0
 i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);

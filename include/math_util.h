@@ -30,6 +30,7 @@ typedef union mat4 {
 
 #define ClampMax(Value, MaxValue) (Value > MaxValue) ? (MaxValue) : (Value)
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
+#define ClampV3(Value, MinValue, MaxValue) (V3(Clamp(Value.X, MinValue, MaxValue), Clamp(Value.Y, MinValue, MaxValue), Clamp(Value.Z, MinValue, MaxValue)))
 
 extern mat4 Mat4D(float Diagonal);
 extern float InnerV2(v2 A, v2 B);
@@ -76,6 +77,7 @@ extern mat4 Orthographic(float Left, float Right, float Bottom, float Top, float
 extern mat4 InverseMat4(mat4 A);
 
 extern float Sin(float Value);
+extern i32 Rand();
 
 extern i32 Inside(v2 P, v2 Start, v2 End);
 

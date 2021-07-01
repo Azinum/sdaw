@@ -45,6 +45,14 @@ extern u8* FetchPixel(const image* Source, i32 X, i32 Y);
 
 v3 ColorInvert(v3 Color);
 
+v3 ColorGray(v3 Color);
+
+v3 ColorGrayAverage(v3 Color);
+
+v3 ColorGain(v3 Color, float Gain);
+
+v3 RandomColor();
+
 i32 LoadPNGFromFile(FILE* File, image* Image);
 
 i32 StorePNGFromFile(FILE* File, image* Image);

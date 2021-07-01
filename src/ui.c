@@ -4,17 +4,45 @@ ui_state UI;
 static i32 DeltaX = 0;
 static i32 DeltaY = 0;
 
+#define UI_TESTING 0
+
 static float UIMargin = 4.0f;
 static i32 UITextSize = 14;
 static float UITextKerning = 0.6f;
 static float UITextLeading = 1.5f;
 
+static v2 UI_GetContainerSize(ui_element* E);
 static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
 static void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type);
 static void UI_Process(ui_state* State);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
+
+// Get container size based on the container size mode
+// TODO(lucas): Make a more generalized version of function to be able to work with any number of different types of ui elements.
+v2 UI_GetContainerSize(ui_element* E) {
+  v2 Size = V2(0, 0);
+  v2 ParentSize = V2(Window.Width, Window.Height);
+  if (E->Parent) {
+    ParentSize = E->Parent->Size;
+  }
+  switch (UI.ContainerSizeMode) {
+    case CONTAINER_SIZE_MODE_DEFAULT:
+      Size = UI.ContainerSize;
+      break;
+    case CONTAINER_SIZE_MODE_PERCENT:
+      Size = V2(
+        UI.ContainerSize.X * ParentSize.W,
+        UI.ContainerSize.Y * ParentSize.H
+      );
+      break;
+    default:
+      Assert(0 && "Invalid container size mode");
+      break;
+  }
+  return Size;
+}
 
 void UI_Interaction(ui_element* E) {
   if (MouseOver(MouseX, MouseY, E->P.X, E->P.Y, E->Size.W, E->Size.H)) {
@@ -83,11 +111,23 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   E->ID = ID;
   E->P = V3(0, 0, 0);
   E->Size = Size;
+#if UI_TESTING
+  E->Color = RandomColor();
+  E->BorderColor = RandomColor();
+#else
   E->Color = V3(0.9f, 0.9f, 0.9f);  // Temp
   E->BorderColor = V3(0, 0, 0); // Temp
+#endif
   E->Type = Type;
 
-  E->Parent = UI.Container != E ? UI.Container : NULL;
+  if (E != UI.Container && UI.Container != NULL) {
+    if (E != UI.CurrentContainer && UI.CurrentContainer) {
+      E->Parent = UI.CurrentContainer;
+    }
+    else {
+      E->Parent = UI.Container;
+    }
+  }
 
   if (E->Parent) {
     E->P.Z = E->Parent->P.Z + 0.01f;
@@ -106,19 +146,28 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
 
   switch (E->Type) {
     case ELEMENT_CONTAINER: {
-      E->Color = V3(0.3f, 0.3f, 0.3f);  // Temp
-      UI.Container = E;
+      float ColorValue = 0.15f + (0.05f * UI.CurrentDepth);
+      E->Color = V3(ColorValue, ColorValue, ColorValue);  // Temp
+      if (!UI.Container) {
+        UI.Container = E; // Ok, this element is the master container
+      }
+      else {
+        UI.PrevContainer = UI.CurrentContainer;
+        UI.CurrentContainer = E;
+        E->Size = UI_GetContainerSize(E);
+      }
       break;
     }
     default:
       break;
   }
 
+  // NOTE(lucas): There are probably some alignment issues when it comes to margin placements and such
   if (E->Parent != UI.Prev && UI.Prev != NULL && E->Parent != NULL) {
     switch (UI.PlacementMode) {
       case PLACEMENT_HORIZONTAL: {
 Horizontal:
-        if (UI.Prev->P.X + UI.Prev->Size.W + UIMargin + E->Size.W < E->Parent->P.X + E->Parent->Size.W) {
+        if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W - UIMargin < E->Parent->P.X + E->Parent->Size.W) {
           E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
           E->P.Y = UI.Prev->P.Y;
           break;
@@ -128,7 +177,7 @@ Horizontal:
       }
       case PLACEMENT_VERTICAL: {
 Vertical:
-        E->P.X += UIMargin;
+        E->P.X = UI.Prev->P.X;
         E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
         break;
       }
@@ -202,10 +251,14 @@ ui_element* UI_PushElement() {
 void UI_Init() {
   UI.ElementCount = 0;
   UI.Container = NULL;
+  UI.CurrentContainer = NULL;
+  UI.PrevContainer = NULL;
   UI.Prev = NULL;
   UI.PlacementMode = PLACEMENT_VERTICAL;
   UI.ShouldRefresh = 0;
   UI.ContainerSize = V2(0, 0);
+  UI.ContainerSizeMode = CONTAINER_SIZE_MODE_DEFAULT;
+  UI.CurrentDepth = 0;
 }
 
 // Refresh the ui upon removing elements. The way this works is subject to change.
@@ -224,11 +277,26 @@ i32 UI_DoContainer(u32 ID) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
-    UI_InitElement(E, ID, UI.ContainerSize, ELEMENT_CONTAINER);
-    UI.Prev = NULL;
+    UI.PrevContainer = UI.CurrentContainer; // To be able to go back to the parent container
+    UI_InitElement(E, ID, V2(0, 0), ELEMENT_CONTAINER);
+    UI.Prev = NULL; // NOTE(lucas): We want elements within this container to align in relation to their parent (which is this container), not the previous element that we were processing, thus we set the previous element to NULL.
+    ++UI.CurrentDepth;
   }
   UI_Interaction(E);
   return E->Active;
+}
+
+i32 UI_EndContainer() {
+  UI.Prev = UI.CurrentContainer;
+  UI.CurrentContainer = UI.PrevContainer;
+  UI.PrevContainer = NULL;
+  --UI.CurrentDepth;
+  return NoError;
+}
+
+i32 UI_SetContainerSizeMode(container_size_mode Mode) {
+  UI.ContainerSizeMode = Mode;
+  return NoError;
 }
 
 i32 UI_SetContainerSize(v2 Size) {
@@ -317,15 +385,11 @@ void UI_Render() {
       if (E->Parent) {
         v3 P = E->Parent->P;
         v2 Size = E->Parent->Size;
-        // Clipping = V4(
-        //   P.X, P.Y,
-        //   P.X + Size.W, P.Y + Size.H
-        // );
         Clipping = V4(
-          0, 0,
-          Size.W, Size.H
+          P.X, P.Y,
+          P.X + Size.W, P.Y + Size.H
         );
-        // SetClipping(Clipping);
+        SetClipping(Clipping);
       }
       else {
         SetClipping(DefaultClipping);
@@ -347,12 +411,16 @@ void UI_Render() {
           BorderColor = LerpV3t(BorderColor, V3(0, 0, 0), 0.2f);
         }
       }
+#define HighContrastMode 0
+      if (HighContrastMode) {
+        BorderColor = ColorInvert(Color);
+      }
       DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);
       if (E->Type == ELEMENT_TEXT_BUTTON) {
         v3 TextP = E->P;
         TextP.Y += E->Size.H / 2.0f - UITextSize / 2.0f;
         TextP.Z += 0.01f;
-        v3 TextColor = ColorInvert(E->Color);
+        v3 TextColor = ColorGray(ColorInvert(ColorGain(E->Color, 2.0f)));
         DrawText(TextP, E->Size, TextColor, UITextKerning, UITextLeading, UITextSize, E->Text);
       }
     }

@@ -15,6 +15,38 @@ v3 ColorInvert(v3 Color) {
   );
 }
 
+// Weighted color to grayscale conversion
+v3 ColorGray(v3 Color) {
+  float Value = DotVec3(Color, V3(0.2126f, 0.7152f, 0.0722f));
+  return V3(
+    Value,
+    Value,
+    Value
+  );
+}
+
+// Color to grayscale conversion based on the average color component value
+v3 ColorGrayAverage(v3 Color) {
+  float Value = (Color.R + Color.G + Color.B) / 3.0f;
+  return V3(
+    Value,
+    Value,
+    Value
+  );
+}
+
+v3 ColorGain(v3 Color, float Gain) {
+  return ClampV3(MultiplyV3(Color, Gain), 0.0f, 1.0f);
+}
+
+v3 RandomColor() {
+  return V3(
+    RandomFloat(0.0f, 1.0f),
+    RandomFloat(0.0f, 1.0f),
+    RandomFloat(0.0f, 1.0f)
+  );
+}
+
 i32 LoadPNGFromFile(FILE* File, image* Image) {
   i32 Result = NoError;
   png_structp PNG;

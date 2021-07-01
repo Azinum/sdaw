@@ -114,4 +114,6 @@ i32 ReadFileFromDataPath(const char* Path, buffer* Buffer);
 
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);
 
+float RandomFloat(float From, float To);
+
 #endif

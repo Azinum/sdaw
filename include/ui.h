@@ -20,6 +20,11 @@ typedef enum element_placement_mode {
   PLACEMENT_FILL,
 } element_placement_mode;
 
+typedef enum container_size_mode {
+  CONTAINER_SIZE_MODE_DEFAULT,  // Which is in pixels
+  CONTAINER_SIZE_MODE_PERCENT,  // Percent defined in decimal from 0-1 (in relation to the element's parent)
+} container_size_mode;
+
 struct ui_state;
 
 typedef union element_data {
@@ -56,11 +61,15 @@ typedef struct ui_element {
 typedef struct ui_state {
   ui_element Elements[MAX_UI_ELEMENTS];
   u32 ElementCount;
-  ui_element* Container;
+  ui_element* Container;  // Master
+  ui_element* CurrentContainer;
+  ui_element* PrevContainer;
   ui_element* Prev;
   element_placement_mode PlacementMode;
   u8 ShouldRefresh;
   v2 ContainerSize;
+  container_size_mode ContainerSizeMode;
+  u32 CurrentDepth;
 } ui_state;
 
 void UI_Init();
@@ -70,6 +79,10 @@ void UI_Refresh();
 void UI_Begin();
 
 i32 UI_DoContainer(u32 ID);
+
+i32 UI_EndContainer();
+
+i32 UI_SetContainerSizeMode(container_size_mode Mode);
 
 i32 UI_SetContainerSize(v2 Size);
 

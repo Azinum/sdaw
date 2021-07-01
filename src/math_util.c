@@ -482,6 +482,14 @@ inline float Sin(float Value) {
   return Result;
 }
 
+inline i32 Rand() {
+  i32 Result = 0;
+
+  Result = rand();  // Implement other pseudo-random function?
+
+  return Result;
+}
+
 inline i32 Inside(v2 P, v2 Start, v2 End) {
   i32 Result = 0;
 

@@ -130,9 +130,33 @@ static i32 EngineRun(audio_engine* Engine) {
       RendererBeginFrame();
 
       UI_Begin();
-      UI_SetPlacement(PLACEMENT_VERTICAL);
+      UI_SetPlacement(PLACEMENT_HORIZONTAL);
 
-#if 1
+      if (UI_DoContainer(UI_ID)) {
+        UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
+        UI_SetContainerSize(V2(0.32f, 1.0f));
+
+        if (UI_DoContainer(UI_ID)) {
+          UI_SetPlacement(PLACEMENT_VERTICAL);
+          UI_DoTextButton(UI_ID, "A");
+          UI_DoTextButton(UI_ID, "B");
+          UI_DoTextButton(UI_ID, "C");
+          UI_DoTextButton(UI_ID, "D");
+          UI_DoTextButton(UI_ID, "E");
+          UI_SetPlacement(PLACEMENT_HORIZONTAL);
+          UI_EndContainer();
+        }
+        if (UI_DoContainer(UI_ID)) {
+          UI_DoTextButton(UI_ID, "B");
+          UI_EndContainer();
+        }
+        if (UI_DoContainer(UI_ID)) {
+          UI_DoTextButton(UI_ID, "C");
+          UI_EndContainer();
+        }
+        UI_EndContainer();
+      }
+#if 0
       if (UI_DoContainer(UI_ID)) {
         if (UI_DoTextButton(UI_ID, "A")) {
           puts("A");
@@ -186,7 +210,6 @@ static i32 EngineRun(audio_engine* Engine) {
       TIMER_END();
     }
     RendererFree();
-    CloseSerial();
     MidiCloseDevices();
   }
   return NoError;

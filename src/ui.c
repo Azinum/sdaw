@@ -6,8 +6,8 @@ static i32 DeltaY = 0;
 
 #define UI_TESTING 0
 
-static float UIMargin = 4.0f;
-static i32 UITextSize = 12;
+static float UIMargin = 8.0f;
+static i32 UITextSize = 13;
 static float UITextKerning = 0.6f;
 static float UITextLeading = 1.5f;
 
@@ -21,12 +21,15 @@ static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
 
 // Get container size based on the container size mode
-// TODO(lucas): Make a more generalized version of function to be able to work with any number of different types of ui elements.
+// TODO(lucas): Make a more generalized version of this function to be able to work with any number of different types of ui elements.
 v2 UI_GetContainerSize(ui_element* E) {
   v2 Size = V2(0, 0);
   v2 ParentSize = V2(Window.Width, Window.Height);
   if (E->Parent) {
     ParentSize = E->Parent->Size;
+  }
+  else if (UI.Container == E) {
+    return V2(Window.Width, Window.Height);
   }
   switch (UI.ContainerSizeMode) {
     case CONTAINER_SIZE_MODE_DEFAULT:
@@ -166,7 +169,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
     default:
       break;
   }
-
+#if 0
   // NOTE(lucas): There are probably some alignment issues when it comes to margin placements and such
   if (E->Parent != UI.Prev && UI.Prev != NULL && E->Parent != NULL) {
     switch (UI.PlacementMode) {
@@ -198,11 +201,15 @@ Vertical:
       E->P.Z
     );
   }
+#endif
   UI.Prev = E;
 }
 
 void UI_Process(ui_state* State) {
   TIMER_START();
+  if (!State)
+    return;
+
   for (u32 ElementIndex = 0; ElementIndex < State->ElementCount; ++ElementIndex) {
     ui_element* E = &State->Elements[ElementIndex];
     if (!E->Interaction) {
@@ -221,6 +228,42 @@ void UI_Process(ui_state* State) {
 }
 
 void UI_AlignElement(ui_element* E) {
+  if (E->Type == ELEMENT_CONTAINER) {
+    E->Size = UI_GetContainerSize(E);
+  }
+  if (E->Parent == NULL || E == UI.Container /* master container */) {
+    return;
+  }
+  else if (E->Parent && E->Parent != E) {
+    if (!UI.Prev) {
+      E->P = V3(
+        E->Parent->P.X + UIMargin,
+        E->Parent->P.Y + UIMargin,
+        E->P.Z
+      );
+    }
+    else {
+      switch (UI.PlacementMode) {
+        case PLACEMENT_VERTICAL: {
+          break;
+        }
+        case PLACEMENT_HORIZONTAL: {
+          if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W + UIMargin < E->Parent->P.X + E->Parent->Size.W) {
+            E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
+            E->P.Y = UI.Prev->P.Y;
+          }
+          else {
+            E->P.X = E->Parent->P.X + UIMargin;
+            E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+  UI.Prev = E;
 }
 
 ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
@@ -276,6 +319,8 @@ void UI_Refresh() {
 }
 
 void UI_Begin() {
+  UI.CurrentDepth = 0;
+
   if (UI.ShouldRefresh) {
     // UI_Init();
   }
@@ -288,10 +333,13 @@ i32 UI_DoContainer(u32 ID) {
   if (!Prev) {
     UI.PrevContainer = UI.CurrentContainer; // To be able to go back to the parent container
     UI_InitElement(E, ID, V2(0, 0), ELEMENT_CONTAINER);
-    UI.Prev = NULL; // NOTE(lucas): We want elements within this container to align in relation to their parent (which is this container), not the previous element that we were processing, thus we set the previous element to NULL.
-    ++UI.CurrentDepth;
   }
   UI_Interaction(E);
+  UI.Prev = UI.PrevContainer;
+  UI.PrevContainer = UI.CurrentContainer;
+  UI.CurrentContainer = E;
+  // UI.Prev = NULL; // NOTE(lucas): We want elements within this container to align in relation to their parent (which is this container), not the previous element that we were processing, thus we set the previous element to NULL. (obsolete)
+  ++UI.CurrentDepth;
   return E->Active;
 }
 

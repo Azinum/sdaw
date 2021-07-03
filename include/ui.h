@@ -49,6 +49,9 @@ typedef struct ui_element {
   const char* Text;
   element_data Data;
 
+  u8 FillMode;  // TODO(lucas): Implement
+  v2 Fill;      // TODO(lucas): Implement
+
   u8 Pressed;
   u8 PressedDown;
   u8 Released;

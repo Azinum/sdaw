@@ -147,7 +147,7 @@ void RendererInit() {
   Model = Mat4D(1.0f);
   CompileShader(DataPathConcat("resource/shader/rect"), &RectShader);
   CompileShader(DataPathConcat("resource/shader/text"), &TextShader);
-  LoadImage(DataPathConcat("resource/texture/font_source_code.png"), &FontTexture);
+  LoadImage(DataPathConcat("resource/texture/font_source_code_bold.png"), &FontTexture);
   UploadTexture(&FontTexture, &FontTextureId);
   RendererUpdateMatrices();
 }
@@ -259,7 +259,6 @@ void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSiz
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, TextureId);
   glBindVertexArray(QuadVAO);
-
   for (i32 Index = 0; Index < TextLength; ++Index) {
     char Ch = Text[Index];
     if (Ch == '\0') {

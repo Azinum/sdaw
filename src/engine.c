@@ -133,6 +133,53 @@ static i32 EngineRun(audio_engine* Engine) {
       RendererBeginFrame();
 
       UI_Begin();
+
+#define CONTAINER_TEST 0
+
+#if CONTAINER_TEST
+
+    UI_SetPlacement(PLACEMENT_HORIZONTAL);
+
+    if (UI_DoContainer(UI_ID)) {
+      UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
+      UI_SetContainerSize(V2(0.4f, 0.5f));
+
+      if (UI_DoContainer(UI_ID)) {
+        UI_DoTextButton(UI_ID, "Hello");
+        UI_DoTextButton(UI_ID, "Thing");
+        if (UI_DoContainer(UI_ID)) {
+          UI_DoTextButton(UI_ID, "Some");
+          UI_EndContainer();
+        }
+        UI_EndContainer();
+      }
+      if (UI_DoContainer(UI_ID)) {
+        UI_DoTextButton(UI_ID, "Other");
+        UI_EndContainer();
+      }
+      UI_EndContainer();
+    }
+#endif
+
+#if 1
+      UI_SetPlacement(PLACEMENT_HORIZONTAL);
+
+      if (UI_DoContainer(UI_ID)) {
+        if (UI_DoTextButton(UI_ID, "Add")) {
+          ButtonCount = Clamp(ButtonCount + 1, 0, 1000);
+        }
+        if (UI_DoTextButton(UI_ID, "Remove")) {
+          ButtonCount = Clamp(ButtonCount - 1, 0, 1000);
+        }
+        for (i32 Index = 0; Index < ButtonCount; ++Index) {
+          if (UI_DoTextButton(UI_ID + Index, "Ok")) {
+            puts("OK");
+          }
+        }
+        UI_EndContainer();
+      }
+#endif
+#if 0
       UI_SetPlacement(PLACEMENT_HORIZONTAL);
 
       if (UI_DoContainer(UI_ID)) {
@@ -146,11 +193,9 @@ static i32 EngineRun(audio_engine* Engine) {
               instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
               MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
             }
-            UI_Refresh();
           }
           if (UI_DoTextButton(UI_ID, "Remove")) {
             MixerRemoveBus(Mixer, Mixer->BusCount - 1);
-            UI_Refresh();
           }
           UI_EndContainer();
         }
@@ -158,28 +203,9 @@ static i32 EngineRun(audio_engine* Engine) {
           MixerRender(Mixer);
           UI_EndContainer();
         }
-        UI_SetPlacement(PLACEMENT_HORIZONTAL);
-        if (UI_DoContainer(UI_ID)) {
-          UI_EndContainer();
-        }
         UI_EndContainer();
       }
-#if 0
-      if (UI_DoContainer(UI_ID, V2(32, 300), V2(32 * 47 + 6, 32 * 7), V3(0.15f, 0.15f, 0.15f), 0)) {
-        if (UI_DoButton(UI_ID, V2(0, 0), V2(64, 32), UIColorDecline)) {
-          MixerRemoveBus(Mixer, Mixer->BusCount - 1);
-        }
-        if (UI_DoButton(UI_ID, V2(0, 33), V2(64, 32), UIColorAccept)) {
-          bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
-          if (Bus) {
-            instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
-            MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
-          }
-        }
-      }
 #endif
-
-      MixerRender(Mixer);
 
       UI_Render();
 

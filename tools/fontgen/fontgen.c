@@ -19,8 +19,9 @@
 #include <wchar.h>
 
 #define FONT_SIZE 128
+#define Y_CHANGE (FONT_SIZE / 8)
 
-#define min(a,b) ((a)>(b)?(b):(a))
+#define min(a, b) ((a) > (b) ? (b) : (a))
 
 uint8_t *kanji; // Increase if need more than 8KB
 uint16_t kanjiSize;
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
 	// SDL_SetSurfacePalette(tileset, pal);
 	
 	// Change the Y value for srect if the glyphs are cut off in the output
-	SDL_Rect srect  = { 0, 4, FONT_SIZE, FONT_SIZE };
+	SDL_Rect srect  = { 0, Y_CHANGE, FONT_SIZE, FONT_SIZE };
 	SDL_Rect drect  = { 0, 0, FONT_SIZE, FONT_SIZE };
 	
 	for(uint16_t i = 0; i < kanjiSize;) {
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]) {
 		}
 		int32_t w = 0;
 		TTF_SizeUTF8(font, str, &w, NULL);
-		drect.x = (FONT_SIZE / 2) - w / 2;
+		drect.x = (FONT_SIZE / 2.0f) - (w / 2.0f);
 #if 0
 		SDL_Surface *text = TTF_RenderUTF8_Shaded(font, str, color[15], color[0]);
 #else

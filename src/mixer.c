@@ -238,7 +238,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 }
 
 i32 MixerRender(mixer* Mixer) {
-  UI_SetPlacement(PLACEMENT_VERTICAL);
+  // UI_SetPlacement(PLACEMENT_VERTICAL);
   const i32 TileSize = 24;
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];

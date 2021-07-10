@@ -133,6 +133,38 @@ static i32 EngineRun(audio_engine* Engine) {
       RendererBeginFrame();
 
       UI_Begin();
+#if 0
+      UI_SetPlacement(PLACEMENT_HORIZONTAL);
+      {
+        ui_element* E = NULL;
+        if ((E = UI_DoContainer_(UI_ID))) {
+          UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
+          UI_SetContainerSize(V2(0.4f, 0.5f));
+          UI_DoTextButton(UI_ID, "Hello");
+          UI_DoTextButton(UI_ID, "Thing");
+
+          {
+            ui_element* E = NULL;
+            if ((E = UI_DoContainer_(UI_ID))) {
+              UI_DoTextButton(UI_ID, "Hello");
+              UI_DoTextButton(UI_ID, "Thing");
+              {
+                ui_element* E = NULL;
+                if ((E = UI_DoContainer_(UI_ID))) {
+                  UI_DoTextButton(UI_ID, "Some");
+                  UI_DoBox(UI_ID, V2(32, 32), UIColorStandard);
+                  UI_EndContainer_(E);
+                }
+              }
+
+              UI_EndContainer_(E);
+            }
+          }
+
+          UI_EndContainer_(E);
+        }
+      }
+#endif
 
 #define CONTAINER_TEST 0
 
@@ -142,44 +174,55 @@ static i32 EngineRun(audio_engine* Engine) {
 
     if (UI_DoContainer(UI_ID)) {
       UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-      UI_SetContainerSize(V2(0.4f, 0.5f));
+      UI_SetContainerSize(V2(0.4f, 1.0f));
 
       if (UI_DoContainer(UI_ID)) {
+        UI_DoBox(UI_ID, V2(32, 32), UIColorStandard);
         UI_DoTextButton(UI_ID, "Hello");
-        UI_DoTextButton(UI_ID, "Thing");
-        if (UI_DoContainer(UI_ID)) {
-          UI_DoTextButton(UI_ID, "Some");
-          UI_EndContainer();
-        }
         UI_EndContainer();
       }
       if (UI_DoContainer(UI_ID)) {
-        UI_DoTextButton(UI_ID, "Other");
+        UI_DoBox(UI_ID, V2(32, 32), UIColorInactive);
+        UI_DoTextButton(UI_ID, "There");
         UI_EndContainer();
       }
       UI_EndContainer();
     }
 #endif
 
-#if 1
+#if 0
       UI_SetPlacement(PLACEMENT_HORIZONTAL);
+      UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
 
+      UI_SetContainerSize(V2(1.0f, 1.0f));
       if (UI_DoContainer(UI_ID)) {
+        UI_SetContainerSize(V2(0.5f, 0.5f));
         if (UI_DoTextButton(UI_ID, "Add")) {
           ButtonCount = Clamp(ButtonCount + 1, 0, 1000);
         }
         if (UI_DoTextButton(UI_ID, "Remove")) {
           ButtonCount = Clamp(ButtonCount - 1, 0, 1000);
         }
-        for (i32 Index = 0; Index < ButtonCount; ++Index) {
-          if (UI_DoTextButton(UI_ID + Index, "Ok")) {
-            puts("OK");
+        if (UI_DoContainer(UI_ID)) {
+          for (i32 Index = 0; Index < ButtonCount; ++Index) {
+            if (UI_DoTextButton(UI_ID + Index, "Ok")) {
+              puts("OK");
+            }
           }
+          UI_EndContainer();
+        }
+        if (UI_DoContainer(UI_ID + 1000)) {
+          for (i32 Index = 0; Index < ButtonCount; ++Index) {
+            if (UI_DoTextButton(UI_ID + Index + 1000, "Ok")) {
+              puts("OK");
+            }
+          }
+          UI_EndContainer();
         }
         UI_EndContainer();
       }
 #endif
-#if 0
+#if 1
       UI_SetPlacement(PLACEMENT_HORIZONTAL);
 
       if (UI_DoContainer(UI_ID)) {

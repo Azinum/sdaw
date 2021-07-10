@@ -231,8 +231,10 @@ void UI_AlignElement(ui_element* E) {
   if (E->Type == ELEMENT_CONTAINER) {
     E->Size = UI_GetContainerSize(E);
   }
-  if (E->Parent == NULL || E == UI.Container /* master container */) {
-    return;
+  if (E->Parent == NULL) {
+    if (E == UI.Container) {
+      return;
+    }
   }
   else if (E->Parent && E->Parent != E) {
     if (!UI.Prev) {
@@ -307,23 +309,17 @@ void UI_Init() {
   UI.PrevContainer = NULL;
   UI.Prev = NULL;
   UI.PlacementMode = PLACEMENT_VERTICAL;
-  UI.ShouldRefresh = 0;
   UI.ContainerSize = V2(0, 0);
   UI.ContainerSizeMode = CONTAINER_SIZE_MODE_DEFAULT;
   UI.CurrentDepth = 0;
 }
 
-// Refresh the ui upon removing elements. The way this works is subject to change.
-void UI_Refresh() {
-  UI.ShouldRefresh = 1;
-}
-
 void UI_Begin() {
   UI.CurrentDepth = 0;
+  UI.CurrentContainer = NULL;
+  UI.PrevContainer = NULL;
+  UI.Prev = NULL;
 
-  if (UI.ShouldRefresh) {
-    // UI_Init();
-  }
   UI_Process(&UI);
 }
 
@@ -335,17 +331,18 @@ i32 UI_DoContainer(u32 ID) {
     UI_InitElement(E, ID, V2(0, 0), ELEMENT_CONTAINER);
   }
   UI_Interaction(E);
-  UI.Prev = UI.PrevContainer;
+
+  UI.Prev = NULL;
   UI.PrevContainer = UI.CurrentContainer;
   UI.CurrentContainer = E;
-  // UI.Prev = NULL; // NOTE(lucas): We want elements within this container to align in relation to their parent (which is this container), not the previous element that we were processing, thus we set the previous element to NULL. (obsolete)
+
   ++UI.CurrentDepth;
   return E->Active;
 }
 
 i32 UI_EndContainer() {
   UI.Prev = UI.CurrentContainer;
-  UI.CurrentContainer = UI.PrevContainer;
+  UI.CurrentContainer = UI.CurrentContainer->Parent;  // NOTE(lucas): Change from UI.PrevContainer to UI.CurrentContainer->Parent
   UI.PrevContainer = NULL;
   --UI.CurrentDepth;
   return NoError;
@@ -396,17 +393,6 @@ i32 UI_DoBox(u32 ID, v2 Size, v3 Color) {
 }
 
 #if 0
-i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text) {
-  i32 Prev = 0;
-  ui_element* E = UI_InitInteractable(ID, &Prev);
-  if (!Prev) {
-    UI_InitElement(E, ID, P, Size, Color, ELEMENT_TEXT_BUTTON);
-  }
-  E->Text = Text;
-  UI_AlignToContainer(E, E->Parent, P);
-  UI_Interaction(E);
-  return E->Released;
-}
 
 i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color) {
   i32 Prev = 0;

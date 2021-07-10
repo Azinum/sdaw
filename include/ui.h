@@ -71,7 +71,6 @@ typedef struct ui_state {
   ui_element* PrevContainer;
   ui_element* Prev;
   element_placement_mode PlacementMode;
-  u8 ShouldRefresh;
   v2 ContainerSize;
   container_size_mode ContainerSizeMode;
   u32 CurrentDepth;
@@ -86,6 +85,10 @@ void UI_Begin();
 i32 UI_DoContainer(u32 ID);
 
 i32 UI_EndContainer();
+
+ui_element* UI_DoContainer_(u32 ID);
+
+i32 UI_EndContainer_(ui_element* E);
 
 i32 UI_SetContainerSizeMode(container_size_mode Mode);
 

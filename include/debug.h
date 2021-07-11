@@ -29,7 +29,7 @@ typedef struct debug_event_info {
   };
 } debug_event_info;
 
-static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {0};
+static debug_event_info DebugEventTable[MAX_DEBUG_EVENT] = {};
 
 static i32 DebugNumEvents = 0;
 
@@ -42,6 +42,8 @@ static i32 DebugNumEvents = 0;
   _DebugEventInfo->Double = VALUE; \
 }
 
+
+// CPU-time based timer
 #define TIMER_START(...) \
   clock_t _TimeEnd = 0; \
   clock_t _TimeStart = 0; \
@@ -57,11 +59,28 @@ static i32 DebugNumEvents = 0;
   __VA_ARGS__ \
 }
 
+// Real-time based timer
+#define REAL_TIMER_START(...) \
+  struct timeval TimeEnd = {0}; \
+  struct timeval TimeStart = {0}; \
+  gettimeofday(&TimeStart, NULL); \
+  __VA_ARGS__
+
+#define REAL_TIMER_END(...) { \
+  gettimeofday(&TimeEnd, NULL); \
+  float _DeltaTime = ((((TimeEnd.tv_sec - TimeStart.tv_sec) * 1000000.0f) + TimeEnd.tv_usec) - (TimeStart.tv_usec)) / 1000000.0f; \
+  __VA_ARGS__ \
+}
+
 #else
 
 #define TIMER_START(...)
 
 #define TIMER_END(...)
+
+#define TIMER_START_(...)
+
+#define TIMER_END_(...)
 
 #endif
 

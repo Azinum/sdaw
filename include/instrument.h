@@ -18,6 +18,8 @@ enum instrument_def_type {
   MAX_INSTRUMENT_DEF,
 };
 
+extern instrument_def Instruments[];
+
 instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrument_process_cb Process);
 
 i32 InstrumentAllocUserData(instrument* Ins, i32 Size);

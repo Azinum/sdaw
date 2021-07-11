@@ -28,6 +28,10 @@ static i32 ButtonCount = 0;
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};
 
+#define MAX_BUFFER_SIZE 512
+
+char TitleBuffer[MAX_BUFFER_SIZE] = {};
+
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
 
@@ -46,7 +50,7 @@ static i32 EngineRun(audio_engine* Engine) {
     RendererInit();
     Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
-      TIMER_START();
+      REAL_TIMER_START();
 
       MidiEventCount = MidiFetchEvents(MidiEvents);
 
@@ -131,103 +135,14 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       RendererBeginFrame();
-
       UI_Begin();
-#if 0
-      UI_SetPlacement(PLACEMENT_HORIZONTAL);
-      {
-        ui_element* E = NULL;
-        if ((E = UI_DoContainer_(UI_ID))) {
-          UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-          UI_SetContainerSize(V2(0.4f, 0.5f));
-          UI_DoTextButton(UI_ID, "Hello");
-          UI_DoTextButton(UI_ID, "Thing");
 
-          {
-            ui_element* E = NULL;
-            if ((E = UI_DoContainer_(UI_ID))) {
-              UI_DoTextButton(UI_ID, "Hello");
-              UI_DoTextButton(UI_ID, "Thing");
-              {
-                ui_element* E = NULL;
-                if ((E = UI_DoContainer_(UI_ID))) {
-                  UI_DoTextButton(UI_ID, "Some");
-                  UI_DoBox(UI_ID, V2(32, 32), UIColorStandard);
-                  UI_EndContainer_(E);
-                }
-              }
-
-              UI_EndContainer_(E);
-            }
-          }
-
-          UI_EndContainer_(E);
-        }
-      }
-#endif
-
-#define CONTAINER_TEST 0
-
-#if CONTAINER_TEST
-
-    UI_SetPlacement(PLACEMENT_HORIZONTAL);
-
-    if (UI_DoContainer(UI_ID)) {
-      UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-      UI_SetContainerSize(V2(0.4f, 1.0f));
-
-      if (UI_DoContainer(UI_ID)) {
-        UI_DoBox(UI_ID, V2(32, 32), UIColorStandard);
-        UI_DoTextButton(UI_ID, "Hello");
-        UI_EndContainer();
-      }
-      if (UI_DoContainer(UI_ID)) {
-        UI_DoBox(UI_ID, V2(32, 32), UIColorInactive);
-        UI_DoTextButton(UI_ID, "There");
-        UI_EndContainer();
-      }
-      UI_EndContainer();
-    }
-#endif
-
-#if 0
-      UI_SetPlacement(PLACEMENT_HORIZONTAL);
-      UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-
-      UI_SetContainerSize(V2(1.0f, 1.0f));
-      if (UI_DoContainer(UI_ID)) {
-        UI_SetContainerSize(V2(0.5f, 0.5f));
-        if (UI_DoTextButton(UI_ID, "Add")) {
-          ButtonCount = Clamp(ButtonCount + 1, 0, 1000);
-        }
-        if (UI_DoTextButton(UI_ID, "Remove")) {
-          ButtonCount = Clamp(ButtonCount - 1, 0, 1000);
-        }
-        if (UI_DoContainer(UI_ID)) {
-          for (i32 Index = 0; Index < ButtonCount; ++Index) {
-            if (UI_DoTextButton(UI_ID + Index, "Ok")) {
-              puts("OK");
-            }
-          }
-          UI_EndContainer();
-        }
-        if (UI_DoContainer(UI_ID + 1000)) {
-          for (i32 Index = 0; Index < ButtonCount; ++Index) {
-            if (UI_DoTextButton(UI_ID + Index + 1000, "Ok")) {
-              puts("OK");
-            }
-          }
-          UI_EndContainer();
-        }
-        UI_EndContainer();
-      }
-#endif
 #if 1
       UI_SetPlacement(PLACEMENT_HORIZONTAL);
 
       if (UI_DoContainer(UI_ID)) {
         UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-        UI_SetContainerSize(V2(0.32f, 1.0f));
+        UI_SetContainerSize(V2(0.45f, 1.0f));
 
         if (UI_DoContainer(UI_ID)) {
           if (UI_DoTextButton(UI_ID, "Add")) {
@@ -240,6 +155,24 @@ static i32 EngineRun(audio_engine* Engine) {
           if (UI_DoTextButton(UI_ID, "Remove")) {
             MixerRemoveBus(Mixer, Mixer->BusCount - 1);
           }
+          if (UI_DoTextButton(UI_ID, "Reset")) {
+            Engine->Tick = 0;
+            Engine->Time = 0;
+          }
+          if (UI_DoContainer(UI_ID)) {
+            for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
+              instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
+              if (UI_DoTextButton(UI_ID + InstrumentIndex + 1000, InstrumentDef->Name)) {
+                bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+                if (Bus) {
+                  instrument* Instrument = InstrumentCreate(InstrumentDef->InitCb, InstrumentDef->FreeCb, InstrumentDef->ProcessCb);
+                  if (Instrument)
+                    MixerAttachInstrumentToBus0(Mixer, Bus, Instrument);
+                }
+              }
+            }
+            UI_EndContainer();
+          }
           UI_EndContainer();
         }
         if (UI_DoContainer(UI_ID)) {
@@ -251,10 +184,12 @@ static i32 EngineRun(audio_engine* Engine) {
 #endif
 
       UI_Render();
-
       RendererEndFrame();
 
-      TIMER_END();
+      REAL_TIMER_END(
+        snprintf(TitleBuffer, MAX_BUFFER_SIZE, "%s | %i fps", PROG_NAME, (i32)(1.0f / _DeltaTime));
+        WindowSetTitle(TitleBuffer);
+      );
     }
     RendererFree();
     MidiCloseDevices();

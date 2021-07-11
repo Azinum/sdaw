@@ -55,6 +55,8 @@ window_resize_callback* WindowAddResizeCallback(window_resize_callback Callback)
 
 i32 WindowPollEvents();
 
+void WindowSetTitle(const char* Title);
+
 void WindowSwapBuffers();
 
 void WindowClear(float R, float G, float B);

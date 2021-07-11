@@ -86,10 +86,6 @@ i32 UI_DoContainer(u32 ID);
 
 i32 UI_EndContainer();
 
-ui_element* UI_DoContainer_(u32 ID);
-
-i32 UI_EndContainer_(ui_element* E);
-
 i32 UI_SetContainerSizeMode(container_size_mode Mode);
 
 i32 UI_SetContainerSize(v2 Size);

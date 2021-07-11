@@ -154,7 +154,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
 
   switch (E->Type) {
     case ELEMENT_CONTAINER: {
-      float ColorValue = 0.15f + (0.05f * UI.CurrentDepth);
+      float ColorValue = Clamp(0.15f + (0.05f * UI.CurrentDepth), 0.0f, 1.0f);
       E->Color = V3(ColorValue, ColorValue, ColorValue);  // Temp
       if (!UI.Container) {
         UI.Container = E; // Ok, this element is the master container
@@ -250,7 +250,7 @@ void UI_AlignElement(ui_element* E) {
           break;
         }
         case PLACEMENT_HORIZONTAL: {
-          if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W + UIMargin < E->Parent->P.X + E->Parent->Size.W) {
+          if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W + UIMargin < E->Parent->P.X + E->Parent->Size.W - UIMargin) {
             E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
             E->P.Y = UI.Prev->P.Y;
           }

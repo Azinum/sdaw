@@ -166,6 +166,10 @@ i32 WindowPollEvents() {
   return 0;
 }
 
+void WindowSetTitle(const char* Title) {
+  glfwSetWindowTitle(Window.Window, Title);
+}
+
 void WindowSwapBuffers() {
   glfwSwapBuffers(Window.Window);
 }

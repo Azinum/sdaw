@@ -86,8 +86,8 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
 }
 
 // NOTE(lucas): Returns a reference to the bus that you added. It should be noted, however, that the reference is
-// not persistant, in other words the reference can change (it can point to a bus which you did not
-// initially select). Thus, it should be used with caution.
+// not persistant, in other words the reference can change so that it will point to a bus which you initially did not
+// select. Thus, this function should be used with caution.
 bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) {
   bus* Bus = NULL;
   i32 Index = Mixer->BusCount;

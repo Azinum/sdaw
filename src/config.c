@@ -1,151 +1,335 @@
 // config.c
 
-#define CONFIG_FILE_NAME ".sdaw"
+config_parser_state Parser;
 
-#define Scan(ScanStatus, Iterator, Format, ...) { \
-	u32 NumBytesRead = 0; \
-	ScanStatus = sscanf(Iterator, Format "%n", __VA_ARGS__, &NumBytesRead); \
-	Iterator += NumBytesRead; \
+static u32 TypeSizes[MaxVariableType] = {
+  0,
+  sizeof(i32),
+  sizeof(r32),
+};
+
+typedef enum config_token_type {
+  TOK_IDENT,
+  TOK_INT,
+  TOK_FLOAT,
+  TOK_NEWLINE,
+  TOK_EOF,
+} config_token_type;
+
+typedef struct config_token {
+  char* At;
+  u32 Length;
+  config_token_type Type;
+
+  union {
+    i32 Integer;
+    float Float;
+  };
+} config_token;
+
+static config_token CurrentToken = { .At = NULL, .Length = 0, .Type = TOK_EOF, };
+
+static u8 IsNumber(char Ch);
+static u8 IsAlpha(char Ch);
+static variable_type TokenToVariableType(config_token_type TokenType);
+static config_token ParseNumber(config_parser_state* P);
+static config_token ParseIdent(config_parser_state* P);
+static config_token NextToken(config_parser_state* P);
+static void Next(config_parser_state* P);
+static config_token NullTerminateToken(config_token Token);
+static i32 Parse(config_parser_state* P);
+
+static i32 PushVariable(config_parser_state* P, variable* Variable);
+static u8 VariableExists(config_parser_state* P, const char* Name);
+static variable* FindVariable(config_parser_state* P, const char* Name, u32 Length);
+
+u8 IsNumber(char Ch) {
+  return Ch >= '0' && Ch <= '9';
 }
 
-#define MAX_WORD_SIZE 128
-
-static i32 ParseConfig(buffer* Buffer);
-
-i32 ParseConfig(buffer* Buffer) {
-  i32 Result = NoError;
-  if (Buffer->Count == 0) {
-    return Result;
-  }
-  char Word[MAX_WORD_SIZE] = {};
-  char* Iterator = &Buffer->Data[0];
-  i32 ScanResult = 0;
-  for (;;) {
-    Scan(ScanResult, Iterator, "%s", Word);
-    if (ScanResult == EOF) {
-      break;
-    }
-    if (!strncmp(Word, S_SampleRate, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_SampleRate);
-    }
-    else if (!strncmp(Word, S_FramesPerBuffer, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_FramesPerBuffer);
-    }
-    else if (!strncmp(Word, S_WindowWidth, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_WindowWidth);
-    }
-    else if (!strncmp(Word, S_WindowHeight, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_WindowHeight);
-    }
-    else if (!strncmp(Word, S_FullScreen, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_FullScreen);
-    }
-    else if (!strncmp(Word, S_Vsync, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_Vsync);
-    }
-    else if (!strncmp(Word, S_AudioInput, MAX_WORD_SIZE)) {
-      Scan(ScanResult, Iterator, "%i", &G_AudioInput);
-    }
-
-    else if (!strncmp(Word, S_UIColorBackground, MAX_WORD_SIZE)) {
-      v3* V = &UIColorBackground;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorAccept, MAX_WORD_SIZE)) {
-      v3* V = &UIColorAccept;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorDecline, MAX_WORD_SIZE)) {
-      v3* V = &UIColorDecline;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorStandard, MAX_WORD_SIZE)) {
-      v3* V = &UIColorStandard;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorLight, MAX_WORD_SIZE)) {
-      v3* V = &UIColorLight;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorInactive, MAX_WORD_SIZE)) {
-      v3* V = &UIColorInactive;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-    else if (!strncmp(Word, S_UIColorNotPresent, MAX_WORD_SIZE)) {
-      v3* V = &UIColorNotPresent;
-      Scan(ScanResult, Iterator, "%f %f %f", &V->R, &V->G, &V->B);
-    }
-  }
-  return Result;
+u8 IsAlpha(char Ch) {
+  return (Ch >= 'a' && Ch <= 'z') || (Ch >= 'A' && Ch <= 'Z');
 }
 
-// Need to automate this in some way, some day
-i32 WriteConfig(const char* Path) {
-  FILE* File = fopen(Path, "w");
-  if (File) {
-    fprintf(File, "%s %i\n", S_SampleRate, G_SampleRate);
-    fprintf(File, "%s %i\n", S_FramesPerBuffer, G_FramesPerBuffer);
-    fprintf(File, "%s %i\n", S_WindowWidth, G_WindowWidth);
-    fprintf(File, "%s %i\n", S_WindowHeight, G_WindowHeight);
-    fprintf(File, "%s %i\n", S_FullScreen, G_FullScreen);
-    fprintf(File, "%s %i\n", S_Vsync, G_Vsync);
-    fprintf(File, "%s %i\n", S_AudioInput, G_AudioInput);
-
-    fprintf(File, "\n");
-    fprintf(File, "%s %f %f %f\n", S_UIColorBackground, UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorAccept, UIColorAccept.R, UIColorAccept.G, UIColorAccept.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorDecline, UIColorDecline.R, UIColorDecline.G, UIColorDecline.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorStandard, UIColorStandard.R, UIColorStandard.G, UIColorStandard.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorLight, UIColorLight.R, UIColorLight.G, UIColorLight.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorInactive, UIColorInactive.R, UIColorInactive.G, UIColorInactive.B);
-    fprintf(File, "%s %f %f %f\n", S_UIColorNotPresent, UIColorNotPresent.R, UIColorNotPresent.G, UIColorNotPresent.B);
-
-    fclose(File);
+variable_type TokenToVariableType(config_token_type TokenType) {
+  switch (TokenType) {
+    case TOK_INT:   return TypeInt32;
+    case TOK_FLOAT: return TypeFloat32;
+    default:        return TypeUndefined;
   }
-  else {
-    fprintf(stderr, "Failed to write config file '%s'\n", Path);
-    return Error;
-  }
-  return NoError;
 }
 
-i32 LoadConfig() {
-  i32 Result = NoError;
-  char Path[MAX_PATH_SIZE] = {};
-  char* Home = HomePath();
-
-  snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", Home, CONFIG_FILE_NAME);
-  FILE* File = fopen(Path, "r");
-  if (!File) {
-    if (WriteConfig(Path) == NoError) {
-      fprintf(stdout, "Default configuration file written to '%s'\n", Path);
+config_token ParseNumber(config_parser_state* P) {
+  u8 ShouldParseNumber = 1;
+  u8 Dot = 0;
+  CurrentToken.Type = TOK_INT;
+  while (ShouldParseNumber) {
+    u8 IsValid = 0;
+    if (IsNumber(*P->Index) || *P->Index == 'x' || (*P->Index >= 'a' && *P->Index <= 'f') || (*P->Index >= 'A' && *P->Index <= 'F')) {
+      IsValid = 1;
+    }
+    else if (*P->Index == '.') {
+      CurrentToken.Type = TOK_FLOAT;
+      Dot++;
+      IsValid = 1;
+    }
+    if (IsValid) {
+      P->Index++;
     }
     else {
-      snprintf(Path, MAX_PATH_SIZE, "%s/%s", Home, CONFIG_FILE_NAME);
-      File = fopen(Path, "r");
-      if (!File) {
-        fprintf(stderr, "Failed to open configuration file '%s'\n", Path);
-        if (WriteConfig(Path) == NoError) {
-          fprintf(stdout, "Default configuration file written to '%s'\n", Path);
+      break;
+    }
+  }
+  CurrentToken.Length = P->Index - CurrentToken.At;
+  if (Dot > 1) {
+    // Handle error
+    CurrentToken.Type = TOK_EOF;
+  }
+  i32 ScanResult = 0;
+  u32 NumBytesRead = 0;
+  switch (CurrentToken.Type) {
+    case TypeInt32:
+      ScanResult = sscanf(CurrentToken.At, "%i", &CurrentToken.Integer);
+      break;
+    case TypeFloat32:
+      ScanResult = sscanf(CurrentToken.At, "%f", &CurrentToken.Float);
+      break;
+  }
+  (void)ScanResult;
+  return CurrentToken;
+}
+
+config_token ParseIdent(config_parser_state* P) {
+  while (IsAlpha(*P->Index) || *P->Index == '_') {
+    P->Index++;
+  }
+  CurrentToken.Length = P->Index - CurrentToken.At;
+  CurrentToken.Type = TOK_IDENT;
+  return CurrentToken;
+}
+
+config_token NextToken(config_parser_state* P) {
+  for (;;) {
+    char Ch = *P->Index;
+    Next(P);
+
+    switch (Ch) {
+      case EOF:
+        CurrentToken.Type = TOK_EOF;
+        return CurrentToken;
+      case '\r':
+      case '\n': {
+        CurrentToken.Type = TOK_NEWLINE;
+        return CurrentToken;
+      }
+      case ' ':
+      case '\t':
+      case '\v':
+      case '\f':
+        break;
+      default: {
+        if (IsNumber(Ch)) {
+          return ParseNumber(P);
         }
-        Result = NoError;
-        goto Done;
+        else if (IsAlpha(Ch) || Ch == '_') {
+          return ParseIdent(P);
+        }
+        else {
+          CurrentToken.Type = TOK_EOF;
+          return CurrentToken;
+        }
       }
     }
   }
-  if (File) {
-    fclose(File);
+  return CurrentToken;
+}
+
+config_token NullTerminateToken(config_token Token) {
+  config_token Result = Token;
+
+  Result.At[Result.Length] = '\0';
+
+  return Result;
+}
+
+void Next(config_parser_state* P) {
+  CurrentToken.At = P->Index++;
+  CurrentToken.Length = 1;
+}
+
+i32 Parse(config_parser_state* P) {
+  P->Index = &P->Source.Data[0];
+  u8 ShouldParse = 1;
+  config_token Token;
+  while (ShouldParse) {
+    Token = NextToken(P);
+    switch (Token.Type) {
+      case TOK_IDENT: {
+        variable* Variable = FindVariable(P, Token.At, Token.Length);
+        if (Variable) {
+          for (i32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
+            Token = NextToken(P);
+            if (TokenToVariableType(Token.Type) == Variable->Type) {
+              switch (Variable->Type) {
+                case TypeInt32: {
+                  *((i32*)Variable->Data + FieldIndex) = Token.Integer;
+                  break;
+                }
+                case TypeFloat32: {
+                  *((r32*)Variable->Data + FieldIndex) = Token.Integer;
+                  break;
+                }
+                default:
+                  break;
+              }
+            }
+            else {
+              // Handle
+            }
+          }
+        }
+        break;
+      }
+      case TOK_EOF: {
+        ShouldParse = 0;
+        break;
+      }
+      default:
+        break;
+    }
   }
 
-  buffer Buffer = {};
-  if (ReadFile(Path, &Buffer) == NoError) {
-    Result = ParseConfig(&Buffer);
-    BufferFree(&Buffer);
+  return NoError;
+}
+
+i32 PushVariable(config_parser_state* P, variable* Variable) {
+  ListPush(P->Variables, P->VariableCount, *Variable);
+  return NoError;
+}
+
+// Slow linear search :/
+// TODO(lucas): Implement hash table for variable locations
+u8 VariableExists(config_parser_state* P, const char* Name) {
+  for (i32 Index = 0; Index < P->VariableCount; ++Index) {
+    variable* Variable = &P->Variables[Index];
+    if (!strcmp(Variable->Name, Name)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+variable* FindVariable(config_parser_state* P, const char* Name, u32 Length) {
+  for (i32 Index = 0; Index < P->VariableCount; ++Index) {
+    variable* Variable = &P->Variables[Index];
+    u32 NameLength = strlen(Variable->Name);
+    if (NameLength == Length) {
+      if (!strncmp(Variable->Name, Name, Length)) {
+        return Variable;
+      }
+    }
+  }
+  return NULL;
+}
+
+i32 ConfigParserInit() {
+  i32 Result = NoError;
+
+  config_parser_state* P = &Parser;
+  P->Variables = NULL;
+  P->VariableCount = 0;
+
+  DefineVariable("sample_rate", &G_SampleRate, 1, TypeInt32);
+  DefineVariable("frames_per_buffer", &G_FramesPerBuffer, 1, TypeInt32);
+
+  DefineVariable("window_width", &G_WindowWidth, 1, TypeInt32);
+  DefineVariable("window_height", &G_WindowHeight, 1, TypeInt32);
+  DefineVariable("fullscreen", &G_FullScreen, 1, TypeInt32);
+  DefineVariable("vsync", &G_Vsync, 1, TypeInt32);
+  DefineVariable("audio_input", &G_AudioInput, 1, TypeInt32);
+
+  DefineVariable("ui_color_background", &UIColorBackground, 3, TypeFloat32);
+  DefineVariable("ui_color_accept", &UIColorAccept, 3, TypeFloat32);
+  DefineVariable("ui_color_decline", &UIColorDecline, 3, TypeFloat32);
+  DefineVariable("ui_color_standard", &UIColorStandard, 3, TypeFloat32);
+  DefineVariable("ui_color_light", &UIColorLight, 3, TypeFloat32);
+  DefineVariable("ui_color_inactive", &UIColorInactive, 3, TypeFloat32);
+  DefineVariable("ui_color_not_present", &UIColorNotPresent, 3, TypeFloat32);
+
+  DefineVariable("ui_button_size", &UIButtonSize, 2, TypeFloat32);
+  return Result;
+}
+
+i32 ConfigRead() {
+  i32 Result = NoError;
+  config_parser_state* P = &Parser;
+
+  char Path[MAX_PATH_SIZE];
+  snprintf(Path, MAX_PATH_SIZE, "%s/%s", GetDataPath(), "data/config/default.cfg");
+
+  if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
+    Result = ConfigWrite(Path);  // Write default config
   }
   else {
-    fprintf(stderr, "Failed to parse configuration file '%s'\n", Path);
+    return Parse(P);
   }
-
-Done:
   return Result;
+}
+
+i32 ConfigWrite(const char* Path) {
+  i32 Result = NoError;
+
+  FILE* File = fopen(Path, "w");
+  if (File) {
+    config_parser_state* P = &Parser;
+    for (i32 Index = 0; Index < P->VariableCount; ++Index) {
+      variable* Variable = &P->Variables[Index];
+      fprintf(File, "%s", Variable->Name);
+      for (i32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
+        switch (Variable->Type) {
+          case TypeInt32: {
+            fprintf(File, " %i", *((i32*)Variable->Data + FieldIndex));
+            break;
+          }
+          case TypeFloat32: {
+            fprintf(File, " %lf", *((r32*)Variable->Data + FieldIndex));
+            break;
+          }
+          default:
+            break;
+        }
+      }
+      fprintf(File, "\n");
+    }
+    fclose(File);
+  }
+  else {
+    fprintf(stderr, "Failed to write configuration file '%s'\n", Path);
+  }
+  return Result;
+}
+
+i32 DefineVariable(const char* Name, void* Data, u32 NumFields, variable_type Type) {
+  i32 Result = NoError;
+  config_parser_state* P = &Parser;
+
+  variable Variable = (variable) {
+    .Name = Name,
+    .Data = Data,
+    .NumFields = NumFields,
+    .Type = Type,
+  };
+  if (!VariableExists(P, Name)) {
+    Result = PushVariable(P, &Variable);
+  }
+  else {
+    fprintf(stderr, "Variable '%s' has already been defined\n", Name);
+  }
+  return Result;
+}
+
+void ConfigParserFree() {
+  config_parser_state* P = &Parser;
+  ListFree(P->Variables, P->VariableCount);
+  BufferFree(&P->Source);
 }

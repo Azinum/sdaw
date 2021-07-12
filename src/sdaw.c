@@ -39,7 +39,9 @@ static parse_arg Arguments[] = {
 i32 SdawStart(i32 argc, char** argv) {
   i32 Result = NoError;
   srand(time(NULL));
-  LoadConfig();
+
+  ConfigParserInit();
+  ConfigRead();
 
   if (argc <= 1) {
     Result = EngineInit();
@@ -60,6 +62,7 @@ i32 SdawStart(i32 argc, char** argv) {
       Result = ImageInterp(argc - 1, &argv[1]);
     }
   }
+  ConfigParserFree();
   if (MemoryTotal() != 0) {
     fprintf(stderr, "Memory leak!\n");
     MemoryPrintInfo(stdout);

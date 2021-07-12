@@ -23,7 +23,7 @@ i64 MemoryNumBlocks() {
 
 void MemoryPrintInfo(FILE* File) {
   fprintf(File,
-    "Memory info:\n  Allocated blocks: %li, Total: %g MB (%li bytes)\n",
+    "Memory info:\n  Allocated blocks: %lli, Total: %g MB (%lli bytes)\n",
     MemoryInfo.Blocks,
     MemoryInfo.Total / (1024.0f * 1024.0f),
     MemoryInfo.Total

@@ -6,7 +6,7 @@ PROG=sdaw
 
 BUILD_DIR=build
 
-RES=resource
+RES=data
 
 INC=include
 

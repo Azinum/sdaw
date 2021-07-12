@@ -145,9 +145,9 @@ void RendererInit() {
   InitQuadData();
   View = Mat4D(1.0f);
   Model = Mat4D(1.0f);
-  CompileShader(DataPathConcat("resource/shader/rect"), &RectShader);
-  CompileShader(DataPathConcat("resource/shader/text"), &TextShader);
-  LoadImage(DataPathConcat("resource/texture/font_source_code_bold.png"), &FontTexture);
+  CompileShader(DataPathConcat("data/shader/rect"), &RectShader);
+  CompileShader(DataPathConcat("data/shader/text"), &TextShader);
+  LoadImage(DataPathConcat("data/texture/font_source_code_bold.png"), &FontTexture);
   UploadTexture(&FontTexture, &FontTextureId);
   RendererUpdateMatrices();
 }

@@ -176,7 +176,7 @@ i32 Parse(config_parser_state* P) {
                   break;
                 }
                 case TypeFloat32: {
-                  *((r32*)Variable->Data + FieldIndex) = Token.Integer;
+                  *((r32*)Variable->Data + FieldIndex) = Token.Float;
                   break;
                 }
                 default:
@@ -265,7 +265,7 @@ i32 ConfigRead() {
   config_parser_state* P = &Parser;
 
   char Path[MAX_PATH_SIZE];
-  snprintf(Path, MAX_PATH_SIZE, "%s/%s", GetDataPath(), "data/config/default.cfg");
+  snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), ".sdaw");
 
   if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
     Result = ConfigWrite(Path);  // Write default config

@@ -6,11 +6,6 @@ static i32 DeltaY = 0;
 
 #define UI_TESTING 0
 
-static float UIMargin = 8.0f;
-static i32 UITextSize = 13;
-static float UITextKerning = 0.6f;
-static float UITextLeading = 1.5f;
-
 static v2 UI_GetContainerSize(ui_element* E);
 static void UI_Interaction(ui_element* E);
 static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
@@ -124,7 +119,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   E->BorderColor = RandomColor();
 #else
   E->Color = V3(0.9f, 0.9f, 0.9f);  // Temp
-  E->BorderColor = V3(0, 0, 0); // Temp
+  E->BorderColor = UIColorBorder;
 #endif
   E->Type = Type;
 
@@ -154,8 +149,8 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
 
   switch (E->Type) {
     case ELEMENT_CONTAINER: {
-      float ColorValue = Clamp(0.15f + (0.05f * UI.CurrentDepth), 0.0f, 1.0f);
-      E->Color = V3(ColorValue, ColorValue, ColorValue);  // Temp
+      float ColorFactor = Clamp(0.1f * UI.CurrentDepth, 0.0f, 1.0f);
+      E->Color = LerpV3t(UIColorContainer, UIColorContainerBright, ColorFactor);
       if (!UI.Container) {
         UI.Container = E; // Ok, this element is the master container
       }
@@ -164,6 +159,11 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
         UI.CurrentContainer = E;
         E->Size = UI_GetContainerSize(E);
       }
+      break;
+    }
+    case ELEMENT_TEXT_BUTTON:
+    case ELEMENT_BUTTON: {
+      E->Color = UIColorButton;
       break;
     }
     default:
@@ -374,6 +374,7 @@ i32 UI_DoTextButton(u32 ID, const char* Text) {
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
     v2 Size = UIButtonSize;
+    Size.W = (1 + strlen(Text)) * UITextSize * UITextKerning;
     UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
   }
   E->Text = Text;

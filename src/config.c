@@ -255,8 +255,17 @@ i32 ConfigParserInit() {
   DefineVariable("ui_color_light", &UIColorLight, 3, TypeFloat32);
   DefineVariable("ui_color_inactive", &UIColorInactive, 3, TypeFloat32);
   DefineVariable("ui_color_not_present", &UIColorNotPresent, 3, TypeFloat32);
+  DefineVariable("ui_color_container", &UIColorContainer, 3, TypeFloat32);
+  DefineVariable("ui_color_container_bright", &UIColorContainerBright, 3, TypeFloat32);
+  DefineVariable("ui_color_button", &UIColorButton, 3, TypeFloat32);
+  DefineVariable("ui_color_border", &UIColorBorder, 3, TypeFloat32);
 
   DefineVariable("ui_button_size", &UIButtonSize, 2, TypeFloat32);
+  DefineVariable("ui_margin", &UIMargin, 1, TypeFloat32);
+  DefineVariable("ui_text_size", &UITextSize, 1, TypeInt32);
+  DefineVariable("ui_text_kerning", &UITextKerning, 1, TypeFloat32);
+  DefineVariable("ui_text_leading", &UITextLeading, 1, TypeFloat32);
+
   return Result;
 }
 
@@ -292,7 +301,7 @@ i32 ConfigWrite(const char* Path) {
             break;
           }
           case TypeFloat32: {
-            fprintf(File, " %lf", *((r32*)Variable->Data + FieldIndex));
+            fprintf(File, " %g", *((r32*)Variable->Data + FieldIndex));
             break;
           }
           default:

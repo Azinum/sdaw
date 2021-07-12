@@ -158,7 +158,7 @@ void RendererBeginFrame() {
 
 void RendererEndFrame() {
   WindowSwapBuffers();
-  WindowClear(UIColorBackground.R, UIColorBackground.G, UIColorBackground.B);
+  WindowClear(UIColorBackground);
 }
 
 // Make function name a bit more descriptive

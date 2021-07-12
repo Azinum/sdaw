@@ -142,7 +142,7 @@ static i32 EngineRun(audio_engine* Engine) {
 
       if (UI_DoContainer(UI_ID)) {
         UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-        UI_SetContainerSize(V2(0.45f, 1.0f));
+        UI_SetContainerSize(V2(0.45f, 0.95f));
 
         if (UI_DoContainer(UI_ID)) {
           if (UI_DoTextButton(UI_ID, "Add")) {

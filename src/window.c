@@ -174,8 +174,8 @@ void WindowSwapBuffers() {
   glfwSwapBuffers(Window.Window);
 }
 
-void WindowClear(float R, float G, float B) {
-  glClearColor(R, G, B, 1.0f);
+void WindowClear(v3 Color) {
+  glClearColor(Color.R, Color.G, Color.B, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

@@ -53,6 +53,8 @@ v3 ColorGain(v3 Color, float Gain);
 
 v3 RandomColor();
 
+float BrightnessExtract(v3 Color);
+
 i32 LoadPNGFromFile(FILE* File, image* Image);
 
 i32 StorePNGFromFile(FILE* File, image* Image);

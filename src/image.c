@@ -47,6 +47,14 @@ v3 RandomColor() {
   );
 }
 
+float BrightnessExtract(v3 Color) {
+  float Result = 0.0f;
+
+  Result = DotVec3(Color, V3(0.2126f, 0.7152f, 0.0722f));
+
+  return Result;
+}
+
 i32 LoadPNGFromFile(FILE* File, image* Image) {
   i32 Result = NoError;
   png_structp PNG;

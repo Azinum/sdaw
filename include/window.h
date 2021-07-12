@@ -59,6 +59,6 @@ void WindowSetTitle(const char* Title);
 
 void WindowSwapBuffers();
 
-void WindowClear(float R, float G, float B);
+void WindowClear(v3 Color);
 
 #endif

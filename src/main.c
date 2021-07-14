@@ -1,6 +1,6 @@
 //
 // main.c
-// sdaw - simple daw (poor man's daw / audio generator / I don't even know anymore)
+// sdaw - simple daw (poor man's daw / audio generator)
 //
 
 #include "sdaw.c"

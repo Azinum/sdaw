@@ -4,10 +4,11 @@
 
 #include "common.c"
 #include "module.c"
+#include "memory.c"
+#include "hash.c"
 #include "config.c"
 #include "lut.c"
 #include "debug.c"
-#include "memory.c"
 #include "list.c"
 #include "math_util.c"
 #include "arg_parser.c"

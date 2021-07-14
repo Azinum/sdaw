@@ -65,6 +65,7 @@ typedef struct variable {
 typedef struct config_parser_state {
   variable* Variables;
   u32 VariableCount;
+  hash_table VariableLocations;
   buffer Source;
   char* Index;
 } config_parser_state;

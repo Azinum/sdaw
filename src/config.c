@@ -23,7 +23,8 @@ typedef struct config_token {
 
   union {
     i32 Integer;
-    float Float;
+    r32 Float;
+    r32 Number;
   };
 } config_token;
 
@@ -39,7 +40,7 @@ static void Next(config_parser_state* P);
 static config_token NullTerminateToken(config_token Token);
 static i32 Parse(config_parser_state* P);
 
-static i32 PushVariable(config_parser_state* P, variable* Variable);
+static i32 InsertVariable(config_parser_state* P, variable* Variable);
 static u8 VariableExists(config_parser_state* P, const char* Name);
 static variable* FindVariable(config_parser_state* P, const char* Name, u32 Length);
 
@@ -88,11 +89,19 @@ config_token ParseNumber(config_parser_state* P) {
   i32 ScanResult = 0;
   u32 NumBytesRead = 0;
   switch (CurrentToken.Type) {
-    case TypeInt32:
-      ScanResult = sscanf(CurrentToken.At, "%i", &CurrentToken.Integer);
+    case TypeInt32: {
+      r32 Value = 0;
+      ScanResult = sscanf(CurrentToken.At, "%f", &Value);
+      CurrentToken.Number = Value;
       break;
-    case TypeFloat32:
-      ScanResult = sscanf(CurrentToken.At, "%f", &CurrentToken.Float);
+    }
+    case TypeFloat32: {
+      r32 Value = 0;
+      ScanResult = sscanf(CurrentToken.At, "%f", &Value);
+      CurrentToken.Number = Value;
+      break;
+    }
+    default:
       break;
   }
   (void)ScanResult;
@@ -169,23 +178,24 @@ i32 Parse(config_parser_state* P) {
         if (Variable) {
           for (i32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
             Token = NextToken(P);
-            if (TokenToVariableType(Token.Type) == Variable->Type) {
-              switch (Variable->Type) {
-                case TypeInt32: {
-                  *((i32*)Variable->Data + FieldIndex) = Token.Integer;
-                  break;
-                }
-                case TypeFloat32: {
-                  *((r32*)Variable->Data + FieldIndex) = Token.Float;
-                  break;
-                }
-                default:
-                  break;
+            // TODO(lucas): Type check
+            // if (TokenToVariableType(Token.Type) == Variable->Type || 1) {
+            switch (Variable->Type) {
+              case TypeInt32: {
+                *((i32*)Variable->Data + FieldIndex) = (i32)Token.Number;
+                break;
               }
+              case TypeFloat32: {
+                *((r32*)Variable->Data + FieldIndex) = (r32)Token.Number;
+                break;
+              }
+              default:
+                break;
             }
-            else {
-              // Handle
-            }
+            // }
+            // else {
+            //   // Handle
+            // }
           }
         }
         break;
@@ -202,32 +212,23 @@ i32 Parse(config_parser_state* P) {
   return NoError;
 }
 
-i32 PushVariable(config_parser_state* P, variable* Variable) {
+i32 InsertVariable(config_parser_state* P, variable* Variable) {
+  i32 Location = P->VariableCount;
+  ht_key Key = HashString((char*)Variable->Name, strlen(Variable->Name));
   ListPush(P->Variables, P->VariableCount, *Variable);
+  HtInsertElement(&P->VariableLocations, Key, Location);
   return NoError;
 }
 
-// Slow linear search :/
-// TODO(lucas): Implement hash table for variable locations
 u8 VariableExists(config_parser_state* P, const char* Name) {
-  for (i32 Index = 0; Index < P->VariableCount; ++Index) {
-    variable* Variable = &P->Variables[Index];
-    if (!strcmp(Variable->Name, Name)) {
-      return 1;
-    }
-  }
-  return 0;
+  return FindVariable(P, Name, strlen(Name)) != NULL;
 }
 
 variable* FindVariable(config_parser_state* P, const char* Name, u32 Length) {
-  for (i32 Index = 0; Index < P->VariableCount; ++Index) {
-    variable* Variable = &P->Variables[Index];
-    u32 NameLength = strlen(Variable->Name);
-    if (NameLength == Length) {
-      if (!strncmp(Variable->Name, Name, Length)) {
-        return Variable;
-      }
-    }
+  ht_key Key = HashString((char*)Name, Length);
+  const ht_value* Value = HtLookup(&P->VariableLocations, Key);
+  if (Value) {
+    return &P->Variables[*Value];
   }
   return NULL;
 }
@@ -238,6 +239,7 @@ i32 ConfigParserInit() {
   config_parser_state* P = &Parser;
   P->Variables = NULL;
   P->VariableCount = 0;
+  P->VariableLocations = HtCreateEmpty();
 
   DefineVariable("sample_rate", &G_SampleRate, 1, TypeInt32);
   DefineVariable("frames_per_buffer", &G_FramesPerBuffer, 1, TypeInt32);
@@ -335,7 +337,7 @@ i32 DefineVariable(const char* Name, void* Data, u32 NumFields, variable_type Ty
     .Type = Type,
   };
   if (!VariableExists(P, Name)) {
-    Result = PushVariable(P, &Variable);
+    Result = InsertVariable(P, &Variable);
   }
   else {
     fprintf(stderr, "Variable '%s' has already been defined\n", Name);
@@ -346,5 +348,6 @@ i32 DefineVariable(const char* Name, void* Data, u32 NumFields, variable_type Ty
 void ConfigParserFree() {
   config_parser_state* P = &Parser;
   ListFree(P->Variables, P->VariableCount);
+  HtFree(&P->VariableLocations);
   BufferFree(&P->Source);
 }

@@ -5,10 +5,11 @@
 
 #include "common.h"
 #include "module.h"
+#include "memory.h"
+#include "hash.h"
 #include "config.h"
 #include "lut.h"
 #include "debug.h"
-#include "memory.h"
 #include "list.h"
 #include "math_util.h"
 #include "arg_parser.h"

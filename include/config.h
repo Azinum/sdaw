@@ -12,7 +12,7 @@
 #define RES_DIR "data"
 
 #define SAMPLE_RATE_DEFAULT 44100
-#define FRAMES_PER_BUFFER_DEFAULT 256
+#define FRAMES_PER_BUFFER_DEFAULT 512
 
 static i32 G_SampleRate = SAMPLE_RATE_DEFAULT;
 static i32 G_FramesPerBuffer = FRAMES_PER_BUFFER_DEFAULT;
@@ -30,16 +30,22 @@ static v3 UIColorStandard = V3(0.25f, 0.25f, 0.90f);
 static v3 UIColorLight = V3(0.5f, 0.5f, 0.5f);
 static v3 UIColorInactive = V3(0.3f, 0.3f, 0.3f);
 static v3 UIColorNotPresent = V3(0.1f, 0.1f, 0.1f);
-static v3 UIColorContainer = V3(0.25f, 0.25f, 0.25f);
+static v3 UIColorContainer = V3(0.32f, 0.20f, 0.25f);
 static v3 UIColorContainerBright = V3(0.7f, 0.7f, 0.7f);
 static v3 UIColorButton = V3(0.9f, 0.9f, 0.9f);
 static v3 UIColorBorder = V3(0, 0, 0);
+static float UIBorderThickness = 0.0f;
 
-static v2 UIButtonSize = V2(64, 28);
-static float UIMargin = 8.0f;
+static v2 UIButtonSize = V2(64, 38);
+static float UIMargin = 12.0f;
 static i32 UITextSize = 11;
 static float UITextKerning = 0.6f;
 static float UITextLeading = 1.5f;
+
+static i32 G_GamepadButtonUp = 11;
+static i32 G_GamepadButtonDown = 12;
+static i32 G_GamepadButtonLeft = 13;
+static i32 G_GamepadButtonRight = 14;
 
 typedef enum variable_type {
   TypeUndefined = 0,

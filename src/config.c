@@ -259,12 +259,18 @@ i32 ConfigParserInit() {
   DefineVariable("ui_color_container_bright", &UIColorContainerBright, 3, TypeFloat32);
   DefineVariable("ui_color_button", &UIColorButton, 3, TypeFloat32);
   DefineVariable("ui_color_border", &UIColorBorder, 3, TypeFloat32);
+  DefineVariable("ui_border_thickness", &UIBorderThickness, 1, TypeFloat32);
 
   DefineVariable("ui_button_size", &UIButtonSize, 2, TypeFloat32);
   DefineVariable("ui_margin", &UIMargin, 1, TypeFloat32);
   DefineVariable("ui_text_size", &UITextSize, 1, TypeInt32);
   DefineVariable("ui_text_kerning", &UITextKerning, 1, TypeFloat32);
   DefineVariable("ui_text_leading", &UITextLeading, 1, TypeFloat32);
+
+  DefineVariable("gamepad_button_up", &G_GamepadButtonUp, 1, TypeInt32);
+  DefineVariable("gamepad_button_down", &G_GamepadButtonDown, 1, TypeInt32);
+  DefineVariable("gamepad_button_left", &G_GamepadButtonLeft, 1, TypeInt32);
+  DefineVariable("gamepad_button_right", &G_GamepadButtonRight, 1, TypeInt32);
 
   return Result;
 }

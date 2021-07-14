@@ -32,8 +32,8 @@ v2 UI_GetContainerSize(ui_element* E) {
       break;
     case CONTAINER_SIZE_MODE_PERCENT:
       Size = V2(
-        UI.ContainerSize.X * ParentSize.W,
-        UI.ContainerSize.Y * ParentSize.H
+        (UI.ContainerSize.X * ParentSize.W) - 2 * UIMargin,
+        (UI.ContainerSize.Y * ParentSize.H) - 2 * UIMargin
       );
       break;
     default:
@@ -105,10 +105,10 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   Assert(E);
 
   if (!UI.Container) {
-    Size = V2(
-      WindowWidth(),
-      WindowHeight()
-    );
+    // Size = V2(
+    //   WindowWidth(),
+    //   WindowHeight()
+    // );
   }
 
   E->ID = ID;
@@ -250,7 +250,7 @@ void UI_AlignElement(ui_element* E) {
           break;
         }
         case PLACEMENT_HORIZONTAL: {
-          if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W + UIMargin < E->Parent->P.X + E->Parent->Size.W - UIMargin) {
+          if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W + (2 * UIMargin) < E->Parent->P.X + E->Parent->Size.W) {
             E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
             E->P.Y = UI.Prev->P.Y;
           }
@@ -431,6 +431,7 @@ void UI_WindowResizeCallback(i32 Width, i32 Height) {
   // UI_Init();
 }
 
+// TODO(lucas): Implement "scissoring"/clipping of 2d elements
 void UI_Render() {
   v4 DefaultClipping = Clip;
   v4 Clipping = Clip;
@@ -449,7 +450,6 @@ void UI_Render() {
       else {
         SetClipping(DefaultClipping);
       }
-      float BorderThickness = 1.0f;
       v3 Color = E->Color;
       v3 BorderColor = E->BorderColor;
       if (E->Type != ELEMENT_CONTAINER) {
@@ -470,7 +470,7 @@ void UI_Render() {
       if (HighContrastMode) {
         BorderColor = ColorInvert(Color);
       }
-      DrawRectangle(E->P, E->Size, Color, BorderColor, BorderThickness);
+      DrawRectangle(E->P, E->Size, Color, BorderColor, UIBorderThickness);
       if (E->Type == ELEMENT_TEXT_BUTTON) {
         v3 TextP = E->P;
         TextP.Y += E->Size.H / 2.0f - UITextSize / 2.0f;

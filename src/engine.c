@@ -23,8 +23,6 @@ static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
 
-static i32 ButtonCount = 0;
-
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};
 
@@ -64,14 +62,14 @@ static i32 EngineRun(audio_engine* Engine) {
           u8 B = Event->B;
           switch (Message) {
             case MIDI_NOTE_ON: {
-              printf("NOTE ON, note: %u, velocity: %u\n", A, B);
+              // printf("NOTE ON, note: %u, velocity: %u\n", A, B);
               float Velocity = (float)B / UINT8_MAX;
               NoteTable[A] = Velocity;
               break;
             }
             case MIDI_NOTE_OFF: {
               NoteTable[A] = 0;
-              printf("NOTE OFF, note: %u, velocity: %u\n", A, B);
+              // printf("NOTE OFF, note: %u, velocity: %u\n", A, B);
               break;
             }
             default:
@@ -124,10 +122,10 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_0]) {
         TempoBPM = 120;
       }
-      if (KeyPressed[GLFW_KEY_8]) {
+      if (KeyPressed[GLFW_KEY_8] || GamepadButtonPressed[G_GamepadButtonLeft]) {
         --TempoBPM;
       }
-      if (KeyPressed[GLFW_KEY_9]) {
+      if (KeyPressed[GLFW_KEY_9] || GamepadButtonPressed[G_GamepadButtonRight]) {
         ++TempoBPM;
       }
       if (KeyPressed[GLFW_KEY_M]) {
@@ -142,7 +140,7 @@ static i32 EngineRun(audio_engine* Engine) {
 
       if (UI_DoContainer(UI_ID)) {
         UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-        UI_SetContainerSize(V2(0.45f, 0.95f));
+        UI_SetContainerSize(V2(0.5f, 1.0f));
 
         if (UI_DoContainer(UI_ID)) {
           if (UI_DoTextButton(UI_ID, "Add")) {
@@ -187,7 +185,7 @@ static i32 EngineRun(audio_engine* Engine) {
       RendererEndFrame();
 
       REAL_TIMER_END(
-        snprintf(TitleBuffer, MAX_BUFFER_SIZE, "%s | %i fps", PROG_NAME, (i32)(1.0f / _DeltaTime));
+        snprintf(TitleBuffer, MAX_BUFFER_SIZE, "%s | fps: %i | bpm: %i | time: %.4g s", PROG_NAME, (i32)(1.0f / _DeltaTime), TempoBPM, Engine->Time);
         WindowSetTitle(TitleBuffer);
       );
     }

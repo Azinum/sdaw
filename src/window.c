@@ -2,8 +2,19 @@
 
 window Window;
 
-static i8 KeyDown[GLFW_KEY_LAST] = {0};
-static i8 KeyPressed[GLFW_KEY_LAST] = {0};
+u8 KeyDown[GLFW_KEY_LAST] = {0};
+u8 KeyPressed[GLFW_KEY_LAST] = {0};
+u8 GamepadButtonDown[MAX_GAMEPAD_BUTTON] = {0};
+u8 GamepadButtonPressed[MAX_GAMEPAD_BUTTON] = {0};
+
+float JoystickValues[MAX_JOYSTICK] = {0};
+u32 JoystickCount = 0;
+u8 JoystickPresent = 0;
+
+static const u8* GamepadButtonStates = NULL;
+static i32 GamepadButtonCount = 0;
+static const float* GamepadAxes = NULL;
+static i32 GamepadAxisCount = 0;
 
 static void ErrorCallback(i32 ErrCode, const char* ErrString);
 
@@ -162,6 +173,31 @@ i32 WindowPollEvents() {
 
   if (KeyPressed[GLFW_KEY_ESCAPE] || glfwWindowShouldClose(Window.Window)) {
     return -1;
+  }
+
+  if ((JoystickPresent = glfwJoystickPresent(GLFW_JOYSTICK_1))) {
+    GamepadButtonStates = glfwGetJoystickButtons(0, &GamepadButtonCount);
+    GamepadAxes = glfwGetJoystickAxes(0, &GamepadAxisCount);
+    for (u8 ButtonIndex = 0; ButtonIndex < MAX_GAMEPAD_BUTTON && ButtonIndex < GamepadButtonCount; ++ButtonIndex) {
+      u8 KeyState = GamepadButtonStates[ButtonIndex];
+      if (KeyState == GLFW_PRESS) {
+        GamepadButtonPressed[ButtonIndex] = !GamepadButtonDown[ButtonIndex];
+        GamepadButtonDown[ButtonIndex] = 1;
+      }
+      else {
+        GamepadButtonDown[ButtonIndex] = 0;
+        GamepadButtonPressed[ButtonIndex] = 0;
+      }
+    }
+    if (GamepadAxes) {
+      JoystickCount = GamepadAxisCount;
+      for (i32 AxisIndex = 0; AxisIndex < MAX_JOYSTICK && AxisIndex < GamepadAxisCount; ++AxisIndex) {
+        JoystickValues[AxisIndex] = GamepadAxes[AxisIndex];
+      }
+    }
+    else {
+      JoystickCount = 0;
+    }
   }
   return 0;
 }

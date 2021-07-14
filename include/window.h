@@ -47,6 +47,18 @@ static i8 MouseState = 0;
 #define MiddleMouseDown    (MouseState & (1 << 3))
 #define MiddleMousePressed (MouseState & (1 << 2))
 
+#define MAX_GAMEPAD_BUTTON 16
+#define MAX_JOYSTICK 16
+
+extern u8 KeyDown[];
+extern u8 KeyPressed[];
+extern u8 GamepadButtonDown[];
+extern u8 GamepadButtonPressed[];
+
+extern float JoystickValues[];
+extern u32 JoystickCount;
+extern u8 JoystickPresent;
+
 i32 WindowWidth();
 
 i32 WindowHeight();

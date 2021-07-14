@@ -88,9 +88,6 @@ typedef string buffer;
 
 #define CALL(Callback, ...) (Callback ? (Callback(__VA_ARGS__)) : (void)0)
 
-#define TruthString(Value) (Value ? "yes" : "no")
-#define TRUTH_STRING(Value) (Value ? "YES" : "NO")
-
 typedef enum error_code {
   NoError = 0,
   Error = -1,
@@ -115,5 +112,7 @@ i32 ReadFileFromDataPath(const char* Path, buffer* Buffer);
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);
 
 float RandomFloat(float From, float To);
+
+u64 Hash(char* String);
 
 #endif

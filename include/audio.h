@@ -19,6 +19,8 @@ void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size);
 
 i32 LoadAudioSource(const char* Path, audio_source* Source);
 
+i32 LoadAudioSourceFromDataPath(const char* Path, audio_source* Source);
+
 i32 StoreAudioSource(const char* Path, audio_source* Source);
 
 i32 InitAudioSource(audio_source* Source, u32 SampleCount, u32 ChannelCount);

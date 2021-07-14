@@ -88,6 +88,12 @@ i32 LoadAudioSource(const char* Path, audio_source* Source) {
   return Error;
 }
 
+i32 LoadAudioSourceFromDataPath(const char* Path, audio_source* Source) {
+  char FullPath[MAX_PATH_SIZE] = {0};
+  snprintf(FullPath, MAX_PATH_SIZE, "%s/%s", GetDataPath(), Path);
+  return LoadAudioSource(FullPath, Source);
+}
+
 i32 StoreAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {

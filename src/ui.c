@@ -258,6 +258,14 @@ void UI_AlignElement(ui_element* E) {
             E->P.X = E->Parent->P.X + UIMargin;
             E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
           }
+          if (E->Type == ELEMENT_CONTAINER) {
+            if (E->Parent) {
+              float Delta = (E->P.Y + E->Size.H) - (E->Parent->P.Y + E->Parent->Size.H);
+              if (Delta > 0) {
+                E->Size.H -= Delta + UIMargin;
+              }
+            }
+          }
           break;
         }
         default:

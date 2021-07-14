@@ -92,3 +92,16 @@ float RandomFloat(float From, float To) {
 
   return Result;
 }
+
+u64 Hash(char* String) {
+  u64 HashNumber = 5381;
+  i32 Ch = 0;
+  char* Iter = String;
+  if (!Iter)
+    return HashNumber;
+  while (*Iter++ != '\0') {
+    Ch = *Iter;
+    HashNumber = ((HashNumber << 5) + HashNumber) + Ch;
+  }
+  return HashNumber;
+}

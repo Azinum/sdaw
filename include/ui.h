@@ -3,10 +3,9 @@
 #ifndef _UI_H
 #define _UI_H
 
-#define ID_NUMBER 0
+#define FILE_ID() Hash(__FILE__)
 
-// TODO(lucas): Temporary
-#define UI_ID (ID_NUMBER + __LINE__)
+#define UI_ID (FILE_ID() + __LINE__)
 
 enum element_type {
   ELEMENT_NONE = 0,

@@ -1,8 +1,5 @@
 // engine.c
 
-#undef ID_NUMBER
-#define ID_NUMBER 100000
-
 #include "mixer.c"
 #include "instrument.c"
 #include "audio_engine.c"
@@ -160,7 +157,7 @@ static i32 EngineRun(audio_engine* Engine) {
           if (UI_DoContainer(UI_ID)) {
             for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
               instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
-              if (UI_DoTextButton(UI_ID + InstrumentIndex + 1000, InstrumentDef->Name)) {
+              if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
                 bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
                 if (Bus) {
                   instrument* Instrument = InstrumentCreate(InstrumentDef->InitCb, InstrumentDef->FreeCb, InstrumentDef->ProcessCb);

@@ -66,7 +66,7 @@ config_token ParseNumber(config_parser_state* P) {
   CurrentToken.Type = TOK_INT;
   while (ShouldParseNumber) {
     u8 IsValid = 0;
-    if (IsNumber(*P->Index) || *P->Index == 'x' || (*P->Index >= 'a' && *P->Index <= 'f') || (*P->Index >= 'A' && *P->Index <= 'F')) {
+    if (IsNumber(*P->Index) || *P->Index == '-' || *P->Index == 'x' || (*P->Index >= 'a' && *P->Index <= 'f') || (*P->Index >= 'A' && *P->Index <= 'F')) {
       IsValid = 1;
     }
     else if (*P->Index == '.') {
@@ -137,7 +137,7 @@ config_token NextToken(config_parser_state* P) {
       case '\f':
         break;
       default: {
-        if (IsNumber(Ch)) {
+        if (IsNumber(Ch) || Ch == '-') {
           return ParseNumber(P);
         }
         else if (IsAlpha(Ch) || Ch == '_') {
@@ -273,6 +273,9 @@ i32 ConfigParserInit() {
   DefineVariable("gamepad_button_down", &G_GamepadButtonDown, 1, TypeInt32);
   DefineVariable("gamepad_button_left", &G_GamepadButtonLeft, 1, TypeInt32);
   DefineVariable("gamepad_button_right", &G_GamepadButtonRight, 1, TypeInt32);
+
+  DefineVariable("pa_input_device", &G_PaInputDevice, 1, TypeInt32);
+  DefineVariable("pa_output_device", &G_PaOutputDevice, 1, TypeInt32);
 
   return Result;
 }

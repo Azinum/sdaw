@@ -47,6 +47,9 @@ static i32 G_GamepadButtonDown = 12;
 static i32 G_GamepadButtonLeft = 13;
 static i32 G_GamepadButtonRight = 14;
 
+static i32 G_PaInputDevice = -1;
+static i32 G_PaOutputDevice = -1;
+
 typedef enum variable_type {
   TypeUndefined = 0,
   TypeInt32,

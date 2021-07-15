@@ -49,15 +49,17 @@ i32 AudioEngineInit(audio_engine* Engine, i32 SampleRate, i32 FramesPerBuffer) {
     return -1;
   }
 
+  i32 DeviceCount = Pa_GetDeviceCount();
+
   i32 InputDevice = Pa_GetDefaultInputDevice();
-  InPort.device = InputDevice;
+  InPort.device = G_PaInputDevice >= 0 && G_PaInputDevice < DeviceCount ? G_PaInputDevice : InputDevice;
   InPort.channelCount = 2;
   InPort.sampleFormat = paFloat32;
   InPort.suggestedLatency = Pa_GetDeviceInfo(InPort.device)->defaultLowInputLatency;
   InPort.hostApiSpecificStreamInfo = NULL;
 
   i32 OutputDevice = Pa_GetDefaultOutputDevice();
-  OutPort.device = OutputDevice;
+  OutPort.device = G_PaOutputDevice >= 0 && G_PaOutputDevice < DeviceCount ? G_PaOutputDevice : OutputDevice;
   OutPort.channelCount = 2;
   OutPort.sampleFormat = paFloat32;
   OutPort.suggestedLatency = Pa_GetDeviceInfo(OutPort.device)->defaultLowOutputLatency;

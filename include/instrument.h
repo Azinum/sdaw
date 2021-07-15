@@ -5,24 +5,29 @@
 
 typedef struct instrument_def {
   const char* Name;
-  instrument_cb InitCb;
-  instrument_cb FreeCb;
-  instrument_process_cb ProcessCb;
+  instrument_cb Init;
+  instrument_cb Destroy;
+  instrument_cb Draw;
+  instrument_process_cb Process;
 } instrument_def;
 
-enum instrument_def_type {
-  OSC_TEST,
-  SAMPLER,
-  AUDIO_INPUT,
+typedef enum instrument_def_type {
+  INSTRUMENT_OSC_TEST,
+  INSTRUMENT_SAMPLER,
+  INSTRUMENT_AUDIO_INPUT,
 
   MAX_INSTRUMENT_DEF,
-};
+} instrument_def_type;
 
 extern instrument_def Instruments[];
 
-instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrument_process_cb Process);
+instrument* InstrumentCreate(instrument_def_type Type);
 
 i32 InstrumentAllocUserData(instrument* Ins, i32 Size);
+
+i32 InstrumentDestroy(instrument* Ins);
+
+i32 InstrumentDraw(instrument* Ins);
 
 void InstrumentFree(instrument* Ins);
 

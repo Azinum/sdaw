@@ -16,8 +16,7 @@ static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_LastElement();
 static ui_element* UI_PushElement();
 
-// Get container size based on the container size mode
-// TODO(lucas): Make a more generalized version of this function to be able to work with any number of different types of ui elements.
+// NOTE(lucas): Get container size based on the container size mode
 v2 UI_GetContainerSize(ui_element* E) {
   v2 Size = V2(0, 0);
   v2 ParentSize = V2(Window.Width, Window.Height);
@@ -49,6 +48,7 @@ void UI_Interaction(ui_element* E) {
     // Only align non-movable elements
     UI_AlignElement(E);
   }
+  E->Focus = 0;
   if (MouseOver(MouseX, MouseY, E->P.X, E->P.Y, E->Size.W, E->Size.H)) {
     E->Hover = 1;
   }
@@ -59,6 +59,7 @@ void UI_Interaction(ui_element* E) {
     if (LeftMousePressed) {
       E->Pressed = 1;
       if (E->Movable) {
+        E->Focus = 1;
         DeltaX = E->P.X - MouseX;
         DeltaY = E->P.Y - MouseY;
       }
@@ -69,6 +70,7 @@ void UI_Interaction(ui_element* E) {
     if (LeftMouseDown) {
       E->PressedDown = 1;
       if (E->Movable) {
+        E->Focus = 1;
         E->P.X = MouseX + DeltaX;
         E->P.Y = MouseY + DeltaY;
       }
@@ -105,13 +107,6 @@ void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P) {
 void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   Assert(E);
 
-  if (!UI.Container) {
-    // Size = V2(
-    //   WindowWidth(),
-    //   WindowHeight()
-    // );
-  }
-
   E->ID = ID;
   E->P = V3(0, 0, 0);
   E->Size = Size;
@@ -122,6 +117,7 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   E->Color = V3(0.9f, 0.9f, 0.9f);  // Temp
   E->BorderColor = UIColorBorder;
 #endif
+  E->BorderThickness = UIBorderThickness;
   E->Type = Type;
 
   if (E != UI.Container && UI.Container != NULL) {
@@ -141,6 +137,12 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
 
   E->Text = NULL;
   E->Data = (element_data) { .ToggleValue = 1, };
+
+  E->FillMode = 0;
+  E->Fill = V2(0, 0);
+
+  E->Focus = 0;
+  E->DrawText = 0;
 
   E->Pressed = 0;
   E->PressedDown = 0;
@@ -215,7 +217,6 @@ void UI_Process(ui_state* State) {
     ui_element* E = &State->Elements[ElementIndex];
     if (!E->Interaction) {
       ht_key Key = E->ID;
-      // printf("Remove element with ID: %llu\n", Key);
       HtRemoveElement(&UI.ElementLocations, Key);
       --State->ElementCount;
       if (State->ElementCount > 0) {
@@ -223,10 +224,7 @@ void UI_Process(ui_state* State) {
         if (E->ID != Key) {
           ht_value Location = E - &State->Elements[0];
           Key = E->ID;
-          // printf("Move element with ID: %llu\n", Key);
-
-          // The swapped element now has a new location, therefore we update the hash table accordingly
-          HtInsertElement(&State->ElementLocations, Key, Location);
+          HtInsertElement(&State->ElementLocations, Key, Location); // The swapped element now has a new location, therefore we update the hash table accordingly
         }
       }
       continue;
@@ -409,8 +407,22 @@ i32 UI_DoTextButton(u32 ID, const char* Text) {
     v2 Size = UIButtonSize;
     Size.W = (1 + strlen(Text)) * UITextSize * UITextKerning;
     UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
+    E->DrawText = 1;
+    E->Color = UIColorButton;
   }
   E->Text = Text;
+  UI_Interaction(E);
+  return E->Released;
+}
+
+i32 UI_DoBufferButton(u32 ID, const char* Format, ...) {
+  i32 Prev = 0;
+  ui_element* E = UI_InitInteractable(ID, &Prev);
+  if (!Prev) {
+    v2 Size = UIButtonSize;
+    UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
+  }
+  E->Text = Format;
   UI_Interaction(E);
   return E->Released;
 }
@@ -426,42 +438,36 @@ i32 UI_DoBox(u32 ID, v2 Size, v3 Color) {
   return E->Released;
 }
 
-#if 0
-
-i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color) {
+i32 UI_DoTextToggle(u32 ID, const char* Text, u8* Value) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
-    UI_InitElement(E, ID, P, Size, Color, ELEMENT_BUTTON);
+    v2 Size = UIButtonSize;
+    Size.W = (1 + strlen(Text)) * UITextSize * UITextKerning;
+    UI_InitElement(E, ID, Size, ELEMENT_TOGGLE);
+    E->DrawText = 1;
+    E->Color = UIColorButton;
   }
-  UI_AlignToContainer(E, E->Parent, P);
+  E->Text = Text;
+  if (Value) {
+    E->Data.ToggleValue = *Value;
+  }
   UI_Interaction(E);
-  return E->PressedDown;
-}
 
-i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value) {
-  i32 Prev = 0;
-  ui_element* E = UI_InitInteractable(ID, &Prev);
-  if (!Prev) {
-    UI_InitElement(E, ID, P, Size, Color, ELEMENT_TOGGLE);
-  }
-  UI_AlignToContainer(E, E->Parent, P);
-  UI_Interaction(E);
   if (E->Released) {
     E->Data.ToggleValue = !E->Data.ToggleValue;
-    if (Value)
+    if (Value) {
       *Value = E->Data.ToggleValue;
+    }
   }
   return E->Released;
 }
-#endif
 
 void UI_SetPlacement(element_placement_mode Mode) {
   UI.PlacementMode = Mode;
 }
 
 void UI_WindowResizeCallback(i32 Width, i32 Height) {
-  // UI_Init();
 }
 
 // TODO(lucas): Implement "scissoring"/clipping of 2d elements
@@ -503,9 +509,10 @@ void UI_Render() {
       if (HighContrastMode) {
         BorderColor = ColorInvert(Color);
       }
-      DrawRectangle(E->P, E->Size, Color, BorderColor, UIBorderThickness);
-      if (E->Type == ELEMENT_TEXT_BUTTON) {
-        v3 TextP = E->P;
+      v3 P = E->P;
+      DrawRectangle(P, E->Size, Color, BorderColor, E->BorderThickness);
+      if (E->DrawText && E->Text) {
+        v3 TextP = P;
         TextP.Y += E->Size.H / 2.0f - UITextSize / 2.0f;
         TextP.Z += 0.01f;
         v3 TextColor = ColorGray(ColorInvert(ColorGain(E->Color, 2.0f)));

@@ -4,17 +4,17 @@ static void* LoadThread(void* Instrument);
 static void* UnloadThread(void* Instrument);
 
 instrument_def Instruments[MAX_INSTRUMENT_DEF] = {
-  {"Oscillator Test", OscTestInit, OscTestFree, OscTestProcess},
-  {"Sampler", SamplerInit, SamplerFree, SamplerProcess},
-  {"Audio Input", NULL, NULL, AudioInputProcess},
+  {"Oscillator Test", OscTestInit, OscTestFree, NULL, OscTestProcess},
+  {"Sampler", SamplerInit, SamplerFree, SamplerDraw, SamplerProcess},
+  {"Audio Input", NULL, NULL, NULL, AudioInputProcess},
 };
 
 void* LoadThread(void* Instrument) {
   TIMER_START();
 
   instrument* Ins = (instrument*)Instrument;
-  if (Ins->InitCb) {
-    Ins->InitCb(Ins);
+  if (Ins->Init) {
+    Ins->Init(Ins);
   }
   Ins->Ready = 1;
   pthread_join(Ins->LoadThread, NULL);
@@ -27,9 +27,8 @@ void* UnloadThread(void* Instrument) {
   TIMER_START();
 
   instrument* Ins = (instrument*)Instrument;
-  if (Ins->FreeCb) {
-    Ins->FreeCb(Ins);
-  }
+  InstrumentDestroy(Ins);
+
   BufferFree(&Ins->UserData);
   M_Free(Ins, sizeof(instrument));
 
@@ -40,15 +39,17 @@ void* UnloadThread(void* Instrument) {
   return NULL;
 }
 
-instrument* InstrumentCreate(instrument_cb InitCb, instrument_cb FreeCb, instrument_process_cb Process) {
+instrument* InstrumentCreate(instrument_def_type Type) {
   instrument* Ins = M_Malloc(sizeof(instrument));
   if (Ins) {
+    instrument_def* InsDef = &Instruments[Type];
     Ins->UserData.Data = NULL;
     Ins->UserData.Count = 0;
-    Ins->InitCb = InitCb;
-    Ins->FreeCb = FreeCb;
-    Ins->Process = Process;
-    if (Ins->InitCb) {
+    Ins->Init = InsDef->Init;
+    Ins->Destroy = InsDef->Destroy;
+    Ins->Draw = InsDef->Draw;
+    Ins->Process = InsDef->Process;
+    if (Ins->Init) {
       Ins->Ready = 0;
       pthread_create(&Ins->LoadThread, NULL, LoadThread, (void*)Ins);
     }
@@ -75,6 +76,20 @@ i32 InstrumentAllocUserData(instrument* Ins, i32 Size) {
     Result = Error;
   }
   return Result;
+}
+
+i32 InstrumentDestroy(instrument* Ins) {
+  if (Ins) {
+    return Ins->Destroy ? Ins->Destroy(Ins) : NoError;
+  }
+  return NoError;
+}
+
+i32 InstrumentDraw(instrument* Ins) {
+  if (Ins) {
+    return Ins->Draw ? Ins->Draw(Ins) : NoError;
+  }
+  return NoError;
 }
 
 void InstrumentFree(instrument* Ins) {

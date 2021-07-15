@@ -5,6 +5,10 @@
 
 i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer);
 
+bus* MixerGetBus(mixer* Mixer, i32 BusIndex);
+
+bus* MixerGetFocusedBus(mixer* Mixer);
+
 i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer);
 
 bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex);
@@ -19,7 +23,7 @@ i32 MixerToggleActiveBus(mixer* Mixer, i32 BusIndex);
 
 i32 MixerClearBuffers(mixer* Mixer);
 
-i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer);
+i32 MixerSumBuses(mixer* Mixer, u8 Playing, float* OutBuffer, float* InBuffer);
 
 i32 MixerRender(mixer* Mixer);
 

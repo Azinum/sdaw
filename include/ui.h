@@ -41,6 +41,7 @@ typedef struct ui_element {
   v2 Size;
   v3 Color;
   v3 BorderColor;
+  float BorderThickness;
   i32 Type;
 
   struct ui_element* Parent;
@@ -51,6 +52,9 @@ typedef struct ui_element {
 
   u8 FillMode;  // TODO(lucas): Implement
   v2 Fill;      // TODO(lucas): Implement
+
+  u8 Focus;
+  u8 DrawText;
 
   u8 Pressed;
   u8 PressedDown;
@@ -74,7 +78,7 @@ typedef struct ui_state {
   element_placement_mode PlacementMode;
   v2 ContainerSize;
   container_size_mode ContainerSizeMode;
-  u32 CurrentDepth;
+  u8 CurrentDepth;
 } ui_state;
 
 void UI_Init();
@@ -87,6 +91,8 @@ void UI_Begin();
 
 i32 UI_DoContainer(u32 ID);
 
+i32 UI_DoFloatingContainer(u32 ID);
+
 i32 UI_EndContainer();
 
 i32 UI_SetContainerSizeMode(container_size_mode Mode);
@@ -97,15 +103,11 @@ i32 UI_DoButton(u32 ID);
 
 i32 UI_DoTextButton(u32 ID, const char* Text);
 
+i32 UI_DoBufferButton(u32 ID, const char* Format, ...);
+
 i32 UI_DoBox(u32 ID, v2 Size, v3 Color);
 
-#if 0
-i32 UI_DoTextButton(u32 ID, v2 P, v2 Size, v3 Color, const char* Text);
-
-i32 UI_DoSpecialButton(u32 ID, v2 P, v2 Size, v3 Color);
-
-i32 UI_DoToggle(u32 ID, v2 P, v2 Size, v3 Color, u8* Value);
-#endif
+i32 UI_DoTextToggle(u32 ID, const char* Text, u8* Value);
 
 void UI_SetPlacement(element_placement_mode Mode);
 

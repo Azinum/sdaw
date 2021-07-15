@@ -20,7 +20,7 @@ i32 AudioEngineStateInit(i32 SampleRate, i32 FramesPerBuffer) {
   Engine->In = NULL;
   Engine->Time = 0.0f;
   Engine->DeltaTime = 0.0f;
-  Engine->IsPlaying = 1;
+  Engine->Playing = 1;
   Engine->Initialized = 1;
 
   i32 Result = NoError;
@@ -41,12 +41,12 @@ i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer) {
 
   if (Mixer->Active) {
     MixerClearBuffers(Mixer);
-    MixerSumBuses(Mixer, Engine->IsPlaying, Engine->Out, Engine->In);
+    MixerSumBuses(Mixer, Engine->Playing, Engine->Out, Engine->In);
   }
   else {
     ClearFloatBuffer(Engine->Out, sizeof(float) * MASTER_CHANNEL_COUNT * Engine->FramesPerBuffer);
   }
-  if (AudioEngine.IsPlaying) {
+  if (AudioEngine.Playing) {
     const float DeltaTime = (1.0f / Engine->SampleRate) * Engine->FramesPerBuffer;
     Engine->DeltaTime = DeltaTime;
     Engine->Time += DeltaTime;

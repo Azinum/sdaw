@@ -1,9 +1,12 @@
 // sampler.c
 
 typedef struct sampler_instrument_data {
-  float TimeStamp;
+  r32 TimeStamp;
   i32 Index;
   u8 Reverse;
+  u8 Distort;
+  u8 Weird;
+  u8 Step;
   audio_source Source;
 } sampler_instrument_data;
 
@@ -14,7 +17,10 @@ i32 SamplerInit(instrument* Ins) {
     Sampler->TimeStamp = 0;
     Sampler->Index = 0;
     Sampler->Reverse = 0;
-    Result = LoadAudioSourceFromDataPath("data/audio/basic_kick.ogg", &Sampler->Source);
+    Sampler->Distort = 0;
+    Sampler->Step = 0;
+    // Result = LoadAudioSourceFromDataPath("data/audio/basic_kick.ogg", &Sampler->Source);
+    Result = LoadAudioSourceFromDataPath("data/audio/step.ogg", &Sampler->Source);
   }
   return Result;
 }
@@ -22,30 +28,34 @@ i32 SamplerInit(instrument* Ins) {
 i32 SamplerProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRate) {
   sampler_instrument_data* Sampler = (sampler_instrument_data*)Ins->UserData.Data;
   audio_source* Source = &Sampler->Source;
-  float* Iter = Bus->Buffer;
-  float Time = AudioEngine.Time;
+  r32* Iter = Bus->Buffer;
+  r32 Time = AudioEngine.Time;
 
-  // Sampler->Index = (i32)(Time * SampleRate * Bus->ChannelCount);
+  if (!Sampler->Step) {
+    Sampler->Index = AudioEngine.Tick * Bus->ChannelCount;
+  }
 
   for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex) {
-    float Frame0 = 0.0f;
-    float Frame1 = 0.0f;
+    r32 Frame0 = 0.0f;
+    r32 Frame1 = 0.0f;
 
-    float TimeStamp = Sampler->TimeStamp + ((60.0f / TempoBPM));
-    if (Time >= TimeStamp) {
-      float Delta = Time - TimeStamp; // Compensation for overstepping the time stamp
-      Sampler->TimeStamp = Time - Delta;
-      Sampler->Index = 0;
+    if (Sampler->Step) {
+      r32 TimeStamp = Sampler->TimeStamp + ((60.0f / TempoBPM));
+      if (Time >= TimeStamp) {
+        r32 Delta = Time - TimeStamp; // Compensation for overstepping the time stamp
+        Sampler->TimeStamp = Time - Delta;
+        Sampler->Index = 0;
+      }
     }
 
     if (Sampler->Reverse) {
       if (Sampler->Index < Source->SampleCount) {
         if (Source->ChannelCount == 2) {
-          Frame0 = Source->Buffer[Source->SampleCount - (Sampler->Index++)];
-          Frame1 = Source->Buffer[Source->SampleCount - (Sampler->Index++)];
+          Frame0 = Source->Buffer[Source->SampleCount - Sampler->Index++];
+          Frame1 = Source->Buffer[Source->SampleCount - Sampler->Index++];
         }
         else if (Source->ChannelCount == 1) {
-          Frame0 = Frame1 = Source->Buffer[Source->SampleCount - (Sampler->Index++)];
+          Frame0 = Frame1 = Source->Buffer[Source->SampleCount - Sampler->Index++];
         }
       }
     }
@@ -68,7 +78,21 @@ i32 SamplerProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
       *Iter++ = 0.5f * Frame0 + 0.5f * Frame1;
     }
   }
-  // Distortion(Bus->Buffer, 2, FramesPerBuffer, 0.3f, -20);
+  if (Sampler->Distort) {
+    Distortion(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.25f, 120.0f);
+  }
+  if (Sampler->Weird) {
+    WeirdEffect(Bus->Buffer, Bus->ChannelCount, FramesPerBuffer, 0.25f, 1000.0f);
+  }
+  return NoError;
+}
+
+i32 SamplerDraw(instrument* Ins) {
+  sampler_instrument_data* Sampler = (sampler_instrument_data*)Ins->UserData.Data;
+  UI_DoTextToggle(UI_ID, "Distort", &Sampler->Distort);
+  UI_DoTextToggle(UI_ID, "Weird", &Sampler->Weird);
+  UI_DoTextToggle(UI_ID, "Reverse", &Sampler->Reverse);
+  UI_DoTextToggle(UI_ID, "Step", &Sampler->Step);
   return NoError;
 }
 

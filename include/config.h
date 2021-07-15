@@ -30,11 +30,11 @@ static v3 UIColorStandard = V3(0.25f, 0.25f, 0.90f);
 static v3 UIColorLight = V3(0.5f, 0.5f, 0.5f);
 static v3 UIColorInactive = V3(0.3f, 0.3f, 0.3f);
 static v3 UIColorNotPresent = V3(0.1f, 0.1f, 0.1f);
-static v3 UIColorContainer = V3(0.32f, 0.20f, 0.25f);
-static v3 UIColorContainerBright = V3(0.7f, 0.7f, 0.7f);
+static v3 UIColorContainer = V3(0.1f, 0.2f, 0.3f);
+static v3 UIColorContainerBright = V3(0.0f, 0.0f, 0.0f);
 static v3 UIColorButton = V3(0.9f, 0.9f, 0.9f);
 static v3 UIColorBorder = V3(0, 0, 0);
-static float UIBorderThickness = 0.0f;
+static float UIBorderThickness = 1.0f;
 
 static v2 UIButtonSize = V2(64, 32);
 static float UIMargin = 12.0f;

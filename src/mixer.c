@@ -18,9 +18,16 @@ void FreeBus(mixer* Mixer, bus* Bus) {
 i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
   if (BusIndex > MASTER_BUS_INDEX && BusIndex < Mixer->BusCount) {
     bus* Bus = &Mixer->Buses[BusIndex];
+    if (Bus == Mixer->FocusedBus) {
+      Mixer->FocusedBus = NULL;
+    }
     FreeBus(Mixer, Bus);
     --Mixer->BusCount;
     if (Mixer->BusCount > 0) {
+      bus* Top = &Mixer->Buses[Mixer->BusCount];
+      if (Mixer->FocusedBus == Top) {
+        Mixer->FocusedBus = Bus;
+      }
       *Bus = Mixer->Buses[Mixer->BusCount];
     }
   }
@@ -30,11 +37,13 @@ i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
 i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Mixer->SampleRate = SampleRate;
   Mixer->FramesPerBuffer = FramesPerBuffer;
+  Mixer->FocusedBus = NULL;
   Mixer->Active = 0;
 
   bus* Master = &Mixer->Buses[0];
   Master->Buffer = NULL;
   Master->ChannelCount = MASTER_CHANNEL_COUNT;
+  Master->ID = 0;
   Master->Pan = V2(1, 1);
   Master->Db = V2(DB_MIN, DB_MIN);
   Master->Active = 1;
@@ -43,19 +52,19 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->ToRemove = 0;
 
   Mixer->BusCount = 1;
-#if 0
-{
-  bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
-  instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
-  MixerAttachInstrumentToBus0(Mixer, Bus, OscTest);
-}
-{
-  bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
-  instrument* AudioInput = InstrumentCreate(NULL, NULL, AudioInputProcess);
-  MixerAttachInstrumentToBus0(Mixer, Bus, AudioInput);
-}
-#endif
+
   return NoError;
+}
+
+bus* MixerGetBus(mixer* Mixer, i32 BusIndex) {
+  if (BusIndex > MASTER_BUS_INDEX && BusIndex < Mixer->BusCount) {
+    return &Mixer->Buses[BusIndex];
+  }
+  return NULL;
+}
+
+bus* MixerGetFocusedBus(mixer* Mixer) {
+  return Mixer->FocusedBus;
 }
 
 i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
@@ -170,7 +179,7 @@ i32 MixerClearBuffers(mixer* Mixer) {
   return NoError;
 }
 
-i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer) {
+i32 MixerSumBuses(mixer* Mixer, u8 Playing, float* OutBuffer, float* InBuffer) {
   TIMER_START();
 
   bus* Master = &Mixer->Buses[0];
@@ -178,7 +187,8 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
     Master->Buffer = OutBuffer;
     ClearFloatBuffer(Master->Buffer, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
   }
-  if (!IsPlaying || !Master->Active || Master->Disabled || !Master->Buffer) {
+
+  if (!Master->Active || Master->Disabled || !Master->Buffer) {
     return NoError;
   }
 
@@ -195,6 +205,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
       RemoveBus(Mixer, BusIndex);
       continue;
     }
+    // NOTE(lucas): We do not want to process the bus if we are not playing
+    if (!Playing) {
+      continue;
+    }
+
     instrument* Ins = Bus->Ins;
     if (Bus->Active && !Bus->Disabled && Bus->Buffer && !Bus->ToRemove) {
       if (Ins) {
@@ -203,6 +218,11 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
         }
       }
     }
+  }
+
+  // Early out if we are not playing
+  if (!Playing) {
+    return NoError;
   }
 
   // Sum all buses into the master bus
@@ -241,6 +261,7 @@ i32 MixerSumBuses(mixer* Mixer, u8 IsPlaying, float* OutBuffer, float* InBuffer)
 
 i32 MixerRender(mixer* Mixer) {
   // UI_SetPlacement(PLACEMENT_VERTICAL);
+
   const i32 TileSize = 24;
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
@@ -254,6 +275,9 @@ i32 MixerRender(mixer* Mixer) {
       if (UI_DoTextButton(UI_ID + Bus->ID + 1, "DEL")) {
         MixerRemoveBus(Mixer, BusIndex);
         continue;
+      }
+      if (UI_DoTextButton(UI_ID + Bus->ID + 2, "FOC")) {
+        Mixer->FocusedBus = Bus;
       }
     }
   }

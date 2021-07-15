@@ -77,7 +77,7 @@ static i32 EngineRun(audio_engine* Engine) {
       }
 
       if (KeyPressed[GLFW_KEY_SPACE]) {
-        Engine->IsPlaying = !Engine->IsPlaying;
+        Engine->Playing = !Engine->Playing;
       }
       if (KeyPressed[GLFW_KEY_Z]) {
         BaseNote -= 12;
@@ -144,7 +144,7 @@ static i32 EngineRun(audio_engine* Engine) {
           if (UI_DoTextButton(UI_ID, "Add")) {
             bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
             if (Bus) {
-              instrument* Sampler = InstrumentCreate(SamplerInit, SamplerFree, SamplerProcess);
+              instrument* Sampler = InstrumentCreate(INSTRUMENT_SAMPLER);
               MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
             }
           }
@@ -155,22 +155,32 @@ static i32 EngineRun(audio_engine* Engine) {
             Engine->Tick = 0;
             Engine->Time = 0;
           }
+          UI_SetContainerSize(V2(1.0f, 0.5f));
           if (UI_DoContainer(UI_ID)) {
             for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
               instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
               if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
                 bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
                 if (Bus) {
-                  instrument* Instrument = InstrumentCreate(InstrumentDef->InitCb, InstrumentDef->FreeCb, InstrumentDef->ProcessCb);
-                  if (Instrument)
+                  instrument* Instrument = InstrumentCreate(InstrumentIndex);
+                  if (Instrument) {
                     MixerAttachInstrumentToBus0(Mixer, Bus, Instrument);
+                  }
                 }
               }
             }
             UI_EndContainer();
           }
+          bus* Focus = MixerGetFocusedBus(Mixer);
+          if (Focus) {
+            if (UI_DoContainer(UI_ID)) {
+              InstrumentDraw(Focus->Ins);
+              UI_EndContainer();
+            }
+          }
           UI_EndContainer();
         }
+        UI_SetContainerSize(V2(0.5f, 1.0f));
         if (UI_DoContainer(UI_ID)) {
           MixerRender(Mixer);
           UI_EndContainer();

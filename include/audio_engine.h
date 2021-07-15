@@ -18,8 +18,9 @@ typedef i32 (*instrument_process_cb)(struct instrument* Ins, struct bus* Bus, i3
 typedef struct instrument {
   buffer UserData;
   i32 Type;
-  instrument_cb InitCb;
-  instrument_cb FreeCb;
+  instrument_cb Init;
+  instrument_cb Destroy;
+  instrument_cb Draw;
   instrument_process_cb Process;
   pthread_t LoadThread;
   u8 Ready;
@@ -43,6 +44,7 @@ typedef struct mixer {
   i32 BusCount;
   i32 SampleRate;
   i32 FramesPerBuffer;
+  bus* FocusedBus;
   u8 Active;
 } mixer;
 
@@ -59,7 +61,7 @@ typedef struct audio_engine {
   float* In;
   float Time;
   float DeltaTime;
-  u8 IsPlaying;
+  u8 Playing;
   u8 Initialized;
   mixer Mixer;
 } audio_engine;

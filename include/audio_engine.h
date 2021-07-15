@@ -28,6 +28,7 @@ typedef struct instrument {
 typedef struct bus {
   float* Buffer;
   i32 ChannelCount;
+  u32 ID;
   v2 Pan;
   v2 Db;
   u8 Active;

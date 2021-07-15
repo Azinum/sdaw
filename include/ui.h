@@ -3,9 +3,10 @@
 #ifndef _UI_H
 #define _UI_H
 
-#define FILE_ID() Hash(__FILE__)
+#define FILE_ID Hash(__FILE__)
+#define FUNCTION_ID Hash((char*)__FUNCTION__)
 
-#define UI_ID (FILE_ID() + __LINE__)
+#define UI_ID (FILE_ID + FUNCTION_ID + __LINE__)
 
 enum element_type {
   ELEMENT_NONE = 0,
@@ -65,6 +66,7 @@ typedef struct ui_element {
 typedef struct ui_state {
   ui_element Elements[MAX_UI_ELEMENTS];
   u32 ElementCount;
+  hash_table ElementLocations;  // ID to element index
   ui_element* Container;  // Master
   ui_element* CurrentContainer;
   ui_element* PrevContainer;
@@ -76,6 +78,8 @@ typedef struct ui_state {
 } ui_state;
 
 void UI_Init();
+
+void UI_Free();
 
 void UI_Refresh();
 

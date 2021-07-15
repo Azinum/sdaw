@@ -43,6 +43,7 @@ static i32 EngineRun(audio_engine* Engine) {
     WindowAddResizeCallback(RendererResizeWindowCallback);
 
     RendererInit();
+    UI_Init();
     Mixer->Active = 1; // NOTE(lucas): We don't start the mixer until we have opened our window and initialized the renderer (to reduce startup audio glitches)
     while (WindowPollEvents() == 0) {
       REAL_TIMER_START();
@@ -187,6 +188,7 @@ static i32 EngineRun(audio_engine* Engine) {
       );
     }
     RendererFree();
+    UI_Free();
     MidiCloseDevices();
   }
   return NoError;

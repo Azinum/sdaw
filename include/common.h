@@ -117,4 +117,6 @@ u64 Hash(char* String);
 
 u64 HashString(char* String, u32 Length);
 
+u32 RandomSeed();
+
 #endif

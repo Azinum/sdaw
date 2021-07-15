@@ -19,8 +19,9 @@ i32 RemoveBus(mixer* Mixer, i32 BusIndex) {
   if (BusIndex > MASTER_BUS_INDEX && BusIndex < Mixer->BusCount) {
     bus* Bus = &Mixer->Buses[BusIndex];
     FreeBus(Mixer, Bus);
+    --Mixer->BusCount;
     if (Mixer->BusCount > 0) {
-      *Bus = Mixer->Buses[--Mixer->BusCount];
+      *Bus = Mixer->Buses[Mixer->BusCount];
     }
   }
   return NoError;
@@ -42,7 +43,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->ToRemove = 0;
 
   Mixer->BusCount = 1;
-#if 1
+#if 0
 {
   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
   instrument* OscTest = InstrumentCreate(OscTestInit, OscTestFree, OscTestProcess);
@@ -69,6 +70,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
       Bus->InternalBuffer = 0;
     }
     Bus->ChannelCount = ChannelCount;
+    Bus->ID = RandomSeed();
     Bus->Pan = V2(1, 1);
     Bus->Db = V2(DB_MIN, DB_MIN);
     Bus->Active = 1;
@@ -245,8 +247,14 @@ i32 MixerRender(mixer* Mixer) {
     float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
     float DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
     float DbFactorAverage = (DbFactorL + DbFactorR) / 2.0f;
-    if (UI_DoBox(UI_ID + BusIndex, V2(TileSize, TileSize), ColorGain(V3(0.3f, 1.0f, 0.3f), 10 * DbFactorAverage))) {
+    if (UI_DoBox(UI_ID + Bus->ID, V2(TileSize, TileSize), ColorGain(V3(0.3f, 1.0f, 0.3f), 10 * DbFactorAverage))) {
       Bus->Active = !Bus->Active;
+    }
+    if (BusIndex > MASTER_BUS_INDEX) {
+      if (UI_DoTextButton(UI_ID + Bus->ID + 1, "DEL")) {
+        MixerRemoveBus(Mixer, BusIndex);
+        continue;
+      }
     }
   }
 #if 0

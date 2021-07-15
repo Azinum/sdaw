@@ -115,3 +115,7 @@ u64 HashString(char* String, u32 Length) {
   }
   return HashNumber;
 }
+
+u32 RandomSeed() {
+  return Rand() % UINT32_MAX;
+}

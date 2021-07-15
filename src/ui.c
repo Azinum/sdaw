@@ -13,6 +13,7 @@ static void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type);
 static void UI_Process(ui_state* State);
 static void UI_AlignElement(ui_element* E);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
+static ui_element* UI_LastElement();
 static ui_element* UI_PushElement();
 
 // Get container size based on the container size mode
@@ -213,9 +214,20 @@ void UI_Process(ui_state* State) {
   for (u32 ElementIndex = 0; ElementIndex < State->ElementCount; ++ElementIndex) {
     ui_element* E = &State->Elements[ElementIndex];
     if (!E->Interaction) {
+      ht_key Key = E->ID;
+      // printf("Remove element with ID: %llu\n", Key);
+      HtRemoveElement(&UI.ElementLocations, Key);
       --State->ElementCount;
       if (State->ElementCount > 0) {
         *E = State->Elements[State->ElementCount];
+        if (E->ID != Key) {
+          ht_value Location = E - &State->Elements[0];
+          Key = E->ID;
+          // printf("Move element with ID: %llu\n", Key);
+
+          // The swapped element now has a new location, therefore we update the hash table accordingly
+          HtInsertElement(&State->ElementLocations, Key, Location);
+        }
       }
       continue;
     }
@@ -279,13 +291,10 @@ void UI_AlignElement(ui_element* E) {
 ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
   ui_element* E = NULL;
 
-  // This is quite inefficient as we are doing this for each element. Maybe use hash table or other solution?
-  for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
-    ui_element* Elem = &UI.Elements[ElementIndex];
-    if (Elem->ID == ID) {
-      E = Elem;
-      break;
-    }
+  ht_key Key = ID;
+  const ht_value* Value = HtLookup(&UI.ElementLocations, Key);
+  if (Value) {
+    E = &UI.Elements[*Value];
   }
 
   if (E) {
@@ -293,11 +302,22 @@ ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
   }
   else {
     *Prev = 0;
+    u32 Location = UI.ElementCount;
     E = UI_PushElement();
+    if (E) {
+      HtInsertElement(&UI.ElementLocations, ID, Location);
+    }
   }
 
   Assert(E);
   return E;
+}
+
+ui_element* UI_LastElement() {
+  if (UI.ElementCount > 0) {
+    return &UI.Elements[UI.ElementCount - 1];
+  }
+  return NULL;
 }
 
 ui_element* UI_PushElement() {
@@ -312,14 +332,19 @@ ui_element* UI_PushElement() {
 
 void UI_Init() {
   UI.ElementCount = 0;
+  UI.ElementLocations = HtCreateEmpty();
   UI.Container = NULL;
   UI.CurrentContainer = NULL;
   UI.PrevContainer = NULL;
   UI.Prev = NULL;
-  UI.PlacementMode = PLACEMENT_VERTICAL;
+  UI.PlacementMode = PLACEMENT_HORIZONTAL;
   UI.ContainerSize = V2(0, 0);
   UI.ContainerSizeMode = CONTAINER_SIZE_MODE_DEFAULT;
   UI.CurrentDepth = 0;
+}
+
+void UI_Free() {
+  HtFree(&UI.ElementLocations);
 }
 
 void UI_Begin() {

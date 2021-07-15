@@ -36,7 +36,7 @@ static v3 UIColorButton = V3(0.9f, 0.9f, 0.9f);
 static v3 UIColorBorder = V3(0, 0, 0);
 static float UIBorderThickness = 0.0f;
 
-static v2 UIButtonSize = V2(64, 38);
+static v2 UIButtonSize = V2(64, 32);
 static float UIMargin = 12.0f;
 static i32 UITextSize = 11;
 static float UITextKerning = 0.6f;

@@ -20,6 +20,7 @@ i32 SamplerInit(instrument* Ins) {
     Sampler->Distort = 0;
     Sampler->Step = 0;
     // Result = LoadAudioSourceFromDataPath("data/audio/basic_kick.ogg", &Sampler->Source);
+    // Result = LoadAudioSourceFromDataPath("data/audio/dark_wind.ogg", &Sampler->Source);
     Result = LoadAudioSourceFromDataPath("data/audio/step.ogg", &Sampler->Source);
   }
   return Result;
@@ -89,6 +90,8 @@ i32 SamplerProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRat
 
 i32 SamplerDraw(instrument* Ins) {
   sampler_instrument_data* Sampler = (sampler_instrument_data*)Ins->UserData.Data;
+  Assert(Sampler);
+
   UI_DoTextToggle(UI_ID, "Distort", &Sampler->Distort);
   UI_DoTextToggle(UI_ID, "Weird", &Sampler->Weird);
   UI_DoTextToggle(UI_ID, "Reverse", &Sampler->Reverse);

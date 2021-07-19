@@ -64,7 +64,7 @@ u32 MidiSerialFetchEvents(midi_event* Dest) {
   u32 Count = 0;
   serial_midi_state* Serial = &SerialMidi;
   if (pthread_mutex_trylock(&Serial->Mutex)) {
-    for (i32 EventIndex = 0; EventIndex < Serial->EventCount; ++EventIndex) {
+    for (u32 EventIndex = 0; EventIndex < Serial->EventCount; ++EventIndex) {
       Dest[EventIndex] = Serial->MidiEvents[EventIndex];
     }
     Count = Serial->EventCount;

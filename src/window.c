@@ -51,7 +51,7 @@ static void FrameBufferSizeCallback(GLFWwindow* Win, i32 Width, i32 Height) {
 #endif
   Window.Width = Width;
   Window.Height = Height;
-  for (i32 CallbackIndex = 0; CallbackIndex < Window.WindowResizeCallbackCount; ++CallbackIndex) {
+  for (u32 CallbackIndex = 0; CallbackIndex < Window.WindowResizeCallbackCount; ++CallbackIndex) {
     window_resize_callback Callback = Window.WindowResize[CallbackIndex];
     if (Callback) {
       Callback(Window.Width, Window.Height);

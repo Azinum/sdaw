@@ -34,7 +34,6 @@ static u32 FontTextureId;
 static i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program);
 static i32 CompileShader(const char* Path, u32* Program);
 static void InitQuadData();
-static void UploadTexture(image* Texture, u32* TextureId);
 
 i32 CompileShaderFromSource(const char* VertSource, const char* FragSource, u32* Program) {
   i32 Result = NoError;
@@ -126,6 +125,17 @@ void InitQuadData() {
   glBindVertexArray(0);
 }
 
+void RendererInit() {
+  InitQuadData();
+  View = Mat4D(1.0f);
+  Model = Mat4D(1.0f);
+  CompileShader(DataPathConcat("data/shader/rect"), &RectShader);
+  CompileShader(DataPathConcat("data/shader/text"), &TextShader);
+  LoadImage(DataPathConcat("data/texture/font_source_code_bold.png"), &FontTexture);
+  UploadTexture(&FontTexture, &FontTextureId);
+  RendererUpdateMatrices();
+}
+
 void UploadTexture(image* Texture, u32* TextureId) {
   i32 TextureFormat = Texture->BytesPerPixel == 4 ? GL_RGBA : GL_RGB;
   glGenTextures(1, TextureId);
@@ -141,15 +151,8 @@ void UploadTexture(image* Texture, u32* TextureId) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void RendererInit() {
-  InitQuadData();
-  View = Mat4D(1.0f);
-  Model = Mat4D(1.0f);
-  CompileShader(DataPathConcat("data/shader/rect"), &RectShader);
-  CompileShader(DataPathConcat("data/shader/text"), &TextShader);
-  LoadImage(DataPathConcat("data/texture/font_source_code_bold.png"), &FontTexture);
-  UploadTexture(&FontTexture, &FontTextureId);
-  RendererUpdateMatrices();
+void UnloadTexture(u32* TextureId) {
+  glDeleteTextures(1, TextureId);
 }
 
 void RendererBeginFrame() {
@@ -300,7 +303,7 @@ void RendererResizeWindowCallback(i32 Width, i32 Height) {
 
 void RendererFree() {
   UnloadImage(&FontTexture);
-  glDeleteTextures(1, &FontTextureId);
+  UnloadTexture(&FontTextureId);
   glDeleteShader(RectShader);
   glDeleteShader(TextShader);
   glDeleteVertexArrays(1, &QuadVAO);

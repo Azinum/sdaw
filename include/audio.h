@@ -17,6 +17,10 @@ void ClearFloatBuffer(float* Buffer, i32 Size);
 
 void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size);
 
+void CopyFloatBufferEliminateEven(float* DestBuffer, float* SourceBuffer, i32 Size);
+
+void CopyFloatBufferEliminateOdd(float* DestBuffer, float* SourceBuffer, i32 Size);
+
 i32 LoadAudioSource(const char* Path, audio_source* Source);
 
 i32 LoadAudioSourceFromDataPath(const char* Path, audio_source* Source);

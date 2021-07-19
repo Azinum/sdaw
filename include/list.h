@@ -43,12 +43,6 @@
 	}\
 }
 
-void BufferPush(buffer* Buffer, char Element);
-
-void BufferPushString(buffer* Buffer, const char* format, ...);
-
-void BufferFree(buffer* Buffer);
-
 // Size of type
 // Count of elements to allocate
 void* ListInit(const u32 Size, const u32 Count);

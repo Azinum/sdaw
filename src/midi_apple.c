@@ -229,7 +229,7 @@ i32 MidiAppleOpenDevices() {
         // printf("Entity: %.*s\n", EntityName.Count, EntityName.Data);
 
         ItemCount SourceCount = MIDIEntityGetNumberOfSources(Entity);
-        for (i32 SourceIndex = 0; SourceIndex < SourceCount; ++SourceIndex) {
+        for (u32 SourceIndex = 0; SourceIndex < SourceCount; ++SourceIndex) {
           MIDIEndpointRef Source = MIDIEntityGetSource(Entity, SourceIndex);
           buffer SourceName = {0};
           GetDeviceName(Source, &SourceName);
@@ -248,13 +248,13 @@ EndOfLoop:
 }
 
 void MidiAppleCloseDevices() {
-  for (i32 Index = 0; Index < MidiApple.InputDeviceCount; ++Index) {
+  for (u32 Index = 0; Index < MidiApple.InputDeviceCount; ++Index) {
     midi_endpoint* InputDevice = &MidiApple.InputDevices[Index];
     // Clean up midi reference endpoint(s)!!!
     BufferFree(&InputDevice->Name);
   }
 
-  for (i32 Index = 0; Index < MidiApple.SourcePortCount; ++Index) {
+  for (u32 Index = 0; Index < MidiApple.SourcePortCount; ++Index) {
     midi_source_port* SourcePort = &MidiApple.SourcePorts[Index];
     // Clean up!!!
   }

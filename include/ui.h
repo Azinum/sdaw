@@ -6,7 +6,7 @@
 #define FILE_ID Hash(__FILE__)
 #define FUNCTION_ID Hash((char*)__FUNCTION__)
 
-#define UI_ID (FILE_ID + FUNCTION_ID + __LINE__)
+#define UI_ID ((u32)(__LINE__ * (FILE_ID + FUNCTION_ID)))
 
 enum element_type {
   ELEMENT_NONE = 0,
@@ -48,10 +48,8 @@ typedef struct ui_element {
   struct ui_state* UI;
 
   const char* Text;
+  string String;
   element_data Data;
-
-  u8 FillMode;  // TODO(lucas): Implement
-  v2 Fill;      // TODO(lucas): Implement
 
   u8 Focus;
   u8 DrawText;
@@ -65,11 +63,10 @@ typedef struct ui_element {
   u8 Interaction;
 } ui_element;
 
-#define MAX_UI_ELEMENTS 256
-
 typedef struct ui_state {
-  ui_element Elements[MAX_UI_ELEMENTS];
+  ui_element* Elements;
   u32 ElementCount;
+  u32 ElementAllocCount;
   hash_table ElementLocations;  // ID to element index
   ui_element* Container;  // Master
   ui_element* CurrentContainer;
@@ -90,8 +87,6 @@ void UI_Refresh();
 void UI_Begin();
 
 i32 UI_DoContainer(u32 ID);
-
-i32 UI_DoFloatingContainer(u32 ID);
 
 i32 UI_EndContainer();
 

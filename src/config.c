@@ -176,7 +176,7 @@ i32 Parse(config_parser_state* P) {
       case TOK_IDENT: {
         variable* Variable = FindVariable(P, Token.At, Token.Length);
         if (Variable) {
-          for (i32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
+          for (u32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
             Token = NextToken(P);
             // TODO(lucas): Type check
             // if (TokenToVariableType(Token.Type) == Variable->Type || 1) {
@@ -302,10 +302,10 @@ i32 ConfigWrite(const char* Path) {
   FILE* File = fopen(Path, "w");
   if (File) {
     config_parser_state* P = &Parser;
-    for (i32 Index = 0; Index < P->VariableCount; ++Index) {
+    for (u32 Index = 0; Index < P->VariableCount; ++Index) {
       variable* Variable = &P->Variables[Index];
       fprintf(File, "%s", Variable->Name);
-      for (i32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
+      for (u32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
         switch (Variable->Type) {
           case TypeInt32: {
             fprintf(File, " %i", *((i32*)Variable->Data + FieldIndex));

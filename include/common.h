@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include <sys/time.h>
 
@@ -55,12 +56,16 @@ typedef union v4 {
   };
 } v4;
 
+typedef struct buffer {
+  char* Data;
+  u32 Count;
+} buffer;
+
 typedef struct string {
   char* Data;
   u32 Count;
+  u32 Size;
 } string;
-
-typedef string buffer;
 
 #define V2(_X, _Y) ((v2) { .X = _X, .Y = _Y })
 #define V3(_X, _Y, _Z) ((v3) { .X = _X, .Y = _Y, .Z = _Z })
@@ -87,6 +92,8 @@ typedef string buffer;
 #define HighNibble(Byte) (u8)((Byte & 0xf0) >> 4)
 
 #define CALL(Callback, ...) (Callback ? (Callback(__VA_ARGS__)) : (void)0)
+
+#define MAX_BUFFER_SIZE 512
 
 typedef enum error_code {
   NoError = 0,

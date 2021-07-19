@@ -23,8 +23,6 @@ static float ReleaseTime = 15.0f;
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};
 
-#define MAX_BUFFER_SIZE 512
-
 char TitleBuffer[MAX_BUFFER_SIZE] = {};
 
 static i32 EngineRun(audio_engine* Engine) {
@@ -51,7 +49,7 @@ static i32 EngineRun(audio_engine* Engine) {
       MidiEventCount = MidiFetchEvents(MidiEvents);
 
       if (MidiEventCount > 0) {
-        for (i32 EventIndex = 0; EventIndex < MidiEventCount; ++EventIndex) {
+        for (u32 EventIndex = 0; EventIndex < MidiEventCount; ++EventIndex) {
           midi_event* Event = &MidiEvents[EventIndex];
           u8 Message = Event->Message;
           u8 High = HighNibble(Message);
@@ -120,10 +118,10 @@ static i32 EngineRun(audio_engine* Engine) {
       if (KeyPressed[GLFW_KEY_0]) {
         TempoBPM = 120;
       }
-      if (KeyPressed[GLFW_KEY_8] || GamepadButtonPressed[G_GamepadButtonLeft]) {
+      if (KeyPressed[GLFW_KEY_8] || GamepadButtonPressed[G_GamepadButtonLeft] || GamepadButtonDown[G_GamepadButtonDown]) {
         --TempoBPM;
       }
-      if (KeyPressed[GLFW_KEY_9] || GamepadButtonPressed[G_GamepadButtonRight]) {
+      if (KeyPressed[GLFW_KEY_9] || GamepadButtonPressed[G_GamepadButtonRight] || GamepadButtonDown[G_GamepadButtonUp]) {
         ++TempoBPM;
       }
       if (KeyPressed[GLFW_KEY_M]) {
@@ -132,10 +130,8 @@ static i32 EngineRun(audio_engine* Engine) {
 
       RendererBeginFrame();
       UI_Begin();
-
 #if 1
       UI_SetPlacement(PLACEMENT_HORIZONTAL);
-
       if (UI_DoContainer(UI_ID)) {
         UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
         UI_SetContainerSize(V2(0.5f, 1.0f));

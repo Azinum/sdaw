@@ -11,6 +11,7 @@
 #include "lut.h"
 #include "debug.h"
 #include "list.h"
+#include "str.h"
 #include "math_util.h"
 #include "arg_parser.h"
 #include "image.h"

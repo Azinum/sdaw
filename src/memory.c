@@ -47,7 +47,9 @@ void* M_Calloc(const i32 Size, const i32 Count) {
 }
 
 void* M_Realloc(void* Data, const i32 OldSize, const i32 NewSize) {
-  assert(Data);
+  if (!Data) {
+    return M_Malloc(NewSize);
+  }
   i32 Diff = NewSize - OldSize;
   void* Temp = realloc(Data, NewSize);
   if (!Temp)

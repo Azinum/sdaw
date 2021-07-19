@@ -109,7 +109,7 @@ u64 Hash(char* String) {
 u64 HashString(char* String, u32 Length) {
   u64 HashNumber = 5381;
   i32 Ch = 0;
-  for (i32 Index = 0; Index < Length; ++Index) {
+  for (u32 Index = 0; Index < Length; ++Index) {
     Ch = String[Index];
     HashNumber = ((HashNumber << 5) + HashNumber) + Ch;
   }

@@ -10,6 +10,10 @@ static v4 Clip;
 
 void RendererInit();
 
+void UploadTexture(image* Texture, u32* TextureId);
+
+void UnloadTexture(u32* TextureId);
+
 void RendererBeginFrame();
 
 void RendererEndFrame();

@@ -10,6 +10,7 @@
 #include "lut.c"
 #include "debug.c"
 #include "list.c"
+#include "str.c"
 #include "math_util.c"
 #include "arg_parser.c"
 #include "image.c"

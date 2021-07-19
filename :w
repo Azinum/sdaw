@@ -4,8 +4,6 @@ ui_state UI;
 static i32 DeltaX = 0;
 static i32 DeltaY = 0;
 
-#define ELEMENT_MAX_COUNT 512
-
 #define UI_TESTING 0
 
 static v2 UI_GetContainerSize(ui_element* E);
@@ -17,7 +15,6 @@ static void UI_AlignElement(ui_element* E);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
 static ui_element* UI_LastElement();
-static void UI_FreeElement(ui_element* E);
 
 // NOTE(lucas): Get container size based on the container size mode
 v2 UI_GetContainerSize(ui_element* E) {
@@ -139,9 +136,10 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   E->UI = NULL;
 
   E->Text = NULL;
-  StringInit(&E->String);
-
   E->Data = (element_data) { .ToggleValue = 1, };
+
+  E->FillMode = 0;
+  E->Fill = V2(0, 0);
 
   E->Focus = 0;
   E->DrawText = 0;
@@ -220,7 +218,7 @@ void UI_Process(ui_state* State) {
     if (!E->Interaction) {
       ht_key Key = E->ID;
       HtRemoveElement(&State->ElementLocations, Key);
-      UI_FreeElement(E);
+      // --State->ElementCount;
       if (State->ElementCount > 0) {
         *E = State->Elements[State->ElementCount - 1];
         if (E->ID != Key) {
@@ -228,8 +226,8 @@ void UI_Process(ui_state* State) {
           Key = E->ID;
           HtInsertElement(&State->ElementLocations, Key, Location); // The swapped element now has a new location, therefore we update the hash table accordingly
         }
-        --State->ElementCount;
       }
+      ListShrink(State->Elements, State->ElementCount, 1);
       continue;
     }
     if (E->Type == ELEMENT_CONTAINER && E->UI && E->Active) {
@@ -273,13 +271,9 @@ void UI_AlignElement(ui_element* E) {
           }
           if (E->Type == ELEMENT_CONTAINER) {
             if (E->Parent) {
-              float WDelta = (E->P.X + E->Size.W) - (E->Parent->P.X + E->Parent->Size.W);
-              float HDelta = (E->P.Y + E->Size.H) - (E->Parent->P.Y + E->Parent->Size.H);
-              if (WDelta > 0) {
-                E->Size.W -= WDelta + UIMargin;
-              }
-              if (HDelta > 0) {
-                E->Size.H -= HDelta + UIMargin;
+              float Delta = (E->P.Y + E->Size.H) - (E->Parent->P.Y + E->Parent->Size.H);
+              if (Delta > 0) {
+                E->Size.H -= Delta + UIMargin;
               }
             }
           }
@@ -319,13 +313,16 @@ ui_element* UI_InitInteractable(u32 ID, i32* Prev) {
 }
 
 ui_element* UI_PushElement() {
-  ui_element* E = NULL;
+  ui_element Element = {0};
 
-  if (UI.ElementCount < UI.ElementAllocCount) {
+#if 0
+  if (UI.ElementCount < MAX_UI_ELEMENTS) {
     E = &UI.Elements[UI.ElementCount++];
   }
-
-  return E;
+#else
+  ListPush(UI.Elements, UI.ElementCount, Element);
+#endif
+  return UI_LastElement();
 }
 
 ui_element* UI_LastElement() {
@@ -335,13 +332,8 @@ ui_element* UI_LastElement() {
   return NULL;
 }
 
-void UI_FreeElement(ui_element* E) {
-  StringFree(&E->String);
-}
-
 void UI_Init() {
-  UI.ElementAllocCount = ELEMENT_MAX_COUNT;
-  UI.Elements = M_Calloc(sizeof(ui_element), UI.ElementAllocCount);
+  UI.Elements = NULL;
   UI.ElementCount = 0;
   UI.ElementLocations = HtCreateEmpty();
   UI.Container = NULL;
@@ -355,7 +347,7 @@ void UI_Init() {
 }
 
 void UI_Free() {
-  M_Free(UI.Elements, UI.ElementAllocCount * sizeof(ui_element));
+  ListFree(UI.Elements, UI.ElementCount);
   HtFree(&UI.ElementLocations);
 }
 

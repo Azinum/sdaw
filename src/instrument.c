@@ -6,7 +6,7 @@ static void* UnloadThread(void* Instrument);
 instrument_def Instruments[MAX_INSTRUMENT_DEF] = {
   {"Oscillator Test", OscTestInit, OscTestFree, NULL, OscTestProcess},
   {"Sampler", SamplerInit, SamplerFree, SamplerDraw, SamplerProcess},
-  {"Audio Input", NULL, NULL, NULL, AudioInputProcess},
+  {"Audio Input", AudioInputInit, AudioInputFree, AudioInputDraw, AudioInputProcess},
 };
 
 void* LoadThread(void* Instrument) {

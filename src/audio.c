@@ -74,6 +74,17 @@ void CopyFloatBufferEliminateEven(float* DestBuffer, float* SourceBuffer, i32 Si
 #endif
 }
 
+void CopyFloatBufferEliminateOdd(float* DestBuffer, float* SourceBuffer, i32 Size) {
+  float* Dest = DestBuffer;
+  float* Source = SourceBuffer;
+  i32 ChunkSize = sizeof(float);
+  i32 MaxChunk = Size / ChunkSize / 2;
+  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, Dest += 2, Source += 2) {
+    *(Dest) = *(Source + 1);
+    *(Dest + 1) = *(Source + 1);
+  }
+}
+
 i32 LoadAudioSource(const char* Path, audio_source* Source) {
   char* Ext = FetchExtension(Path);
   if (!strncmp(Ext, ".wav", MAX_PATH_SIZE)) {

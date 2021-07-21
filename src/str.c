@@ -31,13 +31,17 @@ void StringPush(string* String, char Element) {
   StringMinimize(String);
 }
 
-void StringPushPrintf(string* String, const char* Format, ...) {
-  char Chunk[MAX_BUFFER_SIZE] = {0};
+u32 StringPushPrintf(string* String, const char* Format, ...) {
   va_list Args;
   va_start(Args, Format);
-  u32 NumBytes = vsnprintf(Chunk, MAX_BUFFER_SIZE, Format, Args);
+  u32 Result = StringPushvPrintf(String, Format, Args);
   va_end(Args);
+  return Result;
+}
 
+u32 StringPushvPrintf(string* String, const char* Format, va_list Args) {
+  char Chunk[MAX_BUFFER_SIZE] = {0};
+  u32 NumBytes = vsnprintf(Chunk, MAX_BUFFER_SIZE, Format, Args);
   u32 RequestSize = NumBytes + String->Count;
 
   if (RequestSize < String->Size) {
@@ -53,14 +57,20 @@ void StringPushPrintf(string* String, const char* Format, ...) {
     }
   }
   StringMinimize(String);
+  return String->Count;
 }
 
-void StringPrintf(string* String, const char* Format, ...) {
-  char Chunk[MAX_BUFFER_SIZE] = {0};
+u32 StringPrintf(string* String, const char* Format, ...) {
   va_list Args;
   va_start(Args, Format);
-  u32 NumBytes = vsnprintf(Chunk, MAX_BUFFER_SIZE, Format, Args);
+  u32 Result = StringvPrintf(String, Format, Args);
   va_end(Args);
+  return Result;
+}
+
+u32 StringvPrintf(string* String, const char* Format, va_list Args) {
+  char Chunk[MAX_BUFFER_SIZE] = {0};
+  u32 NumBytes = vsnprintf(Chunk, MAX_BUFFER_SIZE, Format, Args);
 
   if (NumBytes < String->Size) {
     memcpy(&String->Data[0], Chunk, sizeof(char) * NumBytes);
@@ -75,6 +85,7 @@ void StringPrintf(string* String, const char* Format, ...) {
     }
   }
   StringMinimize(String);
+  return String->Count;
 }
 
 void StringFree(string* String) {

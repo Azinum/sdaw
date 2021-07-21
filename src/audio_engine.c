@@ -21,13 +21,30 @@ i32 AudioEngineStateInit(i32 SampleRate, i32 FramesPerBuffer) {
   Engine->Time = 0.0f;
   Engine->DeltaTime = 0.0f;
   Engine->Playing = 1;
+  Engine->Recording = 0;
   Engine->Initialized = 1;
+
+  StreamInit(FramesPerBuffer, 2, "record.data");
 
   i32 Result = NoError;
   if ((Result = AudioEngineInit(Engine, SampleRate, FramesPerBuffer) != NoError)) {
     fprintf(stderr, "Failed to initialize audio engine\n");
   }
   return Result;
+}
+
+i32 AudioEngineStartRecording() {
+  if (!StreamIsRecording()) {
+    StreamStartRecording();
+  }
+  return NoError;
+}
+
+i32 AudioEngineStopRecording() {
+  if (StreamIsRecording()) {
+    StreamStopRecording();
+  }
+  return NoError;
 }
 
 i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer) {
@@ -42,6 +59,9 @@ i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer) {
   if (Mixer->Active) {
     MixerClearBuffers(Mixer);
     MixerSumBuses(Mixer, Engine->Playing, Engine->Out, Engine->In);
+    if (Engine->Recording) {
+      StreamWriteBuffer(Engine->Out, sizeof(float) * MASTER_CHANNEL_COUNT * Engine->FramesPerBuffer);
+    }
   }
   else {
     ClearFloatBuffer(Engine->Out, sizeof(float) * MASTER_CHANNEL_COUNT * Engine->FramesPerBuffer);
@@ -54,4 +74,10 @@ i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer) {
   }
   TIMER_END();
   return NoError;
+}
+
+void AudioEngineTerminate() {
+  AudioEngineStopRecording();
+  StreamFree();
+  AudioEngineExit();
 }

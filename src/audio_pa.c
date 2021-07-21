@@ -102,7 +102,7 @@ i32 AudioEngineStart(callback Callback) {
   return NoError;
 }
 
-void AudioEngineTerminate() {
+void AudioEngineExit() {
   Pa_CloseStream(Stream);
   Pa_Terminate();
 }

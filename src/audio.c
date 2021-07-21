@@ -14,7 +14,7 @@ i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
   return NoError;
 }
 
-void ClearFloatBuffer(float* Buffer, i32 Size) {
+void ClearFloatBuffer(float* Buffer, u32 Size) {
   if (!Buffer) {
     return;
   }
@@ -23,9 +23,9 @@ void ClearFloatBuffer(float* Buffer, i32 Size) {
   Assert(!(Size % 4));
   __m128 Zero = _mm_set1_ps(0.0f);
   __m128* Dest = (__m128*)Buffer;
-  i32 ChunkSize = 4 * sizeof(float);
-  i32 MaxChunk = Size / ChunkSize;
-  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest) {
+  u32 ChunkSize = 4 * sizeof(float);
+  u32 MaxChunk = Size / ChunkSize;
+  for (u32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest) {
     *Dest = Zero;
   }
 #else
@@ -33,16 +33,16 @@ void ClearFloatBuffer(float* Buffer, i32 Size) {
 #endif
 }
 
-void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size) {
+void CopyFloatBuffer(float* DestBuffer, float* Source, u32 Size) {
   Assert(DestBuffer && Source);
   Assert(Size > 0);
 #if USE_SSE
   Assert(!(Size % 4));
   __m128* Dest = (__m128*)DestBuffer;
   __m128* Src = (__m128*)Source;
-  i32 ChunkSize = 4 * sizeof(float);
-  i32 MaxChunk = Size / ChunkSize;
-  for (i32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest, ++Src) {
+  u32 ChunkSize = 4 * sizeof(float);
+  u32 MaxChunk = Size / ChunkSize;
+  for (u32 ChunkIndex = 0; ChunkIndex < MaxChunk; ++ChunkIndex, ++Dest, ++Src) {
     *Dest = *Src;
   }
 #else

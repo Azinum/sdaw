@@ -3,6 +3,7 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
+#include "stream.h"
 #include "audio_engine.h"
 #include "mixer.h"
 #include "instrument.h"

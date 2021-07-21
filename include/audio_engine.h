@@ -5,7 +5,7 @@
 
 #include <pthread.h>
 
-static i32 TempoBPM = 120;
+static i32 TempoBPM = 140;
 
 #define MAX_AUDIO_BUS 32
 
@@ -62,6 +62,7 @@ typedef struct audio_engine {
   float Time;
   float DeltaTime;
   u8 Playing;
+  u8 Recording;
   u8 Initialized;
   mixer Mixer;
 } audio_engine;
@@ -72,9 +73,15 @@ typedef i32 (*callback)(audio_engine*);
 
 i32 AudioEngineStateInit(i32 SampleRate, i32 FramesPerBuffer);
 
+i32 AudioEngineStartRecording();
+
+i32 AudioEngineStopRecording();
+
 i32 AudioEngineProcess(const void* InBuffer, void* OutBuffer);
 
 i32 AudioEngineStart(callback Callback);
+
+void AudioEngineExit();
 
 void AudioEngineTerminate();
 

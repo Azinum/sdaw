@@ -166,7 +166,7 @@ i32 AudioEngineStart(callback Callback) {
   return NoError;
 }
 
-void AudioEngineTerminate() {
+void AudioEngineExit() {
 #if 0
   StereoThreadShouldExit = 1;
   pthread_join(StereoThread, NULL);

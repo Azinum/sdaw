@@ -260,9 +260,10 @@ i32 MixerSumBuses(mixer* Mixer, u8 Playing, float* OutBuffer, float* InBuffer) {
 }
 
 i32 MixerRender(mixer* Mixer) {
-  // UI_SetPlacement(PLACEMENT_VERTICAL);
-
   const i32 TileSize = 24;
+  v2 PrevButtonSize = UIButtonSize;
+  UIButtonSize.H = TileSize;
+  v3 PrevColorButton = UIColorButton;
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
     float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
@@ -272,15 +273,25 @@ i32 MixerRender(mixer* Mixer) {
       Bus->Active = !Bus->Active;
     }
     if (BusIndex > MASTER_BUS_INDEX) {
+      UIColorButton = UIColorDecline;
       if (UI_DoTextButton(UI_ID + Bus->ID + 1, "DEL")) {
         MixerRemoveBus(Mixer, BusIndex);
         continue;
       }
-      if (UI_DoTextButton(UI_ID + Bus->ID + 2, "FOC")) {
-        Mixer->FocusedBus = Bus;
+      u8 ThisFocus = Mixer->FocusedBus == Bus;
+      UIColorButton = PrevColorButton;
+      if (UI_DoTextToggle(UI_ID + Bus->ID + 2, "FOC", &ThisFocus)) {
+        if (!ThisFocus) {
+          Mixer->FocusedBus = NULL;
+        }
+        else {
+          Mixer->FocusedBus = Bus;
+        }
       }
     }
   }
+  UIButtonSize = PrevButtonSize;
+  UIColorButton = PrevColorButton;
 #if 0
   const i32 TileSize = 18;
   const i32 Gap = 8;

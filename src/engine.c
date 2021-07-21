@@ -1,5 +1,6 @@
 // engine.c
 
+#include "stream.c"
 #include "mixer.c"
 #include "instrument.c"
 #include "audio_engine.c"
@@ -151,6 +152,17 @@ static i32 EngineRun(audio_engine* Engine) {
             Engine->Tick = 0;
             Engine->Time = 0;
           }
+          v3 PrevButtonColor = UIColorButton;
+          UIColorButton = UIColorDecline;
+          if (UI_DoTextToggle(UI_ID, "REC", &Engine->Recording)) {
+            if (Engine->Recording) {
+              AudioEngineStartRecording();
+            }
+            else {
+              AudioEngineStopRecording();
+            }
+          }
+          UIColorButton = PrevButtonColor;
           UI_SetContainerSize(V2(1.0f, 0.5f));
           if (UI_DoContainer(UI_ID)) {
             for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {

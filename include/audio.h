@@ -13,9 +13,9 @@ i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount);
 
 i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount);
 
-void ClearFloatBuffer(float* Buffer, i32 Size);
+void ClearFloatBuffer(float* Buffer, u32 Size);
 
-void CopyFloatBuffer(float* DestBuffer, float* Source, i32 Size);
+void CopyFloatBuffer(float* DestBuffer, float* Source, u32 Size);
 
 void CopyFloatBufferEliminateEven(float* DestBuffer, float* SourceBuffer, i32 Size);
 

@@ -166,21 +166,11 @@ i32 StoreWAVE(const char* Path, audio_source* Source) {
   fwrite(&WaveFormat, 1, sizeof(wave_format), File);
   fwrite(&WaveChunk, 1, sizeof(wave_chunk), File);
 
-#if 0
-  i16* Buffer = malloc(sizeof(i16) * Source->SampleCount);
-  i16* Iter = Buffer;
-  ConvertTo16Buffer(Buffer, Source->Buffer, Source->SampleCount);
-  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
-    fwrite(Iter++, 1, sizeof(i16), File);
-  }
-  free(Buffer);
-#else
   float* Iter = Source->Buffer;
   for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
     i16 Sample = (i16)(*(Iter++) * INT16_MAX);
     fwrite(&Sample, 1, sizeof(i16), File);
   }
-#endif
 Done:
   fclose(File);
   return Result;

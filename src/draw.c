@@ -202,14 +202,14 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glUseProgram(0);
 }
 
-void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness) {
+void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness, float Angle) {
   u32 Handle = RectShader;
   glUseProgram(Handle);
 
   Model = Translate(P);
 
   Model = Translate2D(Model, 0.5f * Size.W, 0.5f * Size.H);
-  Model = Rotate2D(Model, 0);
+  Model = Rotate2D(Model, Angle);
   Model = Translate2D(Model, -0.5f * Size.W, -0.5f * Size.H);
   Model = Scale2D(Model, Size.W, Size.H);
 
@@ -232,6 +232,11 @@ void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness) {
 }
 
 void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text) {
+  u32 TextLength = strlen(Text);
+  DrawString(P, Size, Color, Kerning, Leading, TextSize, Text, TextLength);
+}
+
+void DrawString(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text, u32 TextLength) {
   u32 Handle = TextShader;
   glUseProgram(Handle);
 
@@ -239,7 +244,6 @@ void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSiz
   u32 TextureId = FontTextureId;
 
   i32 FontSize = Texture->Width;
-  i32 TextLength = strlen(Text);
   v3 GlyphP = P;
   v2 GlyphSize = V2(
     TextSize,
@@ -262,7 +266,8 @@ void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSiz
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, TextureId);
   glBindVertexArray(QuadVAO);
-  for (i32 Index = 0; Index < TextLength; ++Index) {
+
+  for (u32 Index = 0; Index < TextLength; ++Index) {
     char Ch = Text[Index];
     if (Ch == '\0') {
       break;
@@ -278,7 +283,7 @@ void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSiz
       v2 Range = V2(FontSize, FontSize);
 
       Model = Translate(GlyphP);
-      Model = Scale2D(Model, TextSize, TextSize);
+      Model = Scale2D(Model, GlyphSize.W, GlyphSize.H);
 
       glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
       glUniform2f(glGetUniformLocation(Handle, "Offset"), Offset.X / Texture->Width, Offset.Y / Texture->Height);
@@ -295,8 +300,8 @@ void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSiz
   }
 
   glBindVertexArray(0);
-}
 
+}
 void RendererResizeWindowCallback(i32 Width, i32 Height) {
   RendererUpdateMatrices();
 }

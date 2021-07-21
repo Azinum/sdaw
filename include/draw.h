@@ -24,9 +24,11 @@ void SetClipping(v4 Clipping);
 
 void DrawRect(v3 P, v2 Size, v3 Color);
 
-void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness);
+void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness, float Angle);
 
 void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text);
+
+void DrawString(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text, u32 TextLength);
 
 void RendererResizeWindowCallback(i32 Width, i32 Height);
 

@@ -10,7 +10,6 @@ static i32 DeltaY = 0;
 
 static v2 UI_GetContainerSize(ui_element* E);
 static void UI_Interaction(ui_element* E);
-static void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P);
 static void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type);
 static void UI_Process(ui_state* State);
 static void UI_AlignElement(ui_element* E);
@@ -96,17 +95,6 @@ void UI_Interaction(ui_element* E) {
   E->Interaction = 1;
 }
 
-void UI_AlignToContainer(ui_element* E, ui_element* Container, v2 P) {
-  if (!Container)
-    return;
-
-  E->P = V3(
-    P.X + Container->P.X,
-    P.Y + Container->P.Y,
-    E->P.Z
-  );
-}
-
 void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
   Assert(E);
 
@@ -174,39 +162,6 @@ void UI_InitElement(ui_element* E, u32 ID, v2 Size, i32 Type) {
     default:
       break;
   }
-#if 0
-  // NOTE(lucas): There are probably some alignment issues when it comes to margin placements and such
-  if (E->Parent != UI.Prev && UI.Prev != NULL && E->Parent != NULL) {
-    switch (UI.PlacementMode) {
-      case PLACEMENT_HORIZONTAL: {
-Horizontal:
-        if (UI.Prev->P.X + UI.Prev->Size.W + E->Size.W - UIMargin < E->Parent->P.X + E->Parent->Size.W) {
-          E->P.X = UI.Prev->P.X + UI.Prev->Size.W + UIMargin;
-          E->P.Y = UI.Prev->P.Y;
-          break;
-        }
-        E->P.X = E->Parent->P.X;
-        goto Vertical;
-      }
-      case PLACEMENT_VERTICAL: {
-Vertical:
-        E->P.X = UI.Prev->P.X;
-        // E->P.X += UIMargin;
-        E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
-        break;
-      }
-      default:
-        break;
-    }
-  }
-  else if (E->Parent && E->Parent != NULL && UI.Prev == NULL) {
-    E->P = V3(
-      E->Parent->P.X + UIMargin,
-      E->Parent->P.Y + UIMargin,
-      E->P.Z
-    );
-  }
-#endif
   UI.Prev = E;
 }
 
@@ -260,6 +215,10 @@ void UI_AlignElement(ui_element* E) {
     else {
       switch (UI.PlacementMode) {
         case PLACEMENT_VERTICAL: {
+          if (UI.Prev->P.Y + UI.Prev->Size.H + E->Size.H + (2 * UIMargin) < E->Parent->P.Y + E->Parent->Size.H) {
+            E->P.X = E->Parent->P.X + UIMargin;
+            E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
+          }
           break;
         }
         case PLACEMENT_HORIZONTAL: {
@@ -271,6 +230,7 @@ void UI_AlignElement(ui_element* E) {
             E->P.X = E->Parent->P.X + UIMargin;
             E->P.Y = UI.Prev->P.Y + UI.Prev->Size.H + UIMargin;
           }
+#if 1
           if (E->Type == ELEMENT_CONTAINER) {
             if (E->Parent) {
               float WDelta = (E->P.X + E->Size.W) - (E->Parent->P.X + E->Parent->Size.W);
@@ -283,6 +243,7 @@ void UI_AlignElement(ui_element* E) {
               }
             }
           }
+#endif
           break;
         }
         default:
@@ -355,6 +316,11 @@ void UI_Init() {
 }
 
 void UI_Free() {
+  for (u32 ElementIndex = 0; ElementIndex < UI.ElementCount; ++ElementIndex) {
+    ui_element* E = &UI.Elements[ElementIndex];
+    UI_FreeElement(E);
+  }
+
   M_Free(UI.Elements, UI.ElementAllocCount * sizeof(ui_element));
   HtFree(&UI.ElementLocations);
 }
@@ -409,6 +375,7 @@ i32 UI_DoButton(u32 ID) {
   if (!Prev) {
     v2 Size = UIButtonSize;
     UI_InitElement(E, ID, Size, ELEMENT_BUTTON);
+    E->Color = UIColorButton;
   }
   UI_Interaction(E);
   return E->Released;
@@ -422,21 +389,29 @@ i32 UI_DoTextButton(u32 ID, const char* Text) {
     Size.W = (1 + strlen(Text)) * UITextSize * UITextKerning;
     UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
     E->DrawText = 1;
-    E->Color = UIColorButton;
   }
+  E->Color = UIColorButton;
   E->Text = Text;
   UI_Interaction(E);
   return E->Released;
 }
 
-i32 UI_DoBufferButton(u32 ID, const char* Format, ...) {
+i32 UI_DoStringButton(u32 ID, const char* Format, ...) {
   i32 Prev = 0;
   ui_element* E = UI_InitInteractable(ID, &Prev);
   if (!Prev) {
     v2 Size = UIButtonSize;
     UI_InitElement(E, ID, Size, ELEMENT_TEXT_BUTTON);
+    E->DrawText = 1;
   }
-  E->Text = Format;
+  E->Color = UIColorButton;
+
+  va_list Args;
+  va_start(Args, Format);
+  u32 Count = StringvPrintf(&E->String, Format, Args);
+  va_end(Args);
+  E->Size.W = (1 + Count) * UITextSize * UITextKerning;
+
   UI_Interaction(E);
   return E->Released;
 }
@@ -460,8 +435,8 @@ i32 UI_DoTextToggle(u32 ID, const char* Text, u8* Value) {
     Size.W = (1 + strlen(Text)) * UITextSize * UITextKerning;
     UI_InitElement(E, ID, Size, ELEMENT_TOGGLE);
     E->DrawText = 1;
-    E->Color = UIColorButton;
   }
+  E->Color = UIColorButton;
   E->Text = Text;
   if (Value) {
     E->Data.ToggleValue = *Value;
@@ -524,13 +499,18 @@ void UI_Render() {
         BorderColor = ColorInvert(Color);
       }
       v3 P = E->P;
-      DrawRectangle(P, E->Size, Color, BorderColor, E->BorderThickness);
-      if (E->DrawText && E->Text) {
+      DrawRectangle(P, E->Size, Color, BorderColor, E->BorderThickness, 0);
+      if (E->DrawText) {
         v3 TextP = P;
         TextP.Y += E->Size.H / 2.0f - UITextSize / 2.0f;
         TextP.Z += 0.01f;
-        v3 TextColor = ColorGray(ColorInvert(ColorGain(E->Color, 2.0f)));
-        DrawText(TextP, E->Size, TextColor, UITextKerning, UITextLeading, UITextSize, E->Text);
+        v3 TextColor = ColorGray(ColorInvert(ColorGain(E->Color, 100.0f)));
+        if (E->Text) {
+          DrawText(TextP, E->Size, TextColor, UITextKerning, UITextLeading, UITextSize, E->Text);
+        }
+        else if (E->String.Data) {
+          DrawString(TextP, E->Size, TextColor, UITextKerning, UITextLeading, UITextSize, E->String.Data, E->String.Count);
+        }
       }
     }
   }

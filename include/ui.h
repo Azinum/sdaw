@@ -98,7 +98,7 @@ i32 UI_DoButton(u32 ID);
 
 i32 UI_DoTextButton(u32 ID, const char* Text);
 
-i32 UI_DoBufferButton(u32 ID, const char* Format, ...);
+i32 UI_DoStringButton(u32 ID, const char* Format, ...);
 
 i32 UI_DoBox(u32 ID, v2 Size, v3 Color);
 

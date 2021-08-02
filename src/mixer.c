@@ -50,6 +50,7 @@ i32 MixerInit(mixer* Mixer, i32 SampleRate, i32 FramesPerBuffer) {
   Master->Disabled = 0;
   Master->InternalBuffer = 0;
   Master->ToRemove = 0;
+  Master->MidiInput = 0;
 
   Mixer->BusCount = 1;
 
@@ -85,6 +86,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
     Bus->Active = 1;
     Bus->Disabled = 0;
     Bus->ToRemove = 0;
+    Bus->MidiInput = 0;
     Bus->Ins = NULL;
 
     Mixer->BusCount++;
@@ -278,8 +280,8 @@ i32 MixerRender(mixer* Mixer) {
         MixerRemoveBus(Mixer, BusIndex);
         continue;
       }
-      u8 ThisFocus = Mixer->FocusedBus == Bus;
       UIColorButton = PrevColorButton;
+      u8 ThisFocus = Mixer->FocusedBus == Bus;
       if (UI_DoTextToggle(UI_ID + Bus->ID + 2, "FOC", &ThisFocus)) {
         if (!ThisFocus) {
           Mixer->FocusedBus = NULL;
@@ -288,6 +290,7 @@ i32 MixerRender(mixer* Mixer) {
           Mixer->FocusedBus = Bus;
         }
       }
+      UI_DoTextToggle(UI_ID + Bus->ID + 3, "MID", &Bus->MidiInput);
     }
   }
   UIButtonSize = PrevButtonSize;

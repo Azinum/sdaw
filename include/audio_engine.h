@@ -36,6 +36,7 @@ typedef struct bus {
   u8 Disabled;
   u8 InternalBuffer;
   u8 ToRemove;
+  u8 MidiInput;
   instrument* Ins;
 } bus;
 

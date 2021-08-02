@@ -277,6 +277,9 @@ i32 ConfigParserInit() {
   DefineVariable("pa_input_device", &G_PaInputDevice, 1, TypeInt32);
   DefineVariable("pa_output_device", &G_PaOutputDevice, 1, TypeInt32);
 
+  DefineVariable("stream_buffer_size_multiple", &G_StreamBufferSizeMultiple, 1, TypeInt32);
+  DefineVariable("stream_buffer_denom", &G_StreamBufferDenom, 1, TypeInt32);
+
   return Result;
 }
 
@@ -285,10 +288,18 @@ i32 ConfigRead() {
   config_parser_state* P = &Parser;
 
   char Path[MAX_PATH_SIZE];
-  snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), ".sdaw");
+  snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", HomePath(), ".sdaw");
 
   if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
-    Result = ConfigWrite(Path);  // Write default config
+    if ((Result = ConfigWrite(Path)) != NoError) {
+      snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), ".sdaw");
+      if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
+        Result = ConfigWrite(Path);  // Write default config
+      }
+    }
+    else {
+      Result = ConfigWrite(Path);  // Write default config
+    }
   }
   else {
     return Parse(P);

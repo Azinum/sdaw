@@ -50,6 +50,9 @@ static i32 G_GamepadButtonRight = 14;
 static i32 G_PaInputDevice = -1;
 static i32 G_PaOutputDevice = -1;
 
+static i32 G_StreamBufferSizeMultiple = 32;
+static i32 G_StreamBufferDenom = 2;
+
 typedef enum variable_type {
   TypeUndefined = 0,
   TypeInt32,

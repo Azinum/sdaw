@@ -17,6 +17,16 @@
 #include "ui.c"
 #include "window.c"
 
+typedef enum window_tag {
+  TAG_MAIN = 0,
+  TAG_INSTRUMENT_INSPECT,
+  TAG_INSTRUMENT_PICK,
+  TAG_MIXER,
+} window_tag;
+
+static window_tag WindowTag = TAG_MAIN;
+static u8 UseWindowTags = 0;
+
 static i32 BaseNote = 0;
 static float AttackTime = 0.1f;
 static float ReleaseTime = 15.0f;
@@ -88,37 +98,7 @@ static i32 EngineRun(audio_engine* Engine) {
         if (BaseNote >= (FreqTableSize - 12))
           BaseNote = (FreqTableSize - 12);
       }
-      if (KeyPressed[GLFW_KEY_1]) {
-        MixerToggleActiveBus(Mixer, 0);
-      }
-      if (KeyPressed[GLFW_KEY_2]) {
-        MixerToggleActiveBus(Mixer, 1);
-      }
-      if (KeyPressed[GLFW_KEY_3]) {
-        MixerToggleActiveBus(Mixer, 2);
-      }
-      if (KeyPressed[GLFW_KEY_4]) {
-        MixerToggleActiveBus(Mixer, 3);
-      }
-      if (KeyPressed[GLFW_KEY_5]) {
-        MixerToggleActiveBus(Mixer, 4);
-      }
-      if (KeyPressed[GLFW_KEY_6]) {
-        MixerToggleActiveBus(Mixer, 5);
-      }
-      if (KeyPressed[GLFW_KEY_7]) {
-        MixerToggleActiveBus(Mixer, 6);
-      }
-      if (KeyPressed[GLFW_KEY_8]) {
-        MixerToggleActiveBus(Mixer, 7);
-      }
-      if (KeyPressed[GLFW_KEY_9]) {
-        MixerToggleActiveBus(Mixer, 8);
-      }
 
-      if (KeyPressed[GLFW_KEY_0]) {
-        TempoBPM = 120;
-      }
       if (KeyPressed[GLFW_KEY_8] || GamepadButtonPressed[G_GamepadButtonLeft] || GamepadButtonDown[G_GamepadButtonDown]) {
         --TempoBPM;
       }
@@ -129,73 +109,160 @@ static i32 EngineRun(audio_engine* Engine) {
         MemoryPrintInfo(stdout);
       }
 
+      if (KeyPressed[GLFW_KEY_0]) {
+        UseWindowTags = !UseWindowTags;
+      }
+
+      if (KeyPressed[GLFW_KEY_1]) {
+        WindowTag = TAG_MAIN;
+      }
+      if (KeyPressed[GLFW_KEY_2]) {
+        WindowTag = TAG_INSTRUMENT_INSPECT;
+      }
+      if (KeyPressed[GLFW_KEY_3]) {
+        WindowTag = TAG_INSTRUMENT_PICK;
+      }
+      if (KeyPressed[GLFW_KEY_4]) {
+        WindowTag = TAG_MIXER;
+      }
+
       RendererBeginFrame();
       UI_Begin();
-#if 1
-      UI_SetPlacement(PLACEMENT_HORIZONTAL);
-      if (UI_DoContainer(UI_ID)) {
-        UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
-        UI_SetContainerSize(V2(0.5f, 1.0f));
 
+      if (UseWindowTags && 0) {
+        UI_SetPlacement(PLACEMENT_HORIZONTAL);
         if (UI_DoContainer(UI_ID)) {
-          if (UI_DoTextButton(UI_ID, "Add")) {
-            bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
-            if (Bus) {
-              instrument* Sampler = InstrumentCreate(INSTRUMENT_SAMPLER);
-              MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
-            }
-          }
-          if (UI_DoTextButton(UI_ID, "Remove")) {
-            MixerRemoveBus(Mixer, Mixer->BusCount - 1);
-          }
-          if (UI_DoTextButton(UI_ID, "Reset")) {
-            Engine->Tick = 0;
-            Engine->Time = 0;
-          }
-          v3 PrevButtonColor = UIColorButton;
-          UIColorButton = UIColorDecline;
-          if (UI_DoTextToggle(UI_ID, "REC", &Engine->Recording)) {
-            if (Engine->Recording) {
-              AudioEngineStartRecording();
-            }
-            else {
-              AudioEngineStopRecording();
-            }
-          }
-          UIColorButton = PrevButtonColor;
-          UI_SetContainerSize(V2(1.0f, 0.5f));
-          if (UI_DoContainer(UI_ID)) {
-            for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
-              instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
-              if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
+          UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
+          UI_SetContainerSize(V2(1.0f, 1.0f));
+          switch (WindowTag) {
+            case TAG_MAIN: {
+              UI_SetPlacement(PLACEMENT_VERTICAL);
+              if (UI_DoTextButton(UI_ID, "Add")) {
                 bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
                 if (Bus) {
-                  instrument* Instrument = InstrumentCreate(InstrumentIndex);
-                  if (Instrument) {
-                    MixerAttachInstrumentToBus0(Mixer, Bus, Instrument);
+                  instrument* Sampler = InstrumentCreate(INSTRUMENT_SAMPLER);
+                  MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
+                }
+              }
+              if (UI_DoTextButton(UI_ID, "Remove")) {
+                MixerRemoveBus(Mixer, Mixer->BusCount - 1);
+              }
+              if (UI_DoTextButton(UI_ID, "Reset")) {
+                Engine->Tick = 0;
+                Engine->Time = 0;
+              }
+              v3 PrevButtonColor = UIColorButton;
+              UIColorButton = UIColorDecline;
+              if (UI_DoTextToggle(UI_ID, "REC", &Engine->Recording)) {
+                if (Engine->Recording) {
+                  AudioEngineStartRecording();
+                }
+                else {
+                  AudioEngineStopRecording();
+                }
+              }
+              UIColorButton = PrevButtonColor;
+              break;
+            }
+            case TAG_INSTRUMENT_INSPECT: {
+              bus* Focus = MixerGetFocusedBus(Mixer);
+              if (Focus) {
+                InstrumentDraw(Focus->Ins);
+              }
+              break;
+            }
+            case TAG_INSTRUMENT_PICK: {
+              UI_SetPlacement(PLACEMENT_VERTICAL);
+              for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
+                instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
+                if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
+                  bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+                  if (Bus) {
+                    instrument* Instrument = InstrumentCreate(InstrumentIndex);
+                    if (Instrument) {
+                      MixerAttachInstrumentToBus0(Mixer, Bus, Instrument);
+                    }
                   }
                 }
+              }
+              break;
+            }
+            case TAG_MIXER: {
+              MixerRender(Mixer);
+              break;
+            }
+            default:
+              break;
+          }
+          UI_EndContainer();
+        }
+
+      }
+      else {
+        UI_SetPlacement(PLACEMENT_HORIZONTAL);
+        if (UI_DoContainer(UI_ID)) {
+          UI_SetContainerSizeMode(CONTAINER_SIZE_MODE_PERCENT);
+          UI_SetContainerSize(V2(0.5f, 1.0f));
+
+          if (UI_DoContainer(UI_ID)) {
+            if (UI_DoTextButton(UI_ID, "Add")) {
+              bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+              if (Bus) {
+                instrument* Sampler = InstrumentCreate(INSTRUMENT_SAMPLER);
+                MixerAttachInstrumentToBus0(Mixer, Bus, Sampler);
+              }
+            }
+            if (UI_DoTextButton(UI_ID, "Remove")) {
+              MixerRemoveBus(Mixer, Mixer->BusCount - 1);
+            }
+            if (UI_DoTextButton(UI_ID, "Reset")) {
+              Engine->Tick = 0;
+              Engine->Time = 0;
+            }
+            v3 PrevButtonColor = UIColorButton;
+            UIColorButton = UIColorDecline;
+            if (UI_DoTextToggle(UI_ID, "REC", &Engine->Recording)) {
+              if (Engine->Recording) {
+                AudioEngineStartRecording();
+              }
+              else {
+                AudioEngineStopRecording();
+              }
+            }
+            UIColorButton = PrevButtonColor;
+            UI_SetContainerSize(V2(1.0f, 0.5f));
+            if (UI_DoContainer(UI_ID)) {
+              for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
+                instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
+                if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
+                  bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
+                  if (Bus) {
+                    instrument* Instrument = InstrumentCreate(InstrumentIndex);
+                    if (Instrument) {
+                      MixerAttachInstrumentToBus0(Mixer, Bus, Instrument);
+                    }
+                  }
+                }
+              }
+              UI_EndContainer();
+            }
+            bus* Focus = MixerGetFocusedBus(Mixer);
+            if (Focus) {
+              if (UI_DoContainer(UI_ID)) {
+                InstrumentDraw(Focus->Ins);
+                UI_EndContainer();
               }
             }
             UI_EndContainer();
           }
-          bus* Focus = MixerGetFocusedBus(Mixer);
-          if (Focus) {
-            if (UI_DoContainer(UI_ID)) {
-              InstrumentDraw(Focus->Ins);
-              UI_EndContainer();
-            }
+          UI_SetContainerSize(V2(0.5f, 1.0f));
+          if (UI_DoContainer(UI_ID)) {
+            MixerRender(Mixer);
+            UI_EndContainer();
           }
           UI_EndContainer();
         }
-        UI_SetContainerSize(V2(0.5f, 1.0f));
-        if (UI_DoContainer(UI_ID)) {
-          MixerRender(Mixer);
-          UI_EndContainer();
-        }
-        UI_EndContainer();
       }
-#endif
 
       UI_Render();
       RendererEndFrame();

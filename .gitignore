@@ -6,3 +6,5 @@ sequence/
 out.wav
 *.wav
 .DS_Store
+record.data
+record.wav

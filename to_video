@@ -1,11 +1,11 @@
 #!/bin/bash
 
 AUDIO_DIR=audio
-AUDIO_FILE=sample_maniac.wav
+AUDIO_FILE=dark_wind.ogg
 OUT_DIR=output
 SEQ_DIR=sequence
-W=960
-H=960
+W=480
+H=360
 FPS=24
 
 if [ -f ${AUDIO_DIR}/${AUDIO_FILE} ]; then

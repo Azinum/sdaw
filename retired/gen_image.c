@@ -179,6 +179,7 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
         case IMG_GEN_STRAT_LUCAS: {
           for (i32 Y = 0; Y < Image.Height; ++Y) {
             for (i32 X = 0; X < Image.Width; ++X) {
+#if 0
               color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
               v2 Vector = V2(0, 0); // Vector which represents the movement strength and direction of this pixel
 
@@ -218,6 +219,57 @@ i32 GenerateImageSequence(const char* Path, audio_source* Audio, gen_image_args*
                   }
                 }
               }
+#else
+              color_rgba* Color = (color_rgba*)FetchPixel(&Image, X, Y);
+              v2 Vector = V2(0, 0);
+
+              float* Frames = &Audio->Buffer[(i32)SampleIndex % Audio->SampleCount];
+              const i32 WindowSize = 32;  // Number of audio samples to read for this pixel
+              float SomeFactor = 0.0f;
+              i32 WindowIndex = 0;
+              for (; WindowIndex < WindowSize && WindowIndex < FramesLeft; ++WindowIndex) {
+                SomeFactor += Frames[WindowIndex];
+              }
+              SomeFactor /= (float)WindowIndex;
+
+              v2 Center = V2(SomeFactor * Image.Width / 2, SomeFactor * Image.Height / 2);
+              v2 P = V2(X, Y);
+              v2 DirectionVector = DifferenceV2(Center, P);
+              Vector = MultiplyV2(DirectionVector, 0.0001f * (log10(Db)));
+              if (!(Y % 2)) {
+                Vector.X += SomeFactor * 20 * sin(AnimationTime * 10.0f);
+                Vector.Y += SomeFactor * 20 * cos(AnimationTime * 10.0f);
+              }
+              if (UseMask) {
+                v2 MaskScaling = V2(
+                  (float)Mask.Width / Image.Width,
+                  (float)Mask.Height / Image.Height
+                );
+                v2 TexelSample = V2(
+                  X * MaskScaling.Y,
+                  Y * MaskScaling.Y
+                );
+                if (!(Y % 3)) {
+                  TexelSample.X += SomeFactor * 10 * Vector.X * sin(AnimationTime * 10.0f);
+                }
+                if (!(Y % 17)) {
+                  TexelSample.Y += SomeFactor * 10 * Vector.Y * cos(AnimationTime * 10.0f);
+                }
+                TexelSample = AddToV2(TexelSample, MultiplyToV2(TexelSample, Vector));
+                color_rgba* MaskPixel = (color_rgba*)FetchPixel(&Mask, Abs((i32)TexelSample.X % Mask.Width), Abs((i32)TexelSample.Y % Mask.Height));
+                if (MaskPixel && Color) {
+                  Color->R = Clamp(Color->R + MaskPixel->R, 0, UINT8_MAX);
+                  Color->G = Clamp(Color->G + MaskPixel->G, 0, UINT8_MAX);
+                  Color->B = Clamp(Color->B + MaskPixel->B, 0, UINT8_MAX);
+                  float DbDenom = Db * 0.00005f;
+                  if (DbDenom != 0) {
+                    Color->R /= DbDenom;
+                    Color->G /= DbDenom;
+                    Color->B /= DbDenom;
+                  }
+                }
+              }
+#endif
             }
           }
           break;

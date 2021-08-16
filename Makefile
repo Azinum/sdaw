@@ -53,3 +53,4 @@ shared:
 run:
 	./${BUILD_DIR}/${PROG}
 #	./${BUILD_DIR}/${PROG} -i resource/audio/dark_wind.ogg --width 512 --height 512 -v -s resource/plugins/modules/image_seq/test.mod -o sequence/frame_ --mask images/dark_wind.png
+#	./${BUILD_DIR}/${PROG} -i audio/dark_wind.ogg --verbose --sequence -s 3 --start-index 0 --num-frames 0 --mask images/bonkerser.png --output-path sequence/frame_ --width 512 --height 512 -r 24

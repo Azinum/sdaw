@@ -290,6 +290,12 @@ i32 ConfigRead() {
   char Path[MAX_PATH_SIZE];
   snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", HomePath(), ".sdaw");
 
+  // NOTE(lucas): We free the old source buffer, in cases where
+  // we want to re-read the configuration file, so that we do not get a memory leak
+  if (P->Source.Data) {
+    BufferFree(&P->Source);
+  }
+
   if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
     if ((Result = ConfigWrite(Path)) != NoError) {
       snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), ".sdaw");

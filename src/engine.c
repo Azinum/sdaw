@@ -98,6 +98,9 @@ static i32 EngineRun(audio_engine* Engine) {
         if (BaseNote >= (FreqTableSize - 12))
           BaseNote = (FreqTableSize - 12);
       }
+      if (KeyPressed[GLFW_KEY_R]) {
+        ConfigRead();
+      }
 
       if (KeyPressed[GLFW_KEY_8] || GamepadButtonPressed[G_GamepadButtonLeft] || GamepadButtonDown[G_GamepadButtonDown]) {
         --TempoBPM;

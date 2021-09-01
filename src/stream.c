@@ -1,6 +1,6 @@
 // stream.c
 
-#define STREAM_BUFFER_COUNT 4
+#define STREAM_BUFFER_COUNT 3
 
 typedef struct stream_buffer {
   r32* Data;
@@ -50,7 +50,7 @@ void* StreamWriteThread(void* StreamState) {
     Stream->DoneWritingBuffer = 0;
     if (pthread_mutex_trylock(&Stream->Mutex)) {
       stream_buffer* Buffer = Stream->WriteBuffer;
-      if (Buffer) {
+      if (Buffer && Buffer->Count > 0) {
         if (Stream->File) {
           fwrite(&Buffer->Data[0], sizeof(float), Buffer->Count, Stream->File);
           Buffer->Count = 0;

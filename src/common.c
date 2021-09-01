@@ -119,3 +119,28 @@ u64 HashString(char* String, u32 Length) {
 u32 RandomSeed() {
   return Rand() % UINT32_MAX;
 }
+
+u8 StringContains(char* String, char* Content) {
+  if (!String || !Content) {
+    return 0;
+  }
+  u32 Length = strlen(String);
+  u32 ContentLength = strlen(Content);
+
+  if (Length < ContentLength) {
+    return 0;
+  }
+  for (u32 Index = 0; Index < Length; ++Index) {
+    if (ContentLength < Length - Index) {
+      if (String[Index] == Content[0]) {
+        if (!strncmp(Content, &String[Index], ContentLength)) {
+          return 1;
+        }
+      }
+    }
+    else {
+      return 0;
+    }
+  }
+  return 0;
+}

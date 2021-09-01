@@ -126,4 +126,6 @@ u64 HashString(char* String, u32 Length);
 
 u32 RandomSeed();
 
+u8 StringContains(char* String, char* Content);
+
 #endif

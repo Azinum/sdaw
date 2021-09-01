@@ -192,6 +192,7 @@ void DrawRect(v3 P, v2 Size, v3 Color) {
   glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
   glUniform4f(glGetUniformLocation(Handle, "InBorderColor"), Color.R, Color.G, Color.B, 1.0f);
   glUniform1f(glGetUniformLocation(Handle, "Thickness"), 0);
+  glUniform1i(glGetUniformLocation(Handle, "DrawBorder"), 0);
   glUniform2f(glGetUniformLocation(Handle, "RectSize"), Size.W, Size.H);
   glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
 
@@ -220,6 +221,7 @@ void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness, flo
   glUniform4f(glGetUniformLocation(Handle, "InColor"), Color.R, Color.G, Color.B, 1.0f);
   glUniform4f(glGetUniformLocation(Handle, "InBorderColor"), BorderColor.R, BorderColor.G, BorderColor.B, 1.0f);
   glUniform1f(glGetUniformLocation(Handle, "Thickness"), Thickness);
+  glUniform1i(glGetUniformLocation(Handle, "DrawBorder"), Thickness > 0);
   glUniform2f(glGetUniformLocation(Handle, "RectSize"), Size.W, Size.H);
   glUniform4f(glGetUniformLocation(Handle, "Clip"), Clip.X, Clip.Y, Clip.Z, Clip.W);
 

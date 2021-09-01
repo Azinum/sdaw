@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 typedef struct serial_midi_state {
   pthread_mutex_t Mutex;
@@ -57,12 +58,39 @@ i32 MidiSerialInit() {
 }
 
 i32 MidiSerialOpenDevices() {
-  return NoError;
+  i32 Result = Error;
+
+  const char* DevPath = "/dev";
+  DIR* Directory = NULL;
+  struct dirent* Entry = NULL;
+
+  if ((Directory = opendir(DevPath)) != NULL) {
+    while ((Entry = readdir(Directory)) != NULL) {
+      if (StringContains(Entry->d_name, "midi")) {
+        char Path[MAX_PATH_SIZE];
+        snprintf(Path, MAX_PATH_SIZE, "%s/%s", DevPath, Entry->d_name);
+        // printf("MIDI Device: %s (%s)\n", Entry->d_name, Path);
+        Result = OpenSerial(Path);
+        break;
+      }
+    }
+    closedir(Directory);
+  }
+  else {
+    return Result;
+  }
+  return Result;
 }
 
 u32 MidiSerialFetchEvents(midi_event* Dest) {
   u32 Count = 0;
+
   serial_midi_state* Serial = &SerialMidi;
+
+  if (Serial->Fd < 0) {
+    return 0;
+  }
+
   if (pthread_mutex_trylock(&Serial->Mutex)) {
     for (u32 EventIndex = 0; EventIndex < Serial->EventCount; ++EventIndex) {
       Dest[EventIndex] = Serial->MidiEvents[EventIndex];

@@ -39,7 +39,7 @@ char TitleBuffer[MAX_BUFFER_SIZE] = {};
 static i32 EngineRun(audio_engine* Engine) {
   mixer* Mixer = &Engine->Mixer;
 
-  MidiInitHandle(MIDI_HANDLE_APPLE);
+  MidiInitHandle(MIDI_HANDLE_SERIAL);
   MidiInit();
   MidiOpenDevices();
 

@@ -45,6 +45,10 @@ i32 SdawStart(i32 argc, char** argv) {
   ConfigParserInit();
   ConfigRead();
 
+#if INSTALL_APPLE && __APPLE__
+  Result = EngineInit();
+  EngineFree();
+#else
   if (argc <= 1) {
     Result = EngineInit();
     EngineFree();
@@ -64,6 +68,7 @@ i32 SdawStart(i32 argc, char** argv) {
       Result = ImageInterp(argc - 1, &argv[1]);
     }
   }
+#endif
   ConfigParserFree();
   if (MemoryTotal() != 0) {
     fprintf(stderr, "Memory leak!\n");

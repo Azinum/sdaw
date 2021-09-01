@@ -2,7 +2,7 @@
 
 include config.mk
 
-all: prepare compile run
+all: prepare compile
 
 prepare:
 	mkdir -p sequence
@@ -12,10 +12,14 @@ prepare:
 compile: ${SRC}
 	${CC} ${SRC} -o ${BUILD_DIR}/${PROG} ${FLAGS} ${LIB_LINUX} ${O_RELEASE}
 
-mac: prepare compile_mac run
+mac: prepare compile_mac
 
 compile_mac: ${SRC}
 	${CC} ${SRC} -o ${BUILD_DIR}/${PROG} ${FLAGS} ${LIB_MAC} ${O_RELEASE}
+
+install_mac: FLAGS += -D INSTALL_APPLE
+install_mac: mac install
+	./install_apple.sh
 
 install:
 	chmod o+x ${BUILD_DIR}/${PROG}

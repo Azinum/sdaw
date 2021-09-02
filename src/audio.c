@@ -7,14 +7,14 @@ i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount) {
   return NoError;
 }
 
-i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount) {
+i32 ConvertToInt16Buffer(i16* restrict OutBuffer, float* restrict InBuffer, u32 SampleCount) {
   for (u32 SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
     *OutBuffer++ = InBuffer[SampleIndex] * INT16_MAX;
   }
   return NoError;
 }
 
-void ClearFloatBuffer(float* Buffer, u32 Size) {
+void ClearFloatBuffer(float* restrict Buffer, u32 Size) {
   if (!Buffer) {
     return;
   }
@@ -33,7 +33,7 @@ void ClearFloatBuffer(float* Buffer, u32 Size) {
 #endif
 }
 
-void CopyFloatBuffer(float* DestBuffer, float* Source, u32 Size) {
+void CopyFloatBuffer(float* restrict DestBuffer, float* restrict Source, u32 Size) {
   Assert(DestBuffer && Source);
   Assert(Size > 0);
 #if USE_SSE

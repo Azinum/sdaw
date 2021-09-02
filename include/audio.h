@@ -11,11 +11,12 @@ typedef struct audio_source {
 
 i32 ConvertToFloatBuffer(float* OutBuffer, i16* InBuffer, u32 SampleCount);
 
-i32 ConvertToInt16Buffer(i16* OutBuffer, float* InBuffer, u32 SampleCount);
+i32 ConvertToInt16Buffer(i16* restrict OutBuffer, float* restrict InBuffer, u32 SampleCount);
 
-void ClearFloatBuffer(float* Buffer, u32 Size);
+void ClearFloatBuffer(float* restrict Buffer, u32 Size);
 
-void CopyFloatBuffer(float* DestBuffer, float* Source, u32 Size);
+// Similar to the memcpy function, destination and source memory can NOT overlap
+void CopyFloatBuffer(float* restrict DestBuffer, float* restrict Source, u32 Size);
 
 void CopyFloatBufferEliminateEven(float* DestBuffer, float* SourceBuffer, i32 Size);
 

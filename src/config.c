@@ -2,12 +2,6 @@
 
 config_parser_state Parser;
 
-static u32 TypeSizes[MaxVariableType] = {
-  0,
-  sizeof(i32),
-  sizeof(r32),
-};
-
 typedef enum config_token_type {
   TOK_IDENT,
   TOK_INT,
@@ -32,12 +26,10 @@ static config_token CurrentToken = { .At = NULL, .Length = 0, .Type = TOK_EOF, }
 
 static u8 IsNumber(char Ch);
 static u8 IsAlpha(char Ch);
-static variable_type TokenToVariableType(config_token_type TokenType);
 static config_token ParseNumber(config_parser_state* P);
 static config_token ParseIdent(config_parser_state* P);
 static config_token NextToken(config_parser_state* P);
 static void Next(config_parser_state* P);
-static config_token NullTerminateToken(config_token Token);
 static i32 Parse(config_parser_state* P);
 
 static i32 InsertVariable(config_parser_state* P, variable* Variable);
@@ -50,14 +42,6 @@ u8 IsNumber(char Ch) {
 
 u8 IsAlpha(char Ch) {
   return (Ch >= 'a' && Ch <= 'z') || (Ch >= 'A' && Ch <= 'Z');
-}
-
-variable_type TokenToVariableType(config_token_type TokenType) {
-  switch (TokenType) {
-    case TOK_INT:   return TypeInt32;
-    case TOK_FLOAT: return TypeFloat32;
-    default:        return TypeUndefined;
-  }
 }
 
 config_token ParseNumber(config_parser_state* P) {
@@ -153,14 +137,6 @@ config_token NextToken(config_parser_state* P) {
   return CurrentToken;
 }
 
-config_token NullTerminateToken(config_token Token) {
-  config_token Result = Token;
-
-  Result.At[Result.Length] = '\0';
-
-  return Result;
-}
-
 void Next(config_parser_state* P) {
   CurrentToken.At = P->Index++;
   CurrentToken.Length = 1;
@@ -178,8 +154,6 @@ i32 Parse(config_parser_state* P) {
         if (Variable) {
           for (u32 FieldIndex = 0; FieldIndex < Variable->NumFields; ++FieldIndex) {
             Token = NextToken(P);
-            // TODO(lucas): Type check
-            // if (TokenToVariableType(Token.Type) == Variable->Type || 1) {
             switch (Variable->Type) {
               case TypeInt32: {
                 *((i32*)Variable->Data + FieldIndex) = (i32)Token.Number;
@@ -192,10 +166,6 @@ i32 Parse(config_parser_state* P) {
               default:
                 break;
             }
-            // }
-            // else {
-            //   // Handle
-            // }
           }
         }
         break;

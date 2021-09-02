@@ -2,19 +2,19 @@
 
 include config.mk
 
-all: prepare compile
+all: compile
 
 prepare:
 	mkdir -p sequence
 	mkdir -p ${BUILD_DIR}
 	cp -rp ${RES} ${BUILD_DIR}
 
-compile: ${SRC}
+compile: prepare ${SRC}
 	${CC} ${SRC} -o ${BUILD_DIR}/${PROG} ${FLAGS} ${LIB_LINUX} ${O_RELEASE}
 
-mac: prepare compile_mac
+mac: compile_mac
 
-compile_mac: ${SRC}
+compile_mac: prepare ${SRC}
 	${CC} ${SRC} -o ${BUILD_DIR}/${PROG} ${FLAGS} ${LIB_MAC} ${O_RELEASE}
 
 install_mac: FLAGS += -D INSTALL_APPLE

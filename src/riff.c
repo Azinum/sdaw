@@ -63,6 +63,7 @@ static i32 ValidateWaveHeader(wave_header* Header) {
 }
 
 static i32 ValidateWaveFormat(wave_format* Header) {
+  // TODO(lucas): Handle JUNK format id
   if (strncmp(Header->FormatId, FormatId, ArraySize(FormatId)) != 0) {
     return Error;
   }

@@ -98,6 +98,8 @@ typedef struct string {
 typedef enum error_code {
   NoError = 0,
   Error = -1,
+
+  MaxErrorCode,
 } error_code;
 
 extern char DataPath[];

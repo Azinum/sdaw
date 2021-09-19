@@ -63,8 +63,6 @@ static i32 EngineRun(audio_engine* Engine) {
         for (u32 EventIndex = 0; EventIndex < MidiEventCount; ++EventIndex) {
           midi_event* Event = &MidiEvents[EventIndex];
           u8 Message = Event->Message;
-          u8 High = HighNibble(Message);
-          u8 Low = LowNibble(Message);
           u8 A = Event->A;
           u8 B = Event->B;
           switch (Message) {

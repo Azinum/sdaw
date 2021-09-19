@@ -21,6 +21,7 @@
 #include "image_seq.h"
 #include "gen_audio.h"
 #include "image_interp.h"
+#include "audio_effect.h"
 
 #ifndef NO_ENGINE
   #include "engine.h"

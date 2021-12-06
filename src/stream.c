@@ -3,7 +3,7 @@
 #define STREAM_BUFFER_COUNT 3
 
 typedef struct stream_buffer {
-  r32* Data;
+  f32* Data;
   u32 Count;
   u32 Size;
 } stream_buffer;

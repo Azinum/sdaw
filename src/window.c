@@ -117,14 +117,6 @@ static i32 WindowOpen(u32 Width, u32 Height, const char* Title, u8 Vsync, u8 Ful
   return 0;
 }
 
-static void WindowSetFullScreen() {
-  const GLFWvidmode* Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-  Window.Width = Mode->width;
-  Window.Height = Mode->height;
-  Window.FullScreen = 1;
-  glfwSetWindowSize(Window.Window, Window.Width, Window.Height);
-}
-
 static void WindowToggleFullScreen() {
   Window.FullScreen = !Window.FullScreen;
   if (Window.FullScreen) {

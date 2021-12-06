@@ -85,10 +85,10 @@ i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer) {
   return Result;
 }
 
-float RandomFloat(float From, float To) {
-  float Result = 0.0f;
+f32 RandomFloat(f32 From, f32 To) {
+  f32 Result = 0.0f;
 
-  Result = (float)Rand() / (float)(RAND_MAX / To) + (float)Rand() / (float)(RAND_MAX / From);
+  Result = (f32)Rand() / (f32)(RAND_MAX / To) + (f32)Rand() / (f32)(RAND_MAX / From);
 
   return Result;
 }

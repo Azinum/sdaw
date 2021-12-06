@@ -24,8 +24,8 @@ typedef struct debug_event_info {
   debug_value_type Type;  // Unused for now
   union {
     i32 Integer;
-    r32 Float;
-    r64 Double;
+    f32 Float;
+    f64 Double;
   };
 } debug_event_info;
 
@@ -53,7 +53,7 @@ static i32 DebugNumEvents = 0;
 
 #define TIMER_END(...) { \
   _TimeEnd = clock(); \
-  r64 _DeltaTime = ((r64) (_TimeEnd - _TimeStart)) / CLOCKS_PER_SEC; \
+  f64 _DeltaTime = ((f64) (_TimeEnd - _TimeStart)) / CLOCKS_PER_SEC; \
   char* _Name = (char*)__FUNCTION__; \
   DebugRecordEvent(_Name, _DeltaTime, 0); \
   __VA_ARGS__ \
@@ -68,7 +68,7 @@ static i32 DebugNumEvents = 0;
 
 #define REAL_TIMER_END(...) { \
   gettimeofday(&TimeEnd, NULL); \
-  float _DeltaTime = ((((TimeEnd.tv_sec - TimeStart.tv_sec) * 1000000.0f) + TimeEnd.tv_usec) - (TimeStart.tv_usec)) / 1000000.0f; \
+  f32 _DeltaTime = ((((TimeEnd.tv_sec - TimeStart.tv_sec) * 1000000.0f) + TimeEnd.tv_usec) - (TimeStart.tv_usec)) / 1000000.0f; \
   __VA_ARGS__ \
 }
 

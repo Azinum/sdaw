@@ -1,7 +1,7 @@
 // sampler.c
 
 typedef struct sampler_instrument_data {
-  r32 TimeStamp;
+  f32 TimeStamp;
   i32 Index;
   u8 Reverse;
   u8 Distort;
@@ -28,21 +28,21 @@ i32 SamplerInit(instrument* Ins) {
 i32 SamplerProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRate) {
   sampler_instrument_data* Sampler = (sampler_instrument_data*)Ins->UserData.Data;
   audio_source* Source = &Sampler->Source;
-  r32* Iter = Bus->Buffer;
-  r32 Time = AudioEngine.Time;
+  f32* Iter = Bus->Buffer;
+  f32 Time = AudioEngine.Time;
 
   if (!Sampler->Step) {
     Sampler->Index = AudioEngine.Tick * Bus->ChannelCount;
   }
 
   for (i32 FrameIndex = 0; FrameIndex < FramesPerBuffer; ++FrameIndex) {
-    r32 Frame0 = 0.0f;
-    r32 Frame1 = 0.0f;
+    f32 Frame0 = 0.0f;
+    f32 Frame1 = 0.0f;
 
     if (Sampler->Step) {
-      r32 TimeStamp = Sampler->TimeStamp + ((60.0f / TempoBPM));
+      f32 TimeStamp = Sampler->TimeStamp + ((60.0f / TempoBPM));
       if (Time >= TimeStamp) {
-        r32 Delta = Time - TimeStamp; // Compensation for overstepping the time stamp
+        f32 Delta = Time - TimeStamp; // Compensation for overstepping the time stamp
         Sampler->TimeStamp = Time - Delta;
         Sampler->Index = 0;
       }

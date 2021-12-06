@@ -23,36 +23,36 @@ typedef int16_t i16;
 typedef uint16_t u16;
 typedef int8_t i8;
 typedef uint8_t u8;
-typedef float r32;
-typedef double r64;
+typedef float f32;
+typedef double f64;
 
 typedef union v2 {
   struct {
-    float X, Y;
+    f32 X, Y;
   };
   struct {
-    float U, V;
+    f32 U, V;
   };
   struct {
-    float W, H;
+    f32 W, H;
   };
   struct {
-    float L, R;
+    f32 L, R;
   };
 } v2;
 
 typedef union v3 {
   struct {
-    float X, Y, Z;
+    f32 X, Y, Z;
   };
   struct {
-    float R, G, B;
+    f32 R, G, B;
   };
 } v3;
 
 typedef union v4 {
   struct {
-    float X, Y, Z, W;
+    f32 X, Y, Z, W;
   };
 } v4;
 
@@ -120,7 +120,7 @@ i32 ReadFileFromDataPath(const char* Path, buffer* Buffer);
 
 i32 ReadFileAndNullTerminate(const char* Path, buffer* Buffer);
 
-float RandomFloat(float From, float To);
+f32 RandomFloat(f32 From, f32 To);
 
 u64 Hash(char* String);
 

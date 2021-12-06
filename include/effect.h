@@ -3,14 +3,14 @@
 #ifndef _EFFECT_H
 #define _EFFECT_H
 
-typedef void (*effect_func)(r32*, i32, i32, r32, r32);
+typedef void (*effect_func)(f32*, i32, i32, f32, f32);
 
-void StubEffect(r32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, r32 Mix, r32 Amount);
+void StubEffect(f32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, f32 Mix, f32 Amount);
 
-void Distortion(r32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, r32 Mix, r32 Amount);
+void Distortion(f32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, f32 Mix, f32 Amount);
 
-void WeirdEffect(r32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, r32 Mix, r32 Amount);
+void WeirdEffect(f32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, f32 Mix, f32 Amount);
 
-void WeirdEffect2(r32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, r32 Mix, r32 Amount);
+void WeirdEffect2(f32* Buffer, i32 ChannelCount, i32 FramesPerBuffer, f32 Mix, f32 Amount);
 
 #endif

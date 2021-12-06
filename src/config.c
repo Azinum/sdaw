@@ -17,8 +17,8 @@ typedef struct config_token {
 
   union {
     i32 Integer;
-    r32 Float;
-    r32 Number;
+    f32 Float;
+    f32 Number;
   };
 } config_token;
 
@@ -74,13 +74,13 @@ config_token ParseNumber(config_parser_state* P) {
   u32 NumBytesRead = 0;
   switch (CurrentToken.Type) {
     case TypeInt32: {
-      r32 Value = 0;
+      f32 Value = 0;
       ScanResult = sscanf(CurrentToken.At, "%f", &Value);
       CurrentToken.Number = Value;
       break;
     }
     case TypeFloat32: {
-      r32 Value = 0;
+      f32 Value = 0;
       ScanResult = sscanf(CurrentToken.At, "%f", &Value);
       CurrentToken.Number = Value;
       break;
@@ -160,7 +160,7 @@ i32 Parse(config_parser_state* P) {
                 break;
               }
               case TypeFloat32: {
-                *((r32*)Variable->Data + FieldIndex) = (r32)Token.Number;
+                *((f32*)Variable->Data + FieldIndex) = (f32)Token.Number;
                 break;
               }
               default:
@@ -299,7 +299,7 @@ i32 ConfigWrite(const char* Path) {
             break;
           }
           case TypeFloat32: {
-            fprintf(File, " %g", *((r32*)Variable->Data + FieldIndex));
+            fprintf(File, " %g", *((f32*)Variable->Data + FieldIndex));
             break;
           }
           default:

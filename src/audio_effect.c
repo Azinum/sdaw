@@ -28,8 +28,8 @@ typedef struct audio_effect_args {
   char* Output;
   i32 EffectType;
   i32 SecondaryEffectType;  // NOTE(lucas): Temporary.
-  r32 Mix;
-  r32 Value;
+  f32 Mix;
+  f32 Value;
 } audio_effect_args;
 
 static i32 AudioEffectPrintHelp(FILE* File);

@@ -22,6 +22,7 @@
 #include "gen_audio.h"
 #include "image_interp.h"
 #include "audio_effect.h"
+#include "audio_convert.h"
 
 #ifndef NO_ENGINE
   #include "engine.h"

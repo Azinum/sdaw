@@ -21,6 +21,7 @@
 #include "gen_audio.c"
 #include "image_interp.c"
 #include "audio_effect.c"
+#include "audio_convert.c"
 
 #ifndef NO_ENGINE
   #include "engine.c"
@@ -33,12 +34,14 @@ i32 ImageToAudioGen = 0;
 i32 AudioToImageGen = 0;
 i32 ImageInterpolation = 0;
 i32 DoAudioEffect = 0;
+i32 DoAudioConvert = 0;
 
 static parse_arg Arguments[] = {
   {'a', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
   {'i', "image-seq", "audio to image sequence generator", ArgInt, 0, &AudioToImageGen},
   {'I', "image-interpolate", "image interpolation", ArgInt, 0, &ImageInterpolation},
   {'e', "effect", "apply audio effects on audio files", ArgInt, 0, &DoAudioEffect},
+  {'c', "audio-convert", "convert audio from one format to the other", ArgInt, 0, &DoAudioConvert},
 };
 
 i32 SdawStart(i32 argc, char** argv) {
@@ -72,6 +75,9 @@ i32 SdawStart(i32 argc, char** argv) {
     }
     else if (DoAudioEffect) {
       Result = AudioEffect(argc - 1, &argv[1]);
+    }
+    else if (DoAudioConvert) {
+      Result = AudioConvert(argc - 1, &argv[1]);
     }
   }
 #endif

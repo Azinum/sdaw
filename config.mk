@@ -10,22 +10,19 @@ RES=data
 
 INC=include
 
-# LIB_AUDIO=-lSDL2 -D USE_SDL
-LIB_AUDIO=-lportaudio
+USE_PORTAUDIO=1
 
-LIB_COMMON=-lpthread -lm -lpng -lGLEW -lglfw -ldl ${LIB_AUDIO}
-
-LIB_LINUX=${LIB_COMMON} -lGL -lGLU
-
-LIB_MAC=${LIB_COMMON} -framework OpenGL -framework CoreMIDI -framework CoreFoundation
+LIB=-lpthread -lm -lpng -ldl
 
 SRC=src/main.c
 
-FLAGS=-I${INC} -Wall -Wno-missing-braces
+FLAGS=-I${INC} -Wall
 
 O_RELEASE=-O3 -ffast-math
 
 O_DEBUG=-O0 -g -W -Wall
+
+DEBUG_PROG=
 
 INSTALL_DIR=/usr/local/bin
 

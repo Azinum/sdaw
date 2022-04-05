@@ -1,6 +1,6 @@
 // math_util.c
 
-inline mat4 Mat4D(float Diagonal) {
+inline mat4 Mat4D(f32 Diagonal) {
   mat4 Result = {0};
 
   Result.Elements[0][0] = Diagonal;
@@ -11,8 +11,8 @@ inline mat4 Mat4D(float Diagonal) {
   return Result;
 }
 
-inline float InnerV2(v2 A, v2 B) {
-  float Result = 0;
+inline f32 InnerV2(v2 A, v2 B) {
+  f32 Result = 0;
 
   Result = (A.X * B.X) + (A.Y * B.Y);
 
@@ -38,16 +38,16 @@ inline v3 DifferenceV3(v3 A, v3 B) {
   return Result;
 }
 
-inline float Powf(float A, float B) {
-  float Result = 0;
+inline f32 Powf(f32 A, f32 B) {
+  f32 Result = 0;
 
   Result = powf(A, B);
 
   return Result;
 }
 
-inline float SquareRoot(float A) {
-  float Result = 0;
+inline f32 SquareRoot(f32 A) {
+  f32 Result = 0;
 #if USE_SSE
   Result = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(A)));
 #else
@@ -56,8 +56,8 @@ inline float SquareRoot(float A) {
   return Result;
 }
 
-inline float DistanceV2(v2 A, v2 B) {
-  float Result = 0;
+inline f32 DistanceV2(v2 A, v2 B) {
+  f32 Result = 0;
   v2 Delta = DifferenceV2(A, B);
 
   Result = SquareRoot(Powf(Delta.X, 2.0f) + Powf(Delta.Y, 2.0f));
@@ -65,8 +65,8 @@ inline float DistanceV2(v2 A, v2 B) {
   return Result;
 }
 
-inline float DistanceV3(v3 A, v3 B) {
-  float Result = 0;
+inline f32 DistanceV3(v3 A, v3 B) {
+  f32 Result = 0;
 
   v3 Delta = DifferenceV3(A, B);
   Result = SquareRoot(Powf(Delta.X, 2.0f) + Powf(Delta.Y, 2.0f) + Powf(Delta.Z, 2.0f));
@@ -74,11 +74,11 @@ inline float DistanceV3(v3 A, v3 B) {
   return Result;
 }
 
-inline float ToRadians(float Degrees) {
+inline f32 ToRadians(f32 Degrees) {
   return Degrees * (PI32 / 180.0f);
 }
 
-inline float Lerp(float V0, float V1, float T) {
+inline f32 Lerp(f32 V0, f32 V1, f32 T) {
   return (1.0f - T) * V0 + T * V1;
 }
 
@@ -89,14 +89,14 @@ inline v2 LerpV2(v2 V0, v2 V1, v2 T) {
   );
 }
 
-inline v2 LerpV2t(v2 V0, v2 V1, float T) {
+inline v2 LerpV2t(v2 V0, v2 V1, f32 T) {
   return V2(
     Lerp(V0.X, V1.X, T),
     Lerp(V0.Y, V1.Y, T)
   );
 }
 
-inline v3 LerpV3t(v3 V0, v3 V1, float T) {
+inline v3 LerpV3t(v3 V0, v3 V1, f32 T) {
   return V3(
     Lerp(V0.X, V1.X, T),
     Lerp(V0.Y, V1.Y, T),
@@ -126,12 +126,12 @@ inline mat4 TranslateMat4(mat4 A, v3 T) {
 
 inline v3 MultiplyMatrixVector(mat4 M, v3 A) {
   v3 Result;
-  float X = A.X, Y = A.Y, Z = A.Z;
+  f32 X = A.X, Y = A.Y, Z = A.Z;
 
   Result.X = X * M.Elements[0][0] + Y * M.Elements[1][0] + Z * M.Elements[2][0] + M.Elements[3][0];
   Result.Y = X * M.Elements[0][1] + Y * M.Elements[1][1] + Z * M.Elements[2][1] + M.Elements[3][1];
   Result.Z = X * M.Elements[0][2] + Y * M.Elements[1][2] + Z * M.Elements[2][2] + M.Elements[3][2];
-  float W =  X * M.Elements[0][3] + Y * M.Elements[1][3] + Z * M.Elements[2][3] + M.Elements[3][3];
+  f32 W =  X * M.Elements[0][3] + Y * M.Elements[1][3] + Z * M.Elements[2][3] + M.Elements[3][3];
 
   if (W != 0.0f) {
     Result.X /= W;
@@ -142,9 +142,9 @@ inline v3 MultiplyMatrixVector(mat4 M, v3 A) {
   return Result;
 }
 
-inline v3 MultiplyMatrixVectorW(mat4 M, v3 A, float* W) {
+inline v3 MultiplyMatrixVectorW(mat4 M, v3 A, f32* W) {
   v3 Result;
-  float X = A.X, Y = A.Y, Z = A.Z;
+  f32 X = A.X, Y = A.Y, Z = A.Z;
 
   Result.X = X * M.Elements[0][0] + Y * M.Elements[1][0] + Z * M.Elements[2][0] + M.Elements[3][0];
   Result.Y = X * M.Elements[0][1] + Y * M.Elements[1][1] + Z * M.Elements[2][1] + M.Elements[3][1];
@@ -160,24 +160,24 @@ inline v3 MultiplyMatrixVectorW(mat4 M, v3 A, float* W) {
   return Result;
 }
 
-inline float DotVec3(v3 A, v3 B) {
-  float Result = 0;
+inline f32 DotVec3(v3 A, v3 B) {
+  f32 Result = 0;
 
   Result = (A.X * B.X) + (A.Y * B.Y) + (A.Z * B.Z);
 
   return Result;
 }
 
-inline float LengthSquareVec3(v3 A) {
-  float Result = 0;
+inline f32 LengthSquareVec3(v3 A) {
+  f32 Result = 0;
 
   Result = DotVec3(A, A);
 
   return Result;
 }
 
-inline float LengthVec3(v3 A) {
-  float Result = 0;
+inline f32 LengthVec3(v3 A) {
+  f32 Result = 0;
 
   Result = sqrtf(LengthSquareVec3(A));
 
@@ -187,7 +187,7 @@ inline float LengthVec3(v3 A) {
 inline v3 NormalizeVec3(v3 A) {
   v3 Result = {0};
 
-  float Length = LengthVec3(A);
+  f32 Length = LengthVec3(A);
 
   if (Length != 0.0f) {
     Result.X = A.X * (1.0f / Length);
@@ -208,7 +208,7 @@ inline v3 Cross(v3 A, v3 B) {
   return Result;
 }
 
-inline v3 MultiplyV3(v3 A, float Value) {
+inline v3 MultiplyV3(v3 A, f32 Value) {
   v3 Result = A;
 
   Result.X *= Value;
@@ -218,7 +218,7 @@ inline v3 MultiplyV3(v3 A, float Value) {
   return Result;
 }
 
-inline v2 MultiplyV2(v2 A, float Value) {
+inline v2 MultiplyV2(v2 A, f32 Value) {
   v2 Result = A;
 
   Result.X *= Value;
@@ -246,7 +246,7 @@ inline v2 MultiplyToV2(v2 A, v2 B) {
   return Result;
 }
 
-inline v2 AddV2(v2 A, float Value) {
+inline v2 AddV2(v2 A, f32 Value) {
   v2 Result = A;
 
   Result.X += Value;
@@ -255,7 +255,7 @@ inline v2 AddV2(v2 A, float Value) {
   return Result;
 }
 
-inline v3 AddV3(v3 A, float Value) {
+inline v3 AddV3(v3 A, f32 Value) {
   v3 Result = A;
 
   Result.X += Value;
@@ -265,7 +265,7 @@ inline v3 AddV3(v3 A, float Value) {
   return Result;
 }
 
-inline v2 DivideV2(v2 A, float Value) {
+inline v2 DivideV2(v2 A, f32 Value) {
   v2 Result = A;
 
   if (Value != 0.0f) {
@@ -276,7 +276,7 @@ inline v2 DivideV2(v2 A, float Value) {
   return Result;
 }
 
-inline v3 DivideV3(v3 A, float Value) {
+inline v3 DivideV3(v3 A, f32 Value) {
   v3 Result = A;
 
   if (Value != 0.0f) {
@@ -333,7 +333,7 @@ inline mat4 MultiplyMat4(mat4 A, mat4 B) {
 #else
   for (i32 Column = 0; Column < 4; ++Column) {
     for (i32 Row = 0; Row < 4; ++Row) {
-      float Sum = 0;
+      f32 Sum = 0;
       i32 CurrentMatrice;
       for (CurrentMatrice = 0; CurrentMatrice < 4; ++CurrentMatrice) {
         Sum += A.Elements[CurrentMatrice][Row] * B.Elements[Column][CurrentMatrice];
@@ -345,7 +345,7 @@ inline mat4 MultiplyMat4(mat4 A, mat4 B) {
   return Result;
 }
 
-inline mat4 MultiplyMat4f(mat4 A, float B) {
+inline mat4 MultiplyMat4f(mat4 A, f32 B) {
   mat4 Result;
 
   __m128 Scalar = _mm_set1_ps(B);
@@ -357,14 +357,14 @@ inline mat4 MultiplyMat4f(mat4 A, float B) {
   return Result;
 }
 
-inline mat4 Rotate(float Angle, v3 Axis) {
+inline mat4 Rotate(f32 Angle, v3 Axis) {
   mat4 Result = Mat4D(1.0f);
 
   Axis = NormalizeVec3(Axis);
 
-  float SinTheta = sinf(ToRadians(Angle));
-  float CosTheta = cosf(ToRadians(Angle));
-  float CosValue = 1.0f - CosTheta;
+  f32 SinTheta = sinf(ToRadians(Angle));
+  f32 CosTheta = cosf(ToRadians(Angle));
+  f32 CosValue = 1.0f - CosTheta;
 
   Result.Elements[0][0] = (Axis.X * Axis.X * CosValue) + CosTheta;
   Result.Elements[0][1] = (Axis.X * Axis.Y * CosValue) + (Axis.Z * SinTheta);
@@ -401,10 +401,10 @@ inline mat4 ScaleOnMat4(mat4 A, v3 B) {
   return Result;
 }
 
-inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
+inline mat4 Perspective(f32 Fov, f32 AspectRatio, f32 ZNear, f32 ZFar) {
   mat4 Result = {0};
 
-  float TanThetaOver2 = tanf(Fov * (PI32 / 360.0f));
+  f32 TanThetaOver2 = tanf(Fov * (PI32 / 360.0f));
 
   Result.Elements[0][0] = 1.0f / TanThetaOver2;
   Result.Elements[1][1] = AspectRatio / TanThetaOver2;
@@ -416,7 +416,7 @@ inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
   return Result;
 }
 
-inline mat4 Orthographic(float Left, float Right, float Bottom, float Top, float ZNear, float ZFar) {
+inline mat4 Orthographic(f32 Left, f32 Right, f32 Bottom, f32 Top, f32 ZNear, f32 ZFar) {
   mat4 Result = {0};
 
   Result.Elements[0][0] = 2.0f / (Right - Left);
@@ -474,8 +474,8 @@ inline mat4 InverseMat4(mat4 A) {
   return Result;
 }
 
-inline float Sin(float Value) {
-  float Result = 0.0f;
+inline f32 Sin(f32 Value) {
+  f32 Result = 0.0f;
 
   Result = sinf(Value);
 
@@ -503,7 +503,7 @@ inline i32 Inside(v2 P, v2 Start, v2 End) {
 void PrintMat4(FILE* File, mat4 A) {
   for (i32 Column = 0; Column < 4; ++Column) {
     for (i32 Row = 0; Row < 4; ++Row) {
-      float Value = A.Elements[Column][Row];
+      f32 Value = A.Elements[Column][Row];
       if (Row == 0) fprintf(File, "[");
       fprintf(File, "%3g", Value);
       if (Row < 3) fprintf(File, ", ");

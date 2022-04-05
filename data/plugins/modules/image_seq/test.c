@@ -14,12 +14,16 @@ void Init(image_seq* Seq) {
 color_rgba Process(image_seq* Seq, i32 X, i32 Y, float AnimationTime) {
   color_rgba Color = {};
 
-  Color = ColorRGBA(255 * (0.5 * sin(AnimationTime) + 1), 0, 255 * (0.5f * cos(AnimationTime) + 1), 255);
+  Color = ColorRGBA(255 * (0.5f * (sin(X + AnimationTime) + 1.0f)), 0, 255 * (0.5f * cos(Y + AnimationTime) + 1.0f), 255);
+
+  Color.R *= 3.0f * Seq->DbAverage;
+  Color.G *= 3.0f * Seq->DbAverage;
+  Color.B *= 3.0f * Seq->DbAverage;
 
   if (Seq->Mask) {
     v2 MaskScaling = V2(
-      (float)Seq->Mask->Width / Seq->Output->Width,
-      (float)Seq->Mask->Height / Seq->Output->Height
+      (f32)Seq->Mask->Width / Seq->Output->Width,
+      (f32)Seq->Mask->Height / Seq->Output->Height
     );
     v2 TexelSample = V2(
       X * MaskScaling.Y,

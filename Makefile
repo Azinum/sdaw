@@ -7,6 +7,7 @@ all: compile
 
 prepare:
 	mkdir -p sequence
+	mkdir -p output
 	mkdir -p ${BUILD_DIR}
 	cp -rp ${RES} ${BUILD_DIR}
 

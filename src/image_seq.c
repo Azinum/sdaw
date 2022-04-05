@@ -46,6 +46,7 @@ i32 GenImageSequence(gen_image_args* Args) {
   image_seq Seq = {
     .Output = NULL,
     .Mask = NULL,
+    .DbAverage = 0,
   };
 
   image Image;
@@ -87,7 +88,9 @@ i32 GenImageSequence(gen_image_args* Args) {
     }
   }
 
-  if (InitCb) InitCb(&Seq);
+  if (InitCb) {
+    InitCb(&Seq);
+  }
 
   struct timeval TimeNow = {0};
   gettimeofday(&TimeNow, NULL);
@@ -106,6 +109,15 @@ i32 GenImageSequence(gen_image_args* Args) {
     i32 FramesLeft = MaxFrames - FrameIndex;
     float TimeLeft = DeltaTime * FramesLeft;
     Vprintf(Args->Verbose, "frame = %4i/%i, fps = %3i, last = %.4g ms, est. time left = %3.3g s\n", FrameIndex, MaxFrames - 1, (i32)(1.0f / DeltaTime), DeltaTime, TimeLeft);
+
+    const i32 WindowSize = 1024;
+    f32 Db = 0.0f;
+    for (i32 WindowIndex = 0; WindowIndex < WindowSize; ++WindowIndex) {
+      i32 Index = FrameIndex + WindowIndex;
+      f32 Frame = Audio.Buffer[Index % Audio.SampleCount];
+      Db += Frame * Frame;
+    }
+    Seq.DbAverage = SquareRoot(Db / (f32)WindowSize);
 
     for (i32 Y = 0; Y < Image.Height; ++Y) {
       for (i32 X = 0; X < Image.Width; ++X) {

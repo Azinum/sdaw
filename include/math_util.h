@@ -22,7 +22,7 @@
 #define Scale2D(MODEL, X, Y) MultiplyMat4(MODEL, ScaleMat4(V3(X, Y, 1)))
 
 typedef union mat4 {
-  float Elements[4][4];
+  f32 Elements[4][4];
 #if USE_SSE
   __m128 Rows[4];
 #endif
@@ -32,51 +32,51 @@ typedef union mat4 {
 #define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
 #define ClampV3(Value, MinValue, MaxValue) (V3(Clamp(Value.X, MinValue, MaxValue), Clamp(Value.Y, MinValue, MaxValue), Clamp(Value.Z, MinValue, MaxValue)))
 
-extern mat4 Mat4D(float Diagonal);
-extern float InnerV2(v2 A, v2 B);
+extern mat4 Mat4D(f32 Diagonal);
+extern f32 InnerV2(v2 A, v2 B);
 extern v2 DifferenceV2(v2 A, v2 B);
 extern v3 DifferenceV3(v3 A, v3 B);
-extern float Powf(float A, float B);
-extern float SquareRoot(float A);
-extern float DistanceV2(v2 A, v2 B);
-extern float DistanceV3(v3 A, v3 B);
-extern float ToRadians(float Degrees);
-extern float Lerp(float V0, float V1, float T);
+extern f32 Powf(f32 A, f32 B);
+extern f32 SquareRoot(f32 A);
+extern f32 DistanceV2(v2 A, v2 B);
+extern f32 DistanceV3(v3 A, v3 B);
+extern f32 ToRadians(f32 Degrees);
+extern f32 Lerp(f32 V0, f32 V1, f32 T);
 extern v2 LerpV2(v2 V0, v2 V1, v2 T);
-extern v2 LerpV2t(v2 V0, v2 V1, float T);
-extern v3 LerpV3t(v3 V0, v3 V1, float T);
+extern v2 LerpV2t(v2 V0, v2 V1, f32 T);
+extern v3 LerpV3t(v3 V0, v3 V1, f32 T);
 extern mat4 Translate(v3 T);
 extern mat4 TranslateMat4(mat4 A, v3 T);
 extern v3 MultiplyMatrixVector(mat4 M, v3 A);
-extern v3 MultiplyMatrixVectorW(mat4 M, v3 A, float* W);
-extern float DotVec3(v3 A, v3 B);
-extern float LengthSquareVec3(v3 A);
-extern float LengthVec3(v3 A);
+extern v3 MultiplyMatrixVectorW(mat4 M, v3 A, f32* W);
+extern f32 DotVec3(v3 A, v3 B);
+extern f32 LengthSquareVec3(v3 A);
+extern f32 LengthVec3(v3 A);
 extern v3 NormalizeVec3(v3 A);
 extern v3 Cross(v3 A, v3 B);
 
-extern v3 MultiplyV3(v3 A, float Value);
-extern v2 MultiplyV2(v2 A, float Value);
+extern v3 MultiplyV3(v3 A, f32 Value);
+extern v2 MultiplyV2(v2 A, f32 Value);
 extern v3 MultiplyToV3(v3 A, v3 B);
 extern v2 MultiplyToV2(v2 A, v2 B);
-extern v2 AddV2(v2 A, float Value);
-extern v3 AddV3(v3 A, float Value);
-extern v2 DivideV2(v2 A, float Value);
-extern v3 DivideV3(v3 A, float Value);
+extern v2 AddV2(v2 A, f32 Value);
+extern v3 AddV3(v3 A, f32 Value);
+extern v2 DivideV2(v2 A, f32 Value);
+extern v3 DivideV3(v3 A, f32 Value);
 extern v2 AddToV2(v2 A, v2 B);
 extern v3 AddToV3(v3 A, v3 B);
 extern v3 SubToV3(v3 A, v3 B);
-extern mat4 Mat4D(float Diagonal);
+extern mat4 Mat4D(f32 Diagonal);
 extern mat4 MultiplyMat4(mat4 A, mat4 B);
-extern mat4 MultiplyMat4f(mat4 A, float B);
-extern mat4 Rotate(float Angle, v3 Axis);
+extern mat4 MultiplyMat4f(mat4 A, f32 B);
+extern mat4 Rotate(f32 Angle, v3 Axis);
 extern mat4 ScaleMat4(v3 A);
 extern mat4 ScaleOnMat4(mat4 A, v3 B);
-extern mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar);
-extern mat4 Orthographic(float Left, float Right, float Bottom, float Top, float ZNear, float ZFar);
+extern mat4 Perspective(f32 Fov, f32 AspectRatio, f32 ZNear, f32 ZFar);
+extern mat4 Orthographic(f32 Left, f32 Right, f32 Bottom, f32 Top, f32 ZNear, f32 ZFar);
 extern mat4 InverseMat4(mat4 A);
 
-extern float Sin(float Value);
+extern f32 Sin(f32 Value);
 extern i32 Rand();
 
 extern i32 Inside(v2 P, v2 Start, v2 End);

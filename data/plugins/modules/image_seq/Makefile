@@ -4,14 +4,14 @@ CC=gcc
 
 C_FLAGS=-I/usr/local/include/sdaw -lsdaw -O3 -shared -fPIC
 
-SRC=${wildcard *.c}
+SRC=${subst .c,, ${wildcard *.c}}
 
-PROG=test
+all: test
 
-all: compile
-
-compile:
-	${CC} test.c -o ${PROG}.mod ${C_FLAGS} -Wall
+${SRC}:
+	${CC} $@.c -o $@.mod ${C_FLAGS} -Wall
 
 clean:
 	rm *.mod
+
+.PHONY: test

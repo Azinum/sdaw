@@ -1,15 +1,17 @@
 #!/bin/bash
 
-AUDIO_DIR=audio
-AUDIO_FILE=dark_wind.ogg
+AUDIO_DIR=data/audio
+AUDIO_FILE=it_all_starts_here.ogg
 OUT_DIR=output
 SEQ_DIR=sequence
-W=480
-H=360
+W=512
+H=512
 FPS=24
+
+mkdir -p ${OUT_DIR}
 
 if [ -f ${AUDIO_DIR}/${AUDIO_FILE} ]; then
 	ffmpeg -r ${FPS} -f image2 -s "${W}x${H}" -i ${SEQ_DIR}/frame_%04d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ${OUT_DIR}/${AUDIO_FILE}.mkv -i ${AUDIO_DIR}/${AUDIO_FILE} -acodec copy
 else
-	echo "Audio file '${AUDIO_FILE}' does not exist"
+	echo "Error: Audio file '${AUDIO_DIR}/${AUDIO_FILE}' does not exist"
 fi

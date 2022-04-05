@@ -131,7 +131,9 @@ void RendererInit() {
   Model = Mat4D(1.0f);
   CompileShader(DataPathConcat("data/shader/rect"), &RectShader);
   CompileShader(DataPathConcat("data/shader/text"), &TextShader);
-  LoadImage(DataPathConcat("data/texture/font_source_code_bold.png"), &FontTexture);
+  if (LoadImage(DataPathConcat(UIFontPath), &FontTexture) == Error) {
+    LoadImage(DataPathConcat("data/texture/font_source_code_bold.png"), &FontTexture);
+  }
   UploadTexture(&FontTexture, &FontTextureId);
   RendererUpdateMatrices();
 }
@@ -230,7 +232,6 @@ void DrawRectangle(v3 P, v2 Size, v3 Color, v3 BorderColor, float Thickness, flo
   glBindVertexArray(0);
 
   glUseProgram(0);
-
 }
 
 void DrawText(v3 P, v2 Size, v3 Color, float Kerning, float Leading, i32 TextSize, const char* Text) {

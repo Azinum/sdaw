@@ -93,7 +93,7 @@ config_token ParseNumber(config_parser_state* P) {
 }
 
 config_token ParseIdent(config_parser_state* P) {
-  while (IsAlpha(*P->Index) || *P->Index == '_') {
+  while (IsAlpha(*P->Index) || *P->Index == '/' || *P->Index == '.' || *P->Index == '-' || *P->Index == '_') {
     P->Index++;
   }
   CurrentToken.Length = P->Index - CurrentToken.At;
@@ -107,9 +107,10 @@ config_token NextToken(config_parser_state* P) {
     Next(P);
 
     switch (Ch) {
-      case EOF:
+      case EOF: {
         CurrentToken.Type = TOK_EOF;
         return CurrentToken;
+      }
       case '\r':
       case '\n': {
         CurrentToken.Type = TOK_NEWLINE;
@@ -161,6 +162,12 @@ i32 Parse(config_parser_state* P) {
               }
               case TypeFloat32: {
                 *((f32*)Variable->Data + FieldIndex) = (f32)Token.Number;
+                break;
+              }
+              case TypeString: {
+                char* String = (char*)(char**)(Variable->Data + FieldIndex);
+                strncpy(String, Token.At, Token.Length);
+                String[Token.Length] = '\0';
                 break;
               }
               default:
@@ -238,6 +245,7 @@ i32 ConfigParserInit() {
   DefineVariable("ui_text_size", &UITextSize, 1, TypeInt32);
   DefineVariable("ui_text_kerning", &UITextKerning, 1, TypeFloat32);
   DefineVariable("ui_text_leading", &UITextLeading, 1, TypeFloat32);
+  DefineVariable("ui_font_path", &UIFontPath, 1, TypeString);
 
   DefineVariable("gamepad_button_up", &G_GamepadButtonUp, 1, TypeInt32);
   DefineVariable("gamepad_button_down", &G_GamepadButtonDown, 1, TypeInt32);
@@ -258,7 +266,7 @@ i32 ConfigRead() {
   config_parser_state* P = &Parser;
 
   char Path[MAX_PATH_SIZE];
-  snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", HomePath(), ".sdaw");
+  snprintf(Path, MAX_PATH_SIZE, "%s/.config/sdaw/%s", HomePath(), CONFIG_PATH);
 
   // NOTE(lucas): We free the old source buffer, in cases where
   // we want to re-read the configuration file, so that we do not get a memory leak
@@ -268,7 +276,7 @@ i32 ConfigRead() {
 
   if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
     if ((Result = ConfigWrite(Path)) != NoError) {
-      snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), ".sdaw");
+      snprintf(Path, MAX_PATH_SIZE, "%s/%s", HomePath(), CONFIG_PATH);
       if ((Result = ReadFileAndNullTerminate(Path, &P->Source)) != NoError) {
         Result = ConfigWrite(Path);  // Write default config
       }
@@ -300,6 +308,10 @@ i32 ConfigWrite(const char* Path) {
           }
           case TypeFloat32: {
             fprintf(File, " %g", *((f32*)Variable->Data + FieldIndex));
+            break;
+          }
+          case TypeString: {
+            fprintf(File, " %s", (char*)(char**)(Variable->Data + FieldIndex));
             break;
           }
           default:

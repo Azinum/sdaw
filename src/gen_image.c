@@ -284,6 +284,7 @@ i32 GenImage(i32 argc, char** argv) {
     .SeqFrameRate = 24,
     .Strategy = IMG_GEN_STRAT_DEFAULT,
     .NumFrames = 0,
+    .Verbose = 0,
   };
 
   parse_arg Arguments[] = {
@@ -296,8 +297,8 @@ i32 GenImage(i32 argc, char** argv) {
     {'r', "seq-frame-rate", "frame rate of the sequence", ArgInt, 1, &Args.SeqFrameRate},
     {'s', "strategy", "image sequence generator strategy", ArgInt, 1, &Args.Strategy},
     {'n', "num-frames", "number of frames to generate", ArgInt, 1, &Args.NumFrames},
-    {'v', "verbose", "verbose output", ArgInt, 0, &Args.Verbose},
     {'m', "mask", "image mask", ArgString, 1, &Args.Mask},
+    {'v', "verbose", "verbose output", ArgInt, 0, &Args.Verbose},
   };
 
   Result = ParseArgs(Arguments, ArraySize(Arguments), argc, argv);

@@ -1,6 +1,6 @@
 // ui.c
 
-ui_state UI;
+static ui_state UI;
 static i32 DeltaX = 0;
 static i32 DeltaY = 0;
 
@@ -15,7 +15,6 @@ static void UI_Process(ui_state* State);
 static void UI_AlignElement(ui_element* E);
 static ui_element* UI_InitInteractable(u32 ID, i32* Prev);
 static ui_element* UI_PushElement();
-static ui_element* UI_LastElement();
 static void UI_FreeElement(ui_element* E);
 
 // NOTE(lucas): Get container size based on the container size mode
@@ -287,13 +286,6 @@ ui_element* UI_PushElement() {
   }
 
   return E;
-}
-
-ui_element* UI_LastElement() {
-  if (UI.ElementCount > 0) {
-    return &UI.Elements[UI.ElementCount - 1];
-  }
-  return NULL;
 }
 
 void UI_FreeElement(ui_element* E) {

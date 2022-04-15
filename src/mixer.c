@@ -8,7 +8,7 @@ static i32 RemoveBus(mixer* Mixer, i32 BusIndex);
 
 void FreeBus(mixer* Mixer, bus* Bus) {
   if (Bus->InternalBuffer) {
-    M_Free(Bus->Buffer, sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer);
+    M_Free(Bus->Buffer, sizeof(f32) * Bus->ChannelCount * Mixer->FramesPerBuffer);
   }
   if (Bus->Ins) {
     InstrumentFree(Bus->Ins);
@@ -68,11 +68,11 @@ bus* MixerGetFocusedBus(mixer* Mixer) {
   return Mixer->FocusedBus;
 }
 
-i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
+i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, f32* Buffer) {
   if (Mixer->BusCount < MAX_AUDIO_BUS) {
     bus* Bus = &Mixer->Buses[Mixer->BusCount];
     if (!Buffer) {
-      Bus->Buffer = M_Calloc(sizeof(float), ChannelCount * Mixer->FramesPerBuffer);
+      Bus->Buffer = M_Calloc(sizeof(f32), ChannelCount * Mixer->FramesPerBuffer);
       Bus->InternalBuffer = 1;
     }
     else {
@@ -101,7 +101,7 @@ i32 MixerAddBus(mixer* Mixer, i32 ChannelCount, float* Buffer) {
 // NOTE(lucas): Returns a reference to the bus that you added. It should be noted, however, that the reference is
 // not persistant, in other words the reference can change so that it will point to a bus which you initially did not
 // select. Thus, this function should be used with caution.
-bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, float* Buffer, i32* BusIndex) {
+bus* MixerAddBus0(mixer* Mixer, i32 ChannelCount, f32* Buffer, i32* BusIndex) {
   bus* Bus = NULL;
   i32 Index = Mixer->BusCount;
 
@@ -173,7 +173,7 @@ i32 MixerClearBuffers(mixer* Mixer) {
     // NOTE(lucas): The buffer is cleared elsewhere if it is not internal
     if (Bus->Buffer) {
       if (Bus->InternalBuffer || (Bus->Buffer && BusIndex == MASTER_BUS_INDEX)) {
-        ClearFloatBuffer(Bus->Buffer, sizeof(float) * Bus->ChannelCount * Mixer->FramesPerBuffer);
+        ClearFloatBuffer(Bus->Buffer, sizeof(f32) * Bus->ChannelCount * Mixer->FramesPerBuffer);
       }
     }
   }
@@ -181,13 +181,13 @@ i32 MixerClearBuffers(mixer* Mixer) {
   return NoError;
 }
 
-i32 MixerSumBuses(mixer* Mixer, u8 Playing, float* OutBuffer, float* InBuffer) {
+i32 MixerSumBuses(mixer* Mixer, u8 Playing, f32* OutBuffer, f32* InBuffer) {
   TIMER_START();
 
   bus* Master = &Mixer->Buses[0];
   if (!Master->Buffer) {
     Master->Buffer = OutBuffer;
-    ClearFloatBuffer(Master->Buffer, sizeof(float) * Master->ChannelCount * Mixer->FramesPerBuffer);
+    ClearFloatBuffer(Master->Buffer, sizeof(f32) * Master->ChannelCount * Mixer->FramesPerBuffer);
   }
 
   if (!Master->Active || Master->Disabled || !Master->Buffer) {
@@ -230,11 +230,10 @@ i32 MixerSumBuses(mixer* Mixer, u8 Playing, float* OutBuffer, float* InBuffer) {
   // Sum all buses into the master bus
   for (i32 BusIndex = Mixer->BusCount - 1; BusIndex >= 0; --BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
-    float* Iter = &Master->Buffer[0];
-    instrument* Ins = Bus->Ins;
+    f32* Iter = &Master->Buffer[0];
     if (!Bus->Disabled && !Bus->ToRemove && Bus->Buffer) {
-      float Frame0 = 0.0f;
-      float Frame1 = 0.0f;
+      f32 Frame0 = 0.0f;
+      f32 Frame1 = 0.0f;
       v2 Db = V2(0.0f, 0.0f);
       i32 WindowSize = Mixer->FramesPerBuffer;
       for (i32 FrameIndex = 0; FrameIndex < Mixer->FramesPerBuffer; ++FrameIndex) {
@@ -268,9 +267,9 @@ i32 MixerRender(mixer* Mixer) {
   v3 PrevColorButton = UIColorButton;
   for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
     bus* Bus = &Mixer->Buses[BusIndex];
-    float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
-    float DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
-    float DbFactorAverage = (DbFactorL + DbFactorR) / 2.0f;
+    f32 DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
+    f32 DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
+    f32 DbFactorAverage = (DbFactorL + DbFactorR) / 2.0f;
     if (UI_DoBox(UI_ID + Bus->ID, V2(TileSize, TileSize), ColorGain(V3(0.3f, 1.0f, 0.3f), 10 * DbFactorAverage))) {
       Bus->Active = !Bus->Active;
     }
@@ -295,55 +294,6 @@ i32 MixerRender(mixer* Mixer) {
   }
   UIButtonSize = PrevButtonSize;
   UIColorButton = PrevColorButton;
-#if 0
-  const i32 TileSize = 18;
-  const i32 Gap = 8;
-
-  for (i32 BusIndex = 0; BusIndex < Mixer->BusCount; ++BusIndex) {
-    bus* Bus = &Mixer->Buses[BusIndex];
-    if (Bus->Active) {
-    }
-    { // Draw bus
-      v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize, 0);
-      v2 Size = V2(TileSize, TileSize);
-      v3 Color = V3(0, 0, 0);
-      Color = (Bus->Active ? UIColorStandard : UIColorInactive);
-      if (Bus->Ins) {
-        if (!Bus->Ins->Ready || Bus->ToRemove) {
-          Color = UIColorNotPresent;
-        }
-      }
-      DrawRect(P, Size, Color);
-    }
-
-    {
-      v3 P = V3((1 + BusIndex) * (32 + Gap), 32, 0);
-      UI_DoToggle(1000 + UI_ID + BusIndex, V2(P.X + 60, 0), V2(32, 32), UIColorStandard, &Bus->Active);
-    }
-
-    { // Draw bus volume
-      float DbFactorL = 1.0f / (1 + Abs(Bus->Db.L));
-      float DbFactorR = 1.0f / (1 + Abs(Bus->Db.R));
-      float VolumeBarMaxHeight = 200;
-      v3 P = V3((1 + BusIndex) * (TileSize + Gap), TileSize * 2, 0);
-      v3 OrigP = P;
-      v2 Size = V2(TileSize, 1 + (VolumeBarMaxHeight * DbFactorL));
-      v2 OrigSize = Size;
-      v2 FullSize = Size;
-      Size.W *= 0.4f;
-      FullSize.Y = 1 + VolumeBarMaxHeight;
-      v3 ColorL = (Bus->Active ? V3(0.1f, 0.92, 0.1f) : V3(0.10f, 0.5f, 0.10f));
-      v3 ColorR = ColorL;
-
-      DrawRect(P, Size, ColorL);
-      P.X += OrigSize.W - Size.W;
-      Size.H = 1 + (VolumeBarMaxHeight * DbFactorR);
-      DrawRect(P, Size, ColorR);
-
-      DrawRect(OrigP, FullSize, V3(0.15f, 0.15f, 0.15f));
-    }
-  }
-#endif
   return NoError;
 }
 

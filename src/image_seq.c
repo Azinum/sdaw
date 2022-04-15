@@ -32,7 +32,6 @@ void SigHandle(i32 Signal) {
 
 i32 GenImageSequence(gen_image_args* Args) {
   i32 Result = NoError;
-  float TotalRenderTime = 0.0f;
   float TotalTime = 0.0f;
   float AnimationTime = 0.0f;
   const float TimePerFrame = 1.0f / Args->FrameRate;

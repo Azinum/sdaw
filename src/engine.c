@@ -28,8 +28,6 @@ static window_tag WindowTag = TAG_MAIN;
 static u8 UseWindowTags = 0;
 
 static i32 BaseNote = 0;
-static float AttackTime = 0.1f;
-static float ReleaseTime = 15.0f;
 
 #define MAX_NOTE 127
 float NoteTable[MAX_NOTE] = {0};

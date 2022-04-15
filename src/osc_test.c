@@ -93,10 +93,14 @@ note_state* OscTestPlayNote(i32 FreqIndex, float AttackTime, float ReleaseTime, 
 i32 OscTestProcess(instrument* Ins, bus* Bus, i32 FramesPerBuffer, i32 SampleRate) {
   TIMER_START();
 
+  (void)InitAmp;
+  (void)SquareWave;
   float* Iter = Bus->Buffer;
   i32 Tick = AudioEngine.Tick;
   float Time = AudioEngine.Time;
   float DeltaTime = AudioEngine.DeltaTime;
+
+  (void)DeltaTime;
 
   float TimeStamp = InsTime + (60.0f / TempoBPM);
   if (Time >= TimeStamp) {

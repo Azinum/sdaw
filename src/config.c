@@ -71,7 +71,6 @@ config_token ParseNumber(config_parser_state* P) {
     CurrentToken.Type = TOK_EOF;
   }
   i32 ScanResult = 0;
-  u32 NumBytesRead = 0;
   switch (CurrentToken.Type) {
     case TypeInt32: {
       f32 Value = 0;

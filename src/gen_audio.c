@@ -23,23 +23,7 @@ typedef struct args {
   i32 SamplingStrategy;
 } args;
 
-static i32 GenerateSineWave(audio_source* Source, float Amp, float Freq);
 static i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy);
-
-i32 GenerateSineWave(audio_source* Source, float Amp, float Freq) {
-  float* Iter = Source->Buffer;
-  for (i32 SampleIndex = 0; SampleIndex < Source->SampleCount; ++SampleIndex) {
-    float Frame = Amp * sin((SampleIndex * Freq * 2 * PI32) / G_SampleRate);
-    Amp = Lerp(Amp, 0.0f, 0.00005f);
-    if (Source->ChannelCount == 2) {
-      *(Iter++) += Frame;
-      *(Iter++) += Frame;
-      continue;
-    }
-    *(Iter++) += Frame;
-  }
-  return NoError;
-}
 
 i32 GenerateFromImage(const char* Path, const char* ImagePath, image* Image, float Amp, i32 SampleRate, i32 FrameCopies, i32 ChannelCount, float WDenom, float HDenom, i32 XSpeed, i32 YSpeed, i32 SamplingStrategy) {
   i32 Result = NoError;
@@ -150,6 +134,7 @@ Done:
 }
 
 i32 GenAudio(i32 argc, char** argv) {
+  (void)SamplingDesc;
   args Args = (args) {
     .FrameCopies = 1,
     .ChannelCount = 1,

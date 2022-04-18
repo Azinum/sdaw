@@ -4,7 +4,13 @@ CC=gcc
 
 C_FLAGS=-I/usr/local/include/sdaw -lsdaw -O2
 
-all: compile
+SRC=audio_input_test
 
-compile:
-	${CC} ${C_FLAGS} audio_input_test.c -o audio_input_test -Wall
+EXT=ins
+
+all: ${SRC}
+
+${SRC}:
+	${CC} ${C_FLAGS} $@.c -o $@.${EXT} -Wall
+
+.PHONY: ${SRC}

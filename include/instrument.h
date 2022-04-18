@@ -19,7 +19,12 @@ typedef enum instrument_def_type {
   MAX_INSTRUMENT_DEF,
 } instrument_def_type;
 
-extern instrument_def Instruments[];
+typedef struct instrument_handler {
+  instrument_def* Instruments;
+  u32 InstrumentCount;
+} instrument_handler;
+
+extern instrument_handler InsHandler;
 
 instrument* InstrumentCreate(instrument_def_type Type);
 
@@ -30,5 +35,9 @@ i32 InstrumentDestroy(instrument* Ins);
 i32 InstrumentDraw(instrument* Ins);
 
 void InstrumentFree(instrument* Ins);
+
+i32 InstrumentHandlerInit();
+
+void InstrumentHandlerFree();
 
 #endif

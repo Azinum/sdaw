@@ -30,19 +30,13 @@
   #define EngineFree()
 #endif
 
-i32 ImageToAudioGen = 0;
-i32 AudioToImageGen = 0;
-i32 ImageInterpolation = 0;
-i32 DoAudioEffect = 0;
-i32 DoAudioConvert = 0;
-
-static parse_arg Arguments[] = {
-  {'a', "audio-gen", "image to audio generator", ArgInt, 0, &ImageToAudioGen},
-  {'i', "image-seq", "audio to image sequence generator", ArgInt, 0, &AudioToImageGen},
-  {'I', "image-interpolate", "image interpolation", ArgInt, 0, &ImageInterpolation},
-  {'e', "effect", "apply audio effects on audio files", ArgInt, 0, &DoAudioEffect},
-  {'c', "audio-convert", "convert audio from one format to the other", ArgInt, 0, &DoAudioConvert},
-};
+typedef struct options {
+  i32 ImageToAudioGen;
+  i32 AudioToImageGen;
+  i32 ImageInterpolation;
+  i32 AudioEffect;
+  i32 AudioConvert;
+} options;
 
 i32 SdawStart(i32 argc, char** argv) {
   i32 Result = NoError;
@@ -55,29 +49,44 @@ i32 SdawStart(i32 argc, char** argv) {
   Result = EngineInit();
   EngineFree();
 #else
+  options Options = (options) {
+    .ImageToAudioGen = 0,
+    .AudioToImageGen = 0,
+    .ImageInterpolation = 0,
+    .AudioEffect = 0,
+    .AudioConvert = 0,
+  };
+  parse_arg Arguments[] = {
+    {'a', "audio-gen", "image to audio generator", ArgInt, 0, &Options.ImageToAudioGen},
+    {'i', "image-seq", "audio to image sequence generator", ArgInt, 0, &Options.AudioToImageGen},
+    {'I', "image-interpolate", "image interpolation", ArgInt, 0, &Options.ImageInterpolation},
+    {'e', "effect", "apply audio effects on audio files", ArgInt, 0, &Options.AudioEffect},
+    {'c', "audio-convert", "convert audio from one format to the other", ArgInt, 0, &Options.AudioConvert},
+  };
+
   if (argc <= 1) {
     Result = EngineInit();
     EngineFree();
   }
   else {
-    Result = ParseArgs(Arguments, ArraySize(Arguments), 2 /* parse only the first command */, argv);
+    Result = ParseArgs(Arguments, ArraySize(Arguments), 2 /* only parse the first command */, argv);
     if (Result != NoError) {
       return Result;
     }
-    if (ImageToAudioGen) {
-      Result = GenAudio(argc - 1, &argv[1]);
+    if (Options.ImageToAudioGen) {
+     Result = GenAudio(argc - 1, &argv[1]);
     }
-    else if (AudioToImageGen) {
-      Result = ImageSeq(argc - 1, &argv[1]);
+    else if (Options.AudioToImageGen) {
+     Result = ImageSeq(argc - 1, &argv[1]);
     }
-    else if (ImageInterpolation) {
-      Result = ImageInterp(argc - 1, &argv[1]);
+    else if (Options.ImageInterpolation) {
+     Result = ImageInterp(argc - 1, &argv[1]);
     }
-    else if (DoAudioEffect) {
-      Result = AudioEffect(argc - 1, &argv[1]);
+    else if (Options.AudioEffect) {
+     Result = AudioEffect(argc - 1, &argv[1]);
     }
-    else if (DoAudioConvert) {
-      Result = AudioConvert(argc - 1, &argv[1]);
+    else if (Options.AudioConvert) {
+     Result = AudioConvert(argc - 1, &argv[1]);
     }
   }
 #endif

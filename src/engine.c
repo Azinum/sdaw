@@ -172,8 +172,8 @@ static i32 EngineRun(audio_engine* Engine) {
             }
             case TAG_INSTRUMENT_PICK: {
               UI_SetPlacement(PLACEMENT_VERTICAL);
-              for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
-                instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
+              for (i32 InstrumentIndex = 0; InstrumentIndex < InsHandler.InstrumentCount; ++InstrumentIndex) {
+                instrument_def* InstrumentDef = &InsHandler.Instruments[InstrumentIndex];
                 if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
                   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
                   if (Bus) {
@@ -231,8 +231,8 @@ static i32 EngineRun(audio_engine* Engine) {
             UIColorButton = PrevButtonColor;
             UI_SetContainerSize(V2(1.0f, 0.5f));
             if (UI_DoContainer(UI_ID)) {
-              for (i32 InstrumentIndex = 0; InstrumentIndex < MAX_INSTRUMENT_DEF; ++InstrumentIndex) {
-                instrument_def* InstrumentDef = &Instruments[InstrumentIndex];
+              for (i32 InstrumentIndex = 0; InstrumentIndex < InsHandler.InstrumentCount; ++InstrumentIndex) {
+                instrument_def* InstrumentDef = &InsHandler.Instruments[InstrumentIndex];
                 if (UI_DoTextButton(UI_ID + InstrumentIndex, InstrumentDef->Name)) {
                   bus* Bus = MixerAddBus0(Mixer, 2, NULL, NULL);
                   if (Bus) {
@@ -282,6 +282,7 @@ i32 EngineInit() {
   audio_engine* Engine = &AudioEngine;
   mixer* Mixer = &Engine->Mixer;
   MixerInit(Mixer, G_SampleRate, G_FramesPerBuffer);
+  InstrumentHandlerInit();
 
   AudioEngineStateInit(G_SampleRate, G_FramesPerBuffer);
   AudioEngineStart(NULL);
@@ -296,4 +297,5 @@ void EngineFree() {
   mixer* Mixer = &Engine->Mixer;
   AudioEngineTerminate();
   MixerFree(Mixer);
+  InstrumentHandlerFree();
 }

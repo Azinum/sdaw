@@ -1,10 +1,13 @@
-*.swp
-*.swo
 build/
 output/
 sequence/
 out.wav
-*.wav
 .DS_Store
 record.data
 record.wav
+
+*.swp
+*.swo
+*.wav
+*.ins
+*.mod
